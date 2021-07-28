@@ -1,0 +1,44 @@
+{
+	"user32.dll":
+	[
+		{
+			"name": "patch 1",
+			"pattern": "11 22",
+			"replacement": "12 21",
+			"offset": 1
+		},
+		{
+			"name": "patch 2",
+			"pattern": "33 44",
+			"replacement": "34 43",
+			"offset": 2
+		},
+		{
+			"name": "patch 3",
+			"pattern": "55 66",
+			"replacement": "56 65",
+			"offset": 3
+		}
+	],
+	"kernel32.dll":
+	[
+		{
+			"name": "patch 4",
+			"pattern": "77 88",
+			"replacement": "78 87",
+			"offset": 4
+		},
+		{
+			"name": "patch 5",
+			"pattern": "99 00",
+			"replacement": "90 09",
+			"offset": 5
+		},
+		{
+			"name": "patch 6",
+			"pattern": "AA BB",
+			"replacement": "AB BA",
+			"offset": 6
+		}
+	]
+}
