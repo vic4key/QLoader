@@ -52,6 +52,9 @@ END_MESSAGE_MAP()
 
 CQickLoaderDlg::CQickLoaderDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_QICKLOADER_DIALOG, pParent)
+	, m_path(_T(""))
+	, m_dir(_T(""))
+	, m_auto(BST_UNCHECKED)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -59,12 +62,18 @@ CQickLoaderDlg::CQickLoaderDlg(CWnd* pParent /*=nullptr*/)
 void CQickLoaderDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Text(pDX, IDC_PATH, m_path);
+	DDX_Text(pDX, IDC_DIR, m_dir);
+	DDX_Check(pDX, IDC_AUTO, m_auto);
+	DDX_Control(pDX, IDC_TREE, m_tree);
+	DDX_Control(pDX, ID_LAUNCH, m_launch);
 }
 
 BEGIN_MESSAGE_MAP(CQickLoaderDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDC_AUTO, &OnBnClickedAuto)
 END_MESSAGE_MAP()
 
 
@@ -100,6 +109,8 @@ BOOL CQickLoaderDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
+
+	this->UpdateUI();
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -153,3 +164,13 @@ HCURSOR CQickLoaderDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+void CQickLoaderDlg::OnBnClickedAuto()
+{
+	this->UpdateUI();
+}
+
+void CQickLoaderDlg::UpdateUI()
+{
+  UpdateData();
+  m_launch.EnableWindow(m_auto == BST_UNCHECKED);
+}
