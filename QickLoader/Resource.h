@@ -7,11 +7,12 @@
 #define IDS_ABOUTBOX                    101
 #define IDD_QICKLOADER_DIALOG           102
 #define IDR_MAINFRAME                   128
-#define IDC_PATH                        1000
-#define IDC_DIR                         1001
-#define IDC_TREE                        1002
-#define IDC_AUTO                        1003
-#define ID_LAUNCH                       1004
+#define IDC_PE_PATH                     1000
+#define IDC_PE_DIR                      1001
+#define IDC_PE_AUTO                     1002
+#define IDC_MP_PATH                     1003
+#define IDC_MP_TREE                     1004
+#define ID_LAUNCH                       1005
 
 // Next default values for new objects
 // 
@@ -19,7 +20,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        129
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1005
+#define _APS_NEXT_CONTROL_VALUE         1006
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
