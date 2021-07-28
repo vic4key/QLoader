@@ -204,8 +204,6 @@ void CQickLoaderDlg::OnBnClickedAuto()
 {
   UpdateData();
 
-  // m_pe_auto = m_pe_auto == BST_UNCHECKED ? BST_CHECKED : BST_UNCHECKED;
-
   m_launch.EnableWindow(m_pe_auto == BST_UNCHECKED);
 
   this->ResetUI();
