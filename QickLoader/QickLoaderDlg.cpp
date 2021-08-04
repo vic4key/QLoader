@@ -236,6 +236,8 @@ void CQickLoaderDlg::ResetUI()
   m_pe_dir  = _T("");
   m_mp_path = _T("");
 
+  m_launch.EnableWindow(FALSE);
+
   UpdateData(FALSE);
 }
 
