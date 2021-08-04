@@ -370,17 +370,17 @@ void CQickLoaderDlg::PopulateTree(const std::wstring& file_path)
 
     for (auto& module : g_jdata.items())
     {
-      auto h_module = m_mp_tree.InsertNode(root, new Node(module.key()));
-      assert(h_module != nullptr);
+      auto hmodule = m_mp_tree.InsertNode(root, new Node(module.key()));
+      assert(hmodule != nullptr);
 
-      for (auto& patch : module.value())
+      for (auto& jpatch : module.value())
       {
-        auto name = patch["name"].get<std::string>();
-        if (auto h_patch = m_mp_tree.InsertNode(h_module, new Node(name)))
+        auto name = jpatch["name"].get<std::string>();
+        if (auto hpatch = m_mp_tree.InsertNode(hmodule, new Node(name)))
         {
-          fn_tree_add_node_str(h_patch, patch, "pattern");
-          fn_tree_add_node_str(h_patch, patch, "replacement");
-          fn_tree_add_node_int(h_patch, patch, "offset");
+          fn_tree_add_node_str(hpatch, jpatch, "pattern");
+          fn_tree_add_node_str(hpatch, jpatch, "replacement");
+          fn_tree_add_node_int(hpatch, jpatch, "offset");
         }
       }
     }

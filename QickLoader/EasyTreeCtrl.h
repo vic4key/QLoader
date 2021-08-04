@@ -5,7 +5,7 @@
 
 struct Node
 {
-  Node(const std::string& name, void* pData = nullptr) :  m_pData(pData), m_pTV(nullptr)
+  Node(const std::string& name, void* pData = nullptr) : m_pData(pData), m_pTV(nullptr)
   {
     std::wstring s(name.cbegin(), name.cend());
     m_Name = s.c_str();
@@ -18,12 +18,12 @@ struct Node
   {
     m_Name  = right.m_Name;
     m_pData = right.m_pData;
-    m_pTV = right.m_pTV;
+    m_pTV   = right.m_pTV;
     return *this;
   }
 
   CString m_Name;
-  void* m_pData;
+  void*   m_pData;
   TVITEM* m_pTV;
 };
 
