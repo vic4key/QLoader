@@ -41,6 +41,7 @@ protected:
   afx_msg void OnDropFiles(HDROP hDropInfo);
   // Generated user message map functions
   afx_msg void OnBnClickedAuto();
+  afx_msg void OnBnClickedLaunch();
   DECLARE_MESSAGE_MAP()
 
 private:
