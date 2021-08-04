@@ -10,6 +10,10 @@
 
 #include <vu>
 
+#include <fstream>
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
+
 static std::vector<std::wstring> USABLE_FILE_EXTENSIONS = { L".EXE", L".JSON" };
 
 #ifdef _DEBUG
@@ -119,6 +123,8 @@ BOOL CQickLoaderDlg::OnInitDialog()
   // ChangeWindowMessageFilter(0x0049, MSGFLT_ADD);
   // ChangeWindowMessageFilter(WM_DROPFILES, MSGFLT_ADD);
   // __super::DragAcceptFiles();
+
+  this->InitializeTree();
 
   this->ResetUI();
 
@@ -236,6 +242,8 @@ void CQickLoaderDlg::ResetUI()
   m_pe_dir  = _T("");
   m_mp_path = _T("");
 
+  m_mp_tree.DeleteAllItems();
+
   m_launch.EnableWindow(FALSE);
 
   UpdateData(FALSE);
@@ -270,6 +278,81 @@ void CQickLoaderDlg::UpdateUI()
     }
   }
 
+  if (found_json)
+  {
+    std::wstring mp_path = m_mp_path.GetBuffer(0);
+    assert(vu::IsFileExists(mp_path));
+    this->PopulateTree(mp_path);
+  }
+
   UpdateData(FALSE);
   RedrawWindow();
+}
+
+void CQickLoaderDlg::InitializeTree()
+{
+  m_mp_tree.OnNotify([&](EasyTreeCtrl::eNotifyType action, Node* pNode) -> bool
+  {
+    wchar_t* actions[] =
+    {
+      L"SELECTING",
+
+      L"BEFORE_INSERTING",
+      L"AFTER_INSERTING",
+
+      L"BEFORE_MODIFYING",
+      L"AFTER_MODIFYING",
+
+      L"BEFORE_DELETING",
+      L"AFTER_DELETING",
+    };
+
+    CString s;
+    s.Format(L"`%s` -> %s", actions[int(action)], pNode != nullptr ? pNode->m_Name : L"<empty>");
+    OutputDebugStringW(s.GetBuffer());
+
+    return true;
+  });
+}
+
+void CQickLoaderDlg::PopulateTree(const std::wstring& file_path)
+{
+  std::string s = vu::ToStringA(file_path);
+  std::ifstream fs(s);
+
+  static json jmodules;
+  jmodules = json::parse(fs);
+
+  m_mp_tree.Populate([&](HTREEITEM& root) -> void
+  {
+    auto fn_tree_add_node_str = [&](HTREEITEM& hitem, json& jobject, std::string name) -> HTREEITEM
+    {
+      auto h_item = m_mp_tree.InsertNode(hitem, new Node(name));
+      auto& jitem = jobject[name];
+      return m_mp_tree.InsertNode(h_item, new Node(jitem.get<std::string>(), &jitem));
+    };
+
+    auto fn_tree_add_node_int = [&](HTREEITEM& hitem, json& jobject, std::string name) -> HTREEITEM
+    {
+      auto h_item = m_mp_tree.InsertNode(hitem, new Node(name));
+      auto& jitem = jobject[name];
+      return m_mp_tree.InsertNode(h_item, new Node(std::to_string(jitem.get<int>()), &jitem));
+    };
+
+    for (auto& module : jmodules.items())
+    {
+      auto h_module = m_mp_tree.InsertNode(root, new Node(module.key(), nullptr));
+      assert(h_module != nullptr);
+
+      for (auto& patch : module.value())
+      {
+        auto h_patch = m_mp_tree.InsertNode(h_module, new Node(patch["name"].get<std::string>()));
+        assert(h_patch != nullptr);
+
+        fn_tree_add_node_str(h_patch, patch, "pattern");
+        fn_tree_add_node_str(h_patch, patch, "replacement");
+        fn_tree_add_node_int(h_patch, patch, "offset");
+      }
+    }
+  });
 }

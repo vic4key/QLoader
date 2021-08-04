@@ -13,6 +13,18 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="3rdparty">
+      <UniqueIdentifier>{cbfa505b-65df-47ac-a413-81233754cc30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdparty\nlohmann">
+      <UniqueIdentifier>{32ad3af0-b760-417f-bddb-6c3d0f154320}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdparty\nlohmann\include">
+      <UniqueIdentifier>{88b047eb-837b-43da-856e-da36b6f58161}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="reuse">
+      <UniqueIdentifier>{64b0ea4a-a129-4f84-9e26-2031ad7d91da}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="QickLoader.h">
@@ -33,6 +45,12 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="3rdparty\nlohmann\json.hpp">
+      <Filter>3rdparty\nlohmann\include</Filter>
+    </ClInclude>
+    <ClInclude Include="EasyTreeCtrl.h">
+      <Filter>reuse</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="QickLoader.cpp">
@@ -43,6 +61,9 @@
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EasyTreeCtrl.cpp">
+      <Filter>reuse</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

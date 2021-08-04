@@ -7,6 +7,8 @@
 #include <vector>
 #include <string>
 
+#include "EasyTreeCtrl.h"
+
 // CQickLoaderDlg dialog
 class CQickLoaderDlg : public CDialogEx
 {
@@ -26,6 +28,8 @@ private:
   void ResetUI();
   void UpdateUI();
   bool IsUsableFile(const CString& filePath);
+  void InitializeTree();
+  void PopulateTree(const std::wstring& file_path);
 
   // Implementation
 protected:
@@ -45,7 +49,7 @@ private:
   CString m_pe_dir;
   BOOL m_pe_auto;
   CString m_mp_path;
-  CTreeCtrl m_mp_tree;
+  EasyTreeCtrl m_mp_tree;
   CButton m_launch;
 
 private:
