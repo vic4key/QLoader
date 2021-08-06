@@ -191,7 +191,7 @@ bool EasyTreeCtrl::Notify(eNotifyType action, HTREEITEM pItem)
     tv.cchTextMax = ARRAYSIZE(s);
 
     this->GetItem(&tv);
-    pNode->m_pTV = &tv;
+    pNode->m_ptr_tv = &tv;
   }
 
   return this->Notify(action, pNode);
@@ -221,7 +221,7 @@ HTREEITEM EasyTreeCtrl::InsertNode(HTREEITEM& pParent, Node* pNode)
 {
   assert(pParent != nullptr && pNode != nullptr);
 
-  auto item = this->InsertItem(pNode->m_Name, pParent);
+  auto item = this->InsertItem(pNode->m_name, pParent);
   this->SetItemData(item, DWORD_PTR(pNode));
 
   return item;

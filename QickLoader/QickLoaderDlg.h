@@ -27,9 +27,10 @@ protected:
 private:
   void ResetUI();
   void UpdateUI();
-  bool IsUsableFile(const CString& filePath);
   void InitializeTree();
   void PopulateTree(const std::wstring& file_path);
+
+  bool IsUsableFile(const CString& file_path);
 
   // Implementation
 protected:

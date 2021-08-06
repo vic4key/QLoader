@@ -7,18 +7,9 @@
 #include "QickLoader.h"
 #include "QickLoaderDlg.h"
 #include "afxdialogex.h"
+#include "utils.h"
 
 #include <vu>
-
-#include <fstream>
-#include <nlohmann/json.hpp>
-#include <nlohmann/fifo_map.hpp>
-
-// using json = nlohmann::json; // ordered
-
-template<class K, class V, class dummy_compare, class A>
-using unordered_fifo_map = nlohmann::fifo_map<K, V, nlohmann::fifo_map_compare<K>, A>;
-using json = nlohmann::basic_json<unordered_fifo_map>;
 
 static json g_jdata;
 
@@ -224,14 +215,14 @@ void CQickLoaderDlg::OnBnClickedAuto()
   this->ResetUI();
 }
 
-bool CQickLoaderDlg::IsUsableFile(const CString& filePath)
+bool CQickLoaderDlg::IsUsableFile(const CString& file_path)
 {
   // if (filePath.IsEmpty())
   // {
   //   return false;
   // }
 
-  std::wstring file_extension = PathFindExtension(filePath);
+  std::wstring file_extension = PathFindExtension(file_path);
   file_extension = vu::UpperString(file_extension);
 
   auto it = std::find(USABLE_FILE_EXTENSIONS.cbegin(), USABLE_FILE_EXTENSIONS.cend(), file_extension);
@@ -321,13 +312,13 @@ void CQickLoaderDlg::InitializeTree()
     if (action == EasyTreeCtrl::eNotifyType::AFTER_MODIFYING)
     {
       if (pNode != nullptr &&
-          pNode->m_pData != nullptr &&
-          pNode->m_pTV != nullptr &&
-          pNode->m_pTV->pszText)
+          pNode->m_ptr_data != nullptr &&
+          pNode->m_ptr_tv != nullptr &&
+          pNode->m_ptr_tv->pszText)
       {
-        auto value = vu::ToStringA(pNode->m_pTV->pszText);
+        auto value = vu::ToStringA(pNode->m_ptr_tv->pszText);
 
-        auto ptr_jobject = static_cast<json*>(pNode->m_pData);
+        auto ptr_jobject = static_cast<json*>(pNode->m_ptr_data);
         if (ptr_jobject != nullptr)
         {
           auto& jobject = static_cast<json&>(*ptr_jobject);
@@ -344,7 +335,7 @@ void CQickLoaderDlg::InitializeTree()
     }
 
     CString s;
-    s.Format(L"`%s` -> %s", actions[int(action)], pNode != nullptr ? pNode->m_Name : L"<empty>");
+    s.Format(L"`%s` -> %s", actions[int(action)], pNode != nullptr ? pNode->m_name : L"<empty>");
     OutputDebugStringW(s.GetBuffer());
 
     return true;
@@ -362,9 +353,9 @@ void CQickLoaderDlg::PopulateTree(const std::wstring& file_path)
   {
     auto fn_tree_add_node_str = [&](HTREEITEM& hitem, json& jobject, std::string name) -> HTREEITEM
     {
-      auto h_item = m_mp_tree.InsertNode(hitem, new Node(name));
+      auto h_item = m_mp_tree.InsertNode(hitem, new JNode(name));
       auto& jitem = jobject[name];
-      return m_mp_tree.InsertNode(h_item, new Node(jitem.get<std::string>(), &jitem));
+      return m_mp_tree.InsertNode(h_item, new JNode(jitem.get<std::string>(), &jitem));
     };
 
     auto fn_tree_add_node_int = [&](HTREEITEM& hitem, json& jobject, std::string name) -> HTREEITEM
@@ -376,13 +367,13 @@ void CQickLoaderDlg::PopulateTree(const std::wstring& file_path)
 
     for (auto& module : g_jdata.items())
     {
-      auto hmodule = m_mp_tree.InsertNode(root, new Node(module.key()));
+      auto hmodule = m_mp_tree.InsertNode(root, new JNode(module.key()));
       assert(hmodule != nullptr);
 
       for (auto& jpatch : module.value())
       {
         auto name = jpatch["name"].get<std::string>();
-        if (auto hpatch = m_mp_tree.InsertNode(hmodule, new Node(name)))
+        if (auto hpatch = m_mp_tree.InsertNode(hmodule, new JNode(name, &jpatch, module.key())))
         {
           fn_tree_add_node_str(hpatch, jpatch, "pattern");
           fn_tree_add_node_str(hpatch, jpatch, "replacement");
@@ -397,6 +388,18 @@ void CQickLoaderDlg::OnBnClickedLaunch()
 {
   m_mp_tree.Iterate(m_mp_tree.GetRootItem(), [&](HTREEITEM pItem) -> void
   {
+    auto ptr_jnode = reinterpret_cast<JNode*>(m_mp_tree.GetItemData(pItem));
+    auto ptr_json = utils::to_ptr_json(ptr_jnode);
+    if (ptr_json == nullptr) // must be json binding
+    {
+      return;
+    }
+
+    if (!ptr_json->is_object()) // must be json object (json object patch)
+    {
+      return;
+    }
+
     auto s = m_mp_tree.GetItemText(pItem);
     OutputDebugStringW(s.GetBuffer());
   });

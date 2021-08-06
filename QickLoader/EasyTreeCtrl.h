@@ -5,26 +5,28 @@
 
 struct Node
 {
-  Node(const std::string& name, void* pData = nullptr) : m_pData(pData), m_pTV(nullptr)
+  Node(const std::string& name, void* ptr_data = nullptr)
+    : m_ptr_data(ptr_data), m_ptr_tv(nullptr)
   {
     std::wstring s(name.cbegin(), name.cend());
-    m_Name = s.c_str();
+    m_name = s.c_str();
   }
 
-  Node(const CString& name, void* pData = nullptr) : m_Name(name), m_pData(pData), m_pTV(nullptr) {}
+  Node(const CString& name, void* ptr_data = nullptr)
+    : m_name(name), m_ptr_data(ptr_data), m_ptr_tv(nullptr) {}
   virtual ~Node() {}
 
   Node& operator=(const Node& right)
   {
-    m_Name  = right.m_Name;
-    m_pData = right.m_pData;
-    m_pTV   = right.m_pTV;
+    m_name     = right.m_name;
+    m_ptr_tv   = right.m_ptr_tv;
+    m_ptr_data = right.m_ptr_data;
     return *this;
   }
 
-  CString m_Name;
-  void*   m_pData;
-  TVITEM* m_pTV;
+  CString m_name;
+  TVITEM* m_ptr_tv;
+  void*   m_ptr_data;
 };
 
 class EasyTreeCtrl : public CTreeCtrl
