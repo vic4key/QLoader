@@ -474,7 +474,7 @@ void CQickLoaderDlg::OnBnClickedLaunch()
       return;
     }
 
-    // search each patch in the module
+    // extract the pattern bytes and search the address
 
     auto address = static_cast<const void*>(it->second.m_buffer.get());
     auto pattern = (*ptr_json)["pattern"].get<std::string>();
@@ -486,9 +486,26 @@ void CQickLoaderDlg::OnBnClickedLaunch()
       return;
     }
 
-    // convert offset to va
+    // extract the replacement bytes
 
-    // patch the module in the target process
+    auto replacement = (*ptr_json)["replacement"].get<std::string>();
+    auto l = vu::SplitStringA(replacement, " ");
+    std::vector<vu::byte> repl;
+    for (auto& e : l)
+    {
+      auto v = vu::byte(std::stoi(e, nullptr, 16));
+      repl.push_back(v);
+    }
+
+    // patch at the found address with the replacement bytes
+
+    vu::ulongptr found_patch_address = vu::ulongptr(it->second.m_me.modBaseAddr) + result.second;
+
+    bool ret = process.Write(found_patch_address, repl.data(), repl.size());
+    if (!ret)
+    {
+      return;
+    }
 
     auto s = m_mp_tree.GetItemText(pItem);
     OutputDebugStringW(s.GetBuffer());
