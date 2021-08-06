@@ -195,6 +195,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="3rdparty\nlohmann\fifo_map.hpp" />
     <ClInclude Include="3rdparty\nlohmann\json.hpp" />
     <ClInclude Include="EasyTreeCtrl.h" />
     <ClInclude Include="framework.h" />

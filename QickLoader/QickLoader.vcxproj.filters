@@ -45,11 +45,14 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="EasyTreeCtrl.h">
+      <Filter>reuse</Filter>
+    </ClInclude>
     <ClInclude Include="3rdparty\nlohmann\json.hpp">
       <Filter>3rdparty\nlohmann\include</Filter>
     </ClInclude>
-    <ClInclude Include="EasyTreeCtrl.h">
-      <Filter>reuse</Filter>
+    <ClInclude Include="3rdparty\nlohmann\fifo_map.hpp">
+      <Filter>3rdparty\nlohmann\include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
