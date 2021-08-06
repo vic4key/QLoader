@@ -520,9 +520,6 @@ void CQickLoaderDlg::OnBnClickedLaunch()
     auto wname = vu::ToStringW(name);
     auto line  = vu::FormatW(L"Patch `%s` %s", wname.c_str(), ret ? L"succeed" : L"failed");
     this->AddLog(line);
-
-    auto s = m_mp_tree.GetItemText(pItem);
-    OutputDebugStringW(s.GetBuffer());
   });
 
   // resume the target process
