@@ -31,6 +31,7 @@ private:
   void PopulateTree(const std::wstring& file_path);
 
   bool IsUsableFile(const CString& file_path);
+  void AddLog(const std::wstring& line);
 
   // Implementation
 protected:
@@ -52,6 +53,7 @@ private:
   BOOL m_pe_auto;
   CString m_mp_path;
   EasyTreeCtrl m_mp_tree;
+  CListCtrl m_log;
   CButton m_launch;
 
 private:

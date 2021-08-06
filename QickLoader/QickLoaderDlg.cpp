@@ -75,6 +75,7 @@ void CQickLoaderDlg::DoDataExchange(CDataExchange* pDX)
   DDX_Text(pDX, IDC_MP_PATH, m_mp_path);
   DDX_Control(pDX, IDC_MP_TREE, m_mp_tree);
   DDX_Control(pDX, ID_LAUNCH, m_launch);
+  DDX_Control(pDX, IDC_LOG, m_log);
 }
 
 BEGIN_MESSAGE_MAP(CQickLoaderDlg, CDialogEx)
@@ -234,6 +235,16 @@ bool CQickLoaderDlg::IsUsableFile(const CString& file_path)
   return true;
 }
 
+void CQickLoaderDlg::AddLog(const std::wstring& line)
+{
+  LVITEM lvi = { 0 };
+  lvi.mask = LVIF_TEXT;
+  lvi.iItem = 0;
+  lvi.iSubItem = 0;
+  lvi.pszText = const_cast<wchar_t*>(line.c_str());
+  m_log.InsertItem(&lvi);
+}
+
 void CQickLoaderDlg::ResetUI()
 {
   m_file_paths.clear();
@@ -243,6 +254,7 @@ void CQickLoaderDlg::ResetUI()
   m_mp_path = _T("");
 
   m_mp_tree.DeleteAllItems();
+  m_log.DeleteAllItems();
 
   m_launch.EnableWindow(FALSE);
 
@@ -500,12 +512,14 @@ void CQickLoaderDlg::OnBnClickedLaunch()
     // patch at the found address with the replacement bytes
 
     vu::ulongptr found_patch_address = vu::ulongptr(it->second.m_me.modBaseAddr) + result.second;
-
     bool ret = process.Write(found_patch_address, repl.data(), repl.size());
-    if (!ret)
-    {
-      return;
-    }
+
+    // add to log
+
+    auto name  = (*ptr_json)["name"].get<std::string>();
+    auto wname = vu::ToStringW(name);
+    auto line  = vu::FormatW(L"Patch `%s` %s", wname.c_str(), ret ? L"succeed" : L"failed");
+    this->AddLog(line);
 
     auto s = m_mp_tree.GetItemText(pItem);
     OutputDebugStringW(s.GetBuffer());
