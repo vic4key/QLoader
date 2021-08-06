@@ -386,6 +386,24 @@ void CQickLoaderDlg::PopulateTree(const std::wstring& file_path)
 
 void CQickLoaderDlg::OnBnClickedLaunch()
 {
+  STARTUPINFOW si = { 0 };
+  si.cb = sizeof(si);
+
+  PROCESS_INFORMATION pi = { 0 };
+
+  CreateProcessW(
+    m_pe_path.GetBuffer(0),
+    nullptr, nullptr, nullptr,
+    FALSE,
+    NORMAL_PRIORITY_CLASS,
+    nullptr,
+    m_pe_dir.GetBuffer(0),
+    &si, &pi);
+
+  WaitForInputIdle(pi.hProcess, INFINITE);
+
+  SuspendThread(pi.hThread);
+
   m_mp_tree.Iterate(m_mp_tree.GetRootItem(), [&](HTREEITEM pItem) -> void
   {
     auto ptr_jnode = reinterpret_cast<JNode*>(m_mp_tree.GetItemData(pItem));
@@ -403,4 +421,6 @@ void CQickLoaderDlg::OnBnClickedLaunch()
     auto s = m_mp_tree.GetItemText(pItem);
     OutputDebugStringW(s.GetBuffer());
   });
+
+  ResumeThread(pi.hThread);
 }
