@@ -402,7 +402,55 @@ void CQickLoaderDlg::OnBnClickedLaunch()
 
   WaitForInputIdle(pi.hProcess, INFINITE);
 
+  // suspend the target process
+
   SuspendThread(pi.hThread);
+
+  // parse the target process
+
+  vu::CProcessA process;
+  process.Attach(pi.hProcess);
+  const auto& modules = process.GetModules();
+
+  // copy the memory image of modules and store to a map
+
+  struct module_t
+  {
+    vu::MODULEENTRY32 m_me;
+    std::unique_ptr<vu::byte[]> m_buffer;
+  };
+
+  std::map<std::string, module_t> copied_modules;
+
+  for (auto& item : g_jdata.items())
+  {
+    auto it = std::find_if(modules.cbegin(), modules.cend(), [&](const vu::MODULEENTRY32& me) -> bool
+    {
+      std::string v1 = me.szModule;
+      v1 = vu::LowerStringA(v1);
+
+      std::string v2 = item.key();
+      v2 = vu::LowerStringA(v2);
+
+      return v1 == v2;
+    });
+
+    if (it != modules.cend())
+    {
+      auto module_name = vu::LowerStringA(it->szModule);
+      auto module_base = vu::ulongptr(it->modBaseAddr);
+      auto module_size = it->modBaseSize + 1;
+
+      auto ptr_raw_buffer = new vu::byte[module_size];
+      process.Read(module_base, ptr_raw_buffer, module_size);
+
+      auto& module = copied_modules[module_name];
+      module.m_buffer.reset(ptr_raw_buffer);
+      module.m_me = *it;
+    }
+  }
+
+  // iterate all patches and patch them all in the target process
 
   m_mp_tree.Iterate(m_mp_tree.GetRootItem(), [&](HTREEITEM pItem) -> void
   {
@@ -418,9 +466,35 @@ void CQickLoaderDlg::OnBnClickedLaunch()
       return;
     }
 
+    std::string item = ptr_jnode->m_module;
+    item = vu::LowerStringA(item);
+    auto it = copied_modules.find(item);
+    if (it == copied_modules.cend())
+    {
+      return;
+    }
+
+    // search each patch in the module
+
+    auto address = static_cast<const void*>(it->second.m_buffer.get());
+    auto pattern = (*ptr_json)["pattern"].get<std::string>();
+    auto size    = it->second.m_me.modBaseSize;
+
+    auto result  = vu::FindPatternA(address, size, pattern);
+    if (!result.first)
+    {
+      return;
+    }
+
+    // convert offset to va
+
+    // patch the module in the target process
+
     auto s = m_mp_tree.GetItemText(pItem);
     OutputDebugStringW(s.GetBuffer());
   });
+
+  // resume the target process
 
   ResumeThread(pi.hThread);
 }
