@@ -361,6 +361,8 @@ void CQickLoaderDlg::PopulateTree(const std::wstring& file_path)
 
   g_jdata = json::parse(fs);
 
+  m_mp_tree.DeleteAllItems();
+
   m_mp_tree.Populate([&](HTREEITEM& root) -> void
   {
     auto fn_tree_add_node_str = [&](HTREEITEM& hitem, json& jobject, std::string name) -> HTREEITEM
