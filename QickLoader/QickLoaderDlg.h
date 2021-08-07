@@ -31,7 +31,16 @@ private:
   void PopulateTree(const std::wstring& file_path);
 
   bool IsUsableFile(const CString& file_path);
-  void AddLog(const std::wstring& line);
+
+  enum status_t
+  {
+    none,
+    success,
+    warn,
+    error,
+  };
+
+  void AddLog(const std::wstring& line, const status_t status = none);
 
   // Implementation
 protected:

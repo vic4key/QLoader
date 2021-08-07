@@ -12,7 +12,7 @@
 #include <vu>
 
 static json g_jdata;
-
+static std::string UNNAMED = "<unnamed>";
 static std::vector<std::wstring> USABLE_FILE_EXTENSIONS = { L".EXE", L".JSON" };
 
 #ifdef _DEBUG
@@ -235,14 +235,16 @@ bool CQickLoaderDlg::IsUsableFile(const CString& file_path)
   return true;
 }
 
-void CQickLoaderDlg::AddLog(const std::wstring& line)
+void CQickLoaderDlg::AddLog(const std::wstring& line, const status_t status)
 {
   LVITEM lvi = { 0 };
-  lvi.mask = LVIF_TEXT;
-  lvi.iItem = 0;
+  lvi.mask = LVIF_IMAGE;
+  lvi.iItem = m_log.GetItemCount();
   lvi.iSubItem = 0;
-  lvi.pszText = const_cast<wchar_t*>(line.c_str());
-  m_log.InsertItem(&lvi);
+  lvi.iImage = status;
+  lvi.pszText  = const_cast<wchar_t*>(line.c_str());
+  int index = m_log.InsertItem(&lvi);
+  m_log.SetItemText(index, 1, line.c_str());
 }
 
 void CQickLoaderDlg::ResetUI()
@@ -297,7 +299,7 @@ void CQickLoaderDlg::UpdateUI()
     this->PopulateTree(mp_path);
   }
 
-  m_launch.EnableWindow(!m_pe_path.IsEmpty() && !m_pe_dir.IsEmpty() && !m_pe_path.IsEmpty());
+  m_launch.EnableWindow(!m_pe_dir.IsEmpty() && !m_pe_path.IsEmpty() && !m_mp_path.IsEmpty());
 
   UpdateData(FALSE);
   RedrawWindow();
@@ -352,6 +354,31 @@ void CQickLoaderDlg::InitializeTree()
 
     return true;
   });
+
+  // for log ctrl
+
+  m_log.SetExtendedStyle(m_log.GetExtendedStyle() | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+
+  CRect rect;
+  m_log.GetClientRect(&rect);
+
+  static CImageList image_list;
+  image_list.Create(IDB_LOG_SMALL, 16, 1, 0xFFFFFF);
+  m_log.SetImageList(&image_list, LVSIL_SMALL);
+
+  LVCOLUMN lvc = { 0 };
+
+  lvc.mask = LVCF_FMT | LVCF_TEXT | LVCF_WIDTH;
+  lvc.fmt = LVCFMT_LEFT;
+  lvc.cx = 20;
+  lvc.pszText = L"?";
+  m_log.InsertColumn(0, &lvc);
+
+  lvc.mask = LVCF_FMT | LVCF_TEXT | LVCF_WIDTH;
+  lvc.fmt = LVCFMT_LEFT;
+  lvc.cx = rect.Width() - lvc.cx;
+  lvc.pszText = L"Description";
+  m_log.InsertColumn(1, &lvc);
 }
 
 void CQickLoaderDlg::PopulateTree(const std::wstring& file_path)
@@ -386,7 +413,7 @@ void CQickLoaderDlg::PopulateTree(const std::wstring& file_path)
 
       for (auto& jpatch : module.value())
       {
-        auto name = jpatch["name"].get<std::string>();
+        auto name = jpatch.contains("name") ? jpatch["name"].get<std::string>() : UNNAMED;
         if (auto hpatch = m_mp_tree.InsertNode(hmodule, new JNode(name, &jpatch, module.key())))
         {
           fn_tree_add_node_str(hpatch, jpatch, "pattern");
@@ -400,12 +427,14 @@ void CQickLoaderDlg::PopulateTree(const std::wstring& file_path)
 
 void CQickLoaderDlg::OnBnClickedLaunch()
 {
+  this->AddLog(L"---");
+
   STARTUPINFOW si = { 0 };
   si.cb = sizeof(si);
 
   PROCESS_INFORMATION pi = { 0 };
 
-  CreateProcessW(
+  BOOL created = CreateProcessW(
     m_pe_path.GetBuffer(0),
     nullptr, nullptr, nullptr,
     FALSE,
@@ -416,15 +445,29 @@ void CQickLoaderDlg::OnBnClickedLaunch()
 
   WaitForInputIdle(pi.hProcess, INFINITE);
 
+  auto line = vu::ExtractFileName(m_pe_path.GetBuffer(0));
+  line = vu::FormatW(L"Create the process `%s` %s", line.c_str(), created ? L"succeed" : L"failed");
+  this->AddLog(line, created ? status_t::success : status_t::error);
+
+  if (!created)
+  {
+    this->AddLog(L"Finished");
+    return;
+  }
+
   // suspend the target process
 
   SuspendThread(pi.hThread);
+
+  this->AddLog(L"Suspend the process succeed", status_t::success);
 
   // parse the target process
 
   vu::CProcessA process;
   process.Attach(pi.hProcess);
   const auto& modules = process.GetModules();
+
+  this->AddLog(L"Attach the process succeed", status_t::success);
 
   // copy the memory image of modules and store to a map
 
@@ -449,82 +492,114 @@ void CQickLoaderDlg::OnBnClickedLaunch()
       return v1 == v2;
     });
 
-    if (it != modules.cend())
+    if (it == modules.cend())
     {
-      auto module_name = vu::LowerStringA(it->szModule);
-      auto module_base = vu::ulongptr(it->modBaseAddr);
-      auto module_size = it->modBaseSize + 1;
-
-      auto ptr_raw_buffer = new vu::byte[module_size];
-      process.Read(module_base, ptr_raw_buffer, module_size);
-
-      auto& module = copied_modules[module_name];
-      module.m_buffer.reset(ptr_raw_buffer);
-      module.m_me = *it;
+      continue;
     }
+
+    auto module_name = vu::LowerStringA(it->szModule);
+    auto module_base = vu::ulongptr(it->modBaseAddr);
+    auto module_size = it->modBaseSize + 1;
+
+    auto ptr_raw_buffer = new vu::byte[module_size];
+    process.Read(module_base, ptr_raw_buffer, module_size);
+
+    auto& module = copied_modules[module_name];
+    module.m_buffer.reset(ptr_raw_buffer);
+    module.m_me = *it;
+
+    line = vu::ToStringW(item.key());
+    line = vu::FormatW(L"Find the module `%s` found", line.c_str());
+    this->AddLog(line, status_t::success);
   }
 
-  // iterate all patches and patch them all in the target process
-
-  m_mp_tree.Iterate(m_mp_tree.GetRootItem(), [&](HTREEITEM pItem) -> void
+  if (!copied_modules.empty())
   {
-    auto ptr_jnode = reinterpret_cast<JNode*>(m_mp_tree.GetItemData(pItem));
-    auto ptr_json = utils::to_ptr_json(ptr_jnode);
-    if (ptr_json == nullptr) // must be json binding
+    // iterate all patches and patch them all in the target process
+
+    m_mp_tree.Iterate(m_mp_tree.GetRootItem(), [&](HTREEITEM pItem) -> void
     {
-      return;
-    }
+      auto ptr_jnode = reinterpret_cast<JNode*>(m_mp_tree.GetItemData(pItem));
+      auto ptr_json = utils::to_ptr_json(ptr_jnode);
+      if (ptr_json == nullptr) // must be json binding
+      {
+        return;
+      }
 
-    if (!ptr_json->is_object()) // must be json object (json object patch)
-    {
-      return;
-    }
+      if (!ptr_json->is_object()) // must be json object (json object patch)
+      {
+        return;
+      }
 
-    std::string item = ptr_jnode->m_module;
-    item = vu::LowerStringA(item);
-    auto it = copied_modules.find(item);
-    if (it == copied_modules.cend())
-    {
-      return;
-    }
+      auto& jpatch = *ptr_json;
 
-    // extract the pattern bytes and search the address
+      // extract the patch name
 
-    auto address = static_cast<const void*>(it->second.m_buffer.get());
-    auto pattern = (*ptr_json)["pattern"].get<std::string>();
-    auto size    = it->second.m_me.modBaseSize;
+      auto name = jpatch.contains("name") ? jpatch["name"].get<std::string>() : UNNAMED;
+      std::wstring patch_name = vu::ToStringW(name);
+      line = vu::FormatW(L"Try to patch `%s`", patch_name.c_str());
+      this->AddLog(line);
 
-    auto result  = vu::FindPatternA(address, size, pattern);
-    if (!result.first)
-    {
-      return;
-    }
+      std::string item = ptr_jnode->m_module;
+      item = vu::LowerStringA(item);
+      auto it = copied_modules.find(item);
+      if (it == copied_modules.cend())
+      {
+        line = vu::ToStringW(item);
+        line = vu::FormatW(L"Find the module `%s` not found", line.c_str());
+        this->AddLog(line, status_t::error);
+        return;
+      }
 
-    // extract the replacement bytes
+      // extract the pattern bytes and search the address
 
-    auto replacement = (*ptr_json)["replacement"].get<std::string>();
-    auto l = vu::SplitStringA(replacement, " ");
-    std::vector<vu::byte> repl;
-    for (auto& e : l)
-    {
-      auto v = vu::byte(std::stoi(e, nullptr, 16));
-      repl.push_back(v);
-    }
+      auto address = static_cast<const void*>(it->second.m_buffer.get());
+      auto pattern = jpatch["pattern"].get<std::string>();
+      auto size = it->second.m_me.modBaseSize;
 
-    // patch at the found address with the replacement bytes
+      auto result = vu::FindPatternA(address, size, pattern);
+      if (!result.first)
+      {
+        line = vu::FormatW(L"Find the `%s` not found", line.c_str());
+        this->AddLog(line, status_t::error);
+        return;
+      }
 
-    vu::ulongptr found_patch_address = vu::ulongptr(it->second.m_me.modBaseAddr) + result.second;
-    bool ret = process.Write(found_patch_address, repl.data(), repl.size());
+      line = vu::FormatW(L"Find the `%s` found", line.c_str());
+      this->AddLog(line, status_t::success);
 
-    // add to log
+      // extract the replacement bytes
 
-    auto name  = (*ptr_json)["name"].get<std::string>();
-    auto wname = vu::ToStringW(name);
-    auto line  = vu::FormatW(L"Patch `%s` %s", wname.c_str(), ret ? L"succeed" : L"failed");
-    this->AddLog(line);
-  });
+      auto replacement = jpatch["replacement"].get<std::string>();
+      auto l = vu::SplitStringA(replacement, " ");
+      std::vector<vu::byte> repl;
+      for (auto& e : l)
+      {
+        auto v = vu::byte(std::stoi(e, nullptr, 16));
+        repl.push_back(v);
+      }
+
+      // patch at the found address with the replacement bytes
+
+      vu::ulongptr found_patch_address = vu::ulongptr(it->second.m_me.modBaseAddr) + result.second;
+      bool ret = process.Write(found_patch_address, repl.data(), repl.size());
+
+      // add to log
+
+      auto line = vu::FormatW(L"Patch `%s` %s", patch_name.c_str(), ret ? L"succeed" : L"failed");
+      this->AddLog(line, ret ? status_t::success : status_t::error);
+    });
+  }
+  else
+  {
+    this->AddLog(L"Not found any module for patching", status_t::warn);
+  }
 
   // resume the target process
 
   ResumeThread(pi.hThread);
+
+  this->AddLog(L"Resume the process succeed", status_t::success);
+
+  this->AddLog(L"Finished");
 }

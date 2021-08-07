@@ -225,6 +225,7 @@
     <None Include="res\QickLoader.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\log-small.bmp" />
     <Image Include="res\QickLoader.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
