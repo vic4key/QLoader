@@ -86,6 +86,7 @@ BEGIN_MESSAGE_MAP(CQickLoaderDlg, CDialogEx)
   ON_WM_SYSCOMMAND()
   ON_WM_PAINT()
   ON_WM_QUERYDRAGICON()
+  ON_WM_SIZE()
   ON_WM_DROPFILES()
   ON_BN_CLICKED(IDC_CLEAR, &OnBnClickedClear)
   ON_BN_CLICKED(IDC_LAUNCH, &OnBnClickedLaunch)
@@ -183,6 +184,20 @@ void CQickLoaderDlg::OnPaint()
 HCURSOR CQickLoaderDlg::OnQueryDragIcon()
 {
   return static_cast<HCURSOR>(m_hIcon);
+}
+
+void CQickLoaderDlg::OnSize(UINT nType, int cx, int cy)
+{
+  __super::OnSize(nType, cx, cy);
+
+  if (::IsWindow(m_log.GetSafeHwnd()))
+  {
+    CRect rect;
+    m_log.GetClientRect(&rect);
+    int w_c0 = m_log.GetColumnWidth(0);
+    int w_c1 = rect.Width() - w_c0;
+    m_log.SetColumnWidth(1, w_c1);
+  }
 }
 
 void CQickLoaderDlg::OnDropFiles(HDROP hDropInfo)
@@ -359,26 +374,27 @@ void CQickLoaderDlg::InitializeTree()
 
   m_log.SetExtendedStyle(m_log.GetExtendedStyle() | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
-  CRect rect;
-  m_log.GetClientRect(&rect);
-
   static CImageList image_list;
   image_list.Create(IDB_LOG_SMALL, 16, 1, 0xFFFFFF);
   m_log.SetImageList(&image_list, LVSIL_SMALL);
+
+  const int DEFAULT_COLUMN_WIDTH = 20;
 
   LVCOLUMN lvc = { 0 };
 
   lvc.mask = LVCF_FMT | LVCF_TEXT | LVCF_WIDTH;
   lvc.fmt = LVCFMT_LEFT;
-  lvc.cx = 20;
+  lvc.cx = DEFAULT_COLUMN_WIDTH;
   lvc.pszText = L"?";
   m_log.InsertColumn(0, &lvc);
 
   lvc.mask = LVCF_FMT | LVCF_TEXT | LVCF_WIDTH;
   lvc.fmt = LVCFMT_LEFT;
-  lvc.cx = rect.Width() - lvc.cx;
+  lvc.cx = DEFAULT_COLUMN_WIDTH;
   lvc.pszText = L"Description";
   m_log.InsertColumn(1, &lvc);
+
+  this->SendMessage(WM_SIZE); // request to re-calculate size for window and its controls
 }
 
 void CQickLoaderDlg::PopulateTree(const std::wstring& file_path)
@@ -421,6 +437,8 @@ void CQickLoaderDlg::PopulateTree(const std::wstring& file_path)
           fn_tree_add_node_int(hpatch, jpatch, "offset");
         }
       }
+
+      m_mp_tree.Expand(hmodule, TVE_EXPAND);
     }
   });
 }
