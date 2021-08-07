@@ -60,7 +60,6 @@ CQickLoaderDlg::CQickLoaderDlg(CWnd* pParent /*=nullptr*/)
   : CDialogEx(IDD_QICKLOADER_DIALOG, pParent)
   , m_pe_path(_T(""))
   , m_pe_dir(_T(""))
-  , m_pe_auto(BST_UNCHECKED)
   , m_mp_path(_T(""))
 {
   m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -71,10 +70,9 @@ void CQickLoaderDlg::DoDataExchange(CDataExchange* pDX)
   __super::DoDataExchange(pDX);
   DDX_Text(pDX, IDC_PE_PATH, m_pe_path);
   DDX_Text(pDX, IDC_PE_DIR, m_pe_dir);
-  DDX_Check(pDX, IDC_PE_AUTO, m_pe_auto);
   DDX_Text(pDX, IDC_MP_PATH, m_mp_path);
   DDX_Control(pDX, IDC_MP_TREE, m_mp_tree);
-  DDX_Control(pDX, ID_LAUNCH, m_launch);
+  DDX_Control(pDX, IDC_LAUNCH, m_launch);
   DDX_Control(pDX, IDC_LOG, m_log);
 }
 
@@ -83,8 +81,8 @@ BEGIN_MESSAGE_MAP(CQickLoaderDlg, CDialogEx)
   ON_WM_PAINT()
   ON_WM_QUERYDRAGICON()
   ON_WM_DROPFILES()
-  ON_BN_CLICKED(IDC_PE_AUTO, &OnBnClickedAuto)
-  ON_BN_CLICKED(ID_LAUNCH, &OnBnClickedLaunch)
+  ON_BN_CLICKED(IDC_CLEAR, &OnBnClickedClear)
+  ON_BN_CLICKED(IDC_LAUNCH, &OnBnClickedLaunch)
 END_MESSAGE_MAP()
 
 
@@ -207,12 +205,8 @@ void CQickLoaderDlg::OnDropFiles(HDROP hDropInfo)
   this->UpdateUI();
 }
 
-void CQickLoaderDlg::OnBnClickedAuto()
+void CQickLoaderDlg::OnBnClickedClear()
 {
-  UpdateData();
-
-  m_launch.EnableWindow(m_pe_auto == BST_UNCHECKED);
-
   this->ResetUI();
 }
 

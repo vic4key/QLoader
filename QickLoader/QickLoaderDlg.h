@@ -51,7 +51,7 @@ protected:
   afx_msg HCURSOR OnQueryDragIcon();
   afx_msg void OnDropFiles(HDROP hDropInfo);
   // Generated user message map functions
-  afx_msg void OnBnClickedAuto();
+  afx_msg void OnBnClickedClear();
   afx_msg void OnBnClickedLaunch();
   DECLARE_MESSAGE_MAP()
 
@@ -59,7 +59,6 @@ private:
   HICON m_hIcon;
   CString m_pe_path;
   CString m_pe_dir;
-  BOOL m_pe_auto;
   CString m_mp_path;
   EasyTreeCtrl m_mp_tree;
   CListCtrl m_log;
