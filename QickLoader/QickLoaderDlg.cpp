@@ -9,6 +9,12 @@
 #include "afxdialogex.h"
 #include "utils.h"
 
+#include <winternl.h>
+#pragma comment(lib,"ntdll")
+
+#include <dbghelp.h>
+#pragma comment(lib,"dbghelp")
+
 #include <vu>
 
 static json g_jdata;
@@ -421,7 +427,7 @@ void CQickLoaderDlg::PopulateTree(const std::wstring& file_path)
 
 void CQickLoaderDlg::OnBnClickedLaunch()
 {
-  this->AddLog(L"---");
+  // create the target process as a suspend process
 
   STARTUPINFOW si = { 0 };
   si.cb = sizeof(si);
@@ -432,15 +438,13 @@ void CQickLoaderDlg::OnBnClickedLaunch()
     m_pe_path.GetBuffer(0),
     nullptr, nullptr, nullptr,
     FALSE,
-    NORMAL_PRIORITY_CLASS,
+    NORMAL_PRIORITY_CLASS | CREATE_SUSPENDED,
     nullptr,
     m_pe_dir.GetBuffer(0),
     &si, &pi);
 
-  WaitForInputIdle(pi.hProcess, INFINITE);
-
-  auto line = vu::ExtractFileName(m_pe_path.GetBuffer(0));
-  line = vu::FormatW(L"Create the process `%s` %s", line.c_str(), created ? L"succeed" : L"failed");
+  auto process_name = vu::ExtractFileName(m_pe_path.GetBuffer(0));
+  auto line = vu::FormatW(L"Create the process `%s` %s", process_name.c_str(), created ? L"succeed" : L"failed");
   this->AddLog(line, created ? status_t::success : status_t::error);
 
   if (!created)
@@ -449,21 +453,61 @@ void CQickLoaderDlg::OnBnClickedLaunch()
     return;
   }
 
+  vu::CProcessA process;
+  process.Attach(pi.hProcess);
+
+  // get Entry Point of the target process
+
+  DWORD size = 0;
+  PROCESS_BASIC_INFORMATION pbi = { 0 };
+  NTSTATUS status = NtQueryInformationProcess(pi.hProcess, ProcessBasicInformation, &pbi, sizeof(pbi), &size);
+  assert(NT_SUCCESS(status));
+
+  vu::ulongptr va_oep = 0;
+
+  if (process.Bits() == vu::eXBit::x64)
+  {
+    PEB_T<vu::pe64> peb;
+    process.Read(vu::ulongptr(pbi.PebBaseAddress), &peb, sizeof(peb));
+    va_oep += peb.ImageBaseAddress;
+  }
+  else // x86
+  {
+    PEB_T<vu::pe64> peb;
+    process.Read(vu::ulongptr(pbi.PebBaseAddress), &peb, sizeof(peb));
+    va_oep += peb.ImageBaseAddress;
+  }
+
+  // get RVA Entry Point in the PE file
+  {
+    std::vector<byte> file;
+    utils::read_file(m_pe_path.GetBuffer(0), file);
+    auto pNTHeaders = ImageNtHeader(file.data());
+    assert(pNTHeaders != nullptr);
+    va_oep += pNTHeaders->OptionalHeader.AddressOfEntryPoint;
+  }
+
+  // break the target process at entry point then resume and wait for fully loaded on memory
+
+  std::vector<byte> bp = { 0xEB, 0xFE }, ep(2);
+  process.Read(va_oep, ep.data(), ep.size());
+  process.Write(va_oep, bp.data(), bp.size());
+
+  ResumeThread(pi.hThread);
+
+  WaitForInputIdle(pi.hProcess, 1000); // 1s
+
+  this->AddLog(L"Break the process at its entry point succeed", status_t::success);
+
   // suspend the target process
 
   SuspendThread(pi.hThread);
 
   this->AddLog(L"Suspend the process succeed", status_t::success);
 
-  // parse the target process
-
-  vu::CProcessA process;
-  process.Attach(pi.hProcess);
-  const auto& modules = process.GetModules();
-
-  this->AddLog(L"Attach the process succeed", status_t::success);
-
   // copy the memory image of modules and store to a map
+
+  const auto& modules = process.GetModules();
 
   struct module_t
   {
@@ -502,9 +546,9 @@ void CQickLoaderDlg::OnBnClickedLaunch()
     module.m_buffer.reset(ptr_raw_buffer);
     module.m_me = *it;
 
-    line = vu::ToStringW(item.key());
-    line = vu::FormatW(L"Find the module `%s` found", line.c_str());
-    this->AddLog(line, status_t::success);
+    // line = vu::ToStringW(item.key());
+    // line = vu::FormatW(L"Find the module `%s` found", line.c_str());
+    // this->AddLog(line, status_t::success);
   }
 
   if (!copied_modules.empty())
@@ -534,16 +578,18 @@ void CQickLoaderDlg::OnBnClickedLaunch()
       line = vu::FormatW(L"Try to patch `%s`", patch_name.c_str());
       this->AddLog(line);
 
-      std::string item = ptr_jnode->m_module;
-      item = vu::LowerStringA(item);
-      auto it = copied_modules.find(item);
+      const std::string module_name = vu::LowerStringA(ptr_jnode->m_module);
+      const std::wstring wmodule_name = vu::ToStringW(module_name);
+      auto it = copied_modules.find(module_name);
       if (it == copied_modules.cend())
       {
-        line = vu::ToStringW(item);
-        line = vu::FormatW(L"Find the module `%s` not found", line.c_str());
+        line = vu::FormatW(L"Find the module `%s` not found", wmodule_name.c_str());
         this->AddLog(line, status_t::error);
         return;
       }
+
+      line = vu::FormatW(L"Find the module `%s` found", wmodule_name.c_str());
+      this->AddLog(line, status_t::success);
 
       // extract the pattern bytes and search the address
 
@@ -554,12 +600,12 @@ void CQickLoaderDlg::OnBnClickedLaunch()
       auto result = vu::FindPatternA(address, size, pattern);
       if (!result.first)
       {
-        line = vu::FormatW(L"Find the `%s` not found", line.c_str());
+        line = vu::FormatW(L"Find the patch `%s` not found", patch_name.c_str());
         this->AddLog(line, status_t::error);
         return;
       }
 
-      line = vu::FormatW(L"Find the `%s` found", line.c_str());
+      line = vu::FormatW(L"Find the patch `%s` found", patch_name.c_str());
       this->AddLog(line, status_t::success);
 
       // extract the replacement bytes
@@ -589,7 +635,9 @@ void CQickLoaderDlg::OnBnClickedLaunch()
     this->AddLog(L"Not found any module for patching", status_t::warn);
   }
 
-  // resume the target process
+  // unbeak and resume the target process
+
+  process.Write(va_oep, ep.data(), ep.size());
 
   ResumeThread(pi.hThread);
 
