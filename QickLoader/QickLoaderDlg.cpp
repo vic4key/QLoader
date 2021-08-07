@@ -130,7 +130,7 @@ BOOL CQickLoaderDlg::OnInitDialog()
   // ChangeWindowMessageFilter(WM_DROPFILES, MSGFLT_ADD);
   // __super::DragAcceptFiles();
 
-  this->InitializeTree();
+  this->InitializeUI();
 
   this->ResetUI();
 
@@ -320,7 +320,7 @@ void CQickLoaderDlg::UpdateUI()
   RedrawWindow();
 }
 
-void CQickLoaderDlg::InitializeTree()
+void CQickLoaderDlg::InitializeUI()
 {
   m_mp_tree.OnNotify([&](EasyTreeCtrl::eNotifyType action, Node* pNode) -> bool
   {
