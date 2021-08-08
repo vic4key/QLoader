@@ -5,7 +5,7 @@
 
 ## Requirements
 
-* Windows 32/64 bit (not tested on 32-bit)
+* Windows 32/64 bit
 * MS Visual C++ 2019 or later
 
 ## Features
@@ -35,9 +35,17 @@ Released under the [MIT](LICENSE.md) license
 >
 >![](QLoader/screenshots/template.png?)
 
->Sublime Text 4
+>Sublime Text 4 (64-bit application)
 >
->![](QLoader/screenshots/slt4.png?)
+>![](QLoader/screenshots/ui-sublime_text_4.png?)
+>
+>![](QLoader/screenshots/sublime_text_4.png?)
+
+>Cute Video Converter (32-bit application)
+>
+>![](QLoader/screenshots/ui-cute_video_converter.png?)
+>
+>![](QLoader/screenshots/cute_video_converter.png?)
 
 >Etc
 
