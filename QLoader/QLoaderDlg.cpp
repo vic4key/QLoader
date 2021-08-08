@@ -662,11 +662,8 @@ void CQLoaderDlg::OnBnClickedLaunch()
 
       bool ret = process.Write(found_patch_address, replacement_bytes.data(), replacement_bytes.size());
 
-      line = vu::FormatW(
-        L"Patch `%s` at %p %s",
-        patch_name.c_str(),
-        reinterpret_cast<void*>(found_patch_address),
-        ret ? L"succeed" : L"failed");
+      auto fmt = process.Bits() == vu::eXBit::x64 ? L"Patch `%s` at %16X %s" : L"Patch `%s` at %08X %s";
+      line = vu::FormatW(fmt, patch_name.c_str(), found_patch_address, ret ? L"succeed" : L"failed");
       this->AddLog(line, ret ? status_t::success : status_t::error);
     });
   }
