@@ -597,12 +597,7 @@ void CQLoaderDlg::OnBnClickedLaunch()
 
       auto& jpatch = *ptr_json;
 
-      // extract the patch name
-
-      auto name = utils::json_get(jpatch, "name", UNNAMED);
-      std::wstring patch_name = vu::ToStringW(name);
-      line = vu::FormatW(L"Try to patch `%s`", patch_name.c_str());
-      this->AddLog(line);
+      // find the module of patch
 
       const std::string module_name = vu::LowerStringA(ptr_jnode->m_module);
       const std::wstring wmodule_name = vu::ToStringW(module_name);
@@ -617,10 +612,35 @@ void CQLoaderDlg::OnBnClickedLaunch()
       line = vu::FormatW(L"Find the module `%s` found", wmodule_name.c_str());
       this->AddLog(line, status_t::success);
 
-      // extract the pattern bytes and search the address
+      // extract the name of patch
+
+      auto name = utils::json_get(jpatch, "name", UNNAMED);
+      std::wstring patch_name = vu::ToStringW(name);
+      line = vu::FormatW(L"Try to patch `%s`", patch_name.c_str());
+      this->AddLog(line);
+
+      // extract the pattern bytes of patch
+
+      const auto pattern = utils::json_get(jpatch, "pattern", EMPTY);
+
+      // extract the replacement bytes of patch
+
+      const auto replacement = utils::json_get(jpatch, "replacement", EMPTY);
+      auto l = vu::SplitStringA(replacement, " ");
+      std::vector<vu::byte> replacement_bytes;
+      for (auto& e : l)
+      {
+        auto v = vu::byte(std::stoi(e, nullptr, 16));
+        replacement_bytes.push_back(v);
+      }
+
+      // extract the offset of patch
+
+      const auto offset = utils::json_get(jpatch, "offset", 0);
+
+      // search pattern in the module
 
       auto address = static_cast<const void*>(it->second.m_buffer.get());
-      auto pattern = utils::json_get(jpatch, "pattern", EMPTY);
       auto size = it->second.m_me.modBaseSize;
 
       auto result = vu::FindPatternA(address, size, pattern);
@@ -634,25 +654,19 @@ void CQLoaderDlg::OnBnClickedLaunch()
       line = vu::FormatW(L"Find the patch `%s` found", patch_name.c_str());
       this->AddLog(line, status_t::success);
 
-      // extract the replacement bytes
-
-      auto replacement = utils::json_get(jpatch, "replacement", EMPTY);
-      auto l = vu::SplitStringA(replacement, " ");
-      std::vector<vu::byte> repl;
-      for (auto& e : l)
-      {
-        auto v = vu::byte(std::stoi(e, nullptr, 16));
-        repl.push_back(v);
-      }
-
       // patch at the found address with the replacement bytes
 
-      vu::ulongptr found_patch_address = vu::ulongptr(it->second.m_me.modBaseAddr) + result.second;
-      bool ret = process.Write(found_patch_address, repl.data(), repl.size());
+      auto found_patch_address = vu::ulongptr(it->second.m_me.modBaseAddr);
+      found_patch_address += result.second;
+      found_patch_address += offset;
 
-      // add to log
+      bool ret = process.Write(found_patch_address, replacement_bytes.data(), replacement_bytes.size());
 
-      auto line = vu::FormatW(L"Patch `%s` %s", patch_name.c_str(), ret ? L"succeed" : L"failed");
+      line = vu::FormatW(
+        L"Patch `%s` at %p %s",
+        patch_name.c_str(),
+        reinterpret_cast<void*>(found_patch_address),
+        ret ? L"succeed" : L"failed");
       this->AddLog(line, ret ? status_t::success : status_t::error);
     });
   }
