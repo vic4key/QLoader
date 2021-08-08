@@ -1,0 +1,11 @@
+{
+	"sublime_text.exe":
+	[
+		{
+			"name": "license",
+			"pattern": "80 38 00",
+			"replacement": "FE 00 90",
+			"offset": 0
+		}
+	]
+}
