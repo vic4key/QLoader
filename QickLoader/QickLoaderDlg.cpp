@@ -18,6 +18,7 @@
 #include <vu>
 
 static json g_jdata;
+static std::string EMPTY = "";
 static std::string UNNAMED = "<unnamed>";
 static std::vector<std::wstring> USABLE_FILE_EXTENSIONS = { L".EXE", L".JSON" };
 
@@ -411,29 +412,29 @@ void CQickLoaderDlg::PopulateTree(const std::wstring& file_path)
 
   m_mp_tree.Populate([&](HTREEITEM& root) -> void
   {
-    auto fn_tree_add_node_str = [&](HTREEITEM& hitem, json& jobject, std::string name) -> HTREEITEM
+    auto fn_tree_add_node_str = [&](HTREEITEM& hparent, json& jobject, std::string key) -> HTREEITEM
     {
-      auto h_item = m_mp_tree.InsertNode(hitem, new JNode(name));
-      auto& jitem = jobject[name];
-      return m_mp_tree.InsertNode(h_item, new JNode(jitem.get<std::string>(), &jitem));
+      auto hitem  = m_mp_tree.InsertNode(hparent, new jnode_t(key));
+      auto string = utils::json_get(jobject, key, EMPTY);
+      return m_mp_tree.InsertNode(hitem, new jnode_t(string, &jobject[key]));
     };
 
-    auto fn_tree_add_node_int = [&](HTREEITEM& hitem, json& jobject, std::string name) -> HTREEITEM
+    auto fn_tree_add_node_int = [&](HTREEITEM& hparent, json& jobject, std::string key) -> HTREEITEM
     {
-      auto h_item = m_mp_tree.InsertNode(hitem, new Node(name));
-      auto& jitem = jobject[name];
-      return m_mp_tree.InsertNode(h_item, new Node(std::to_string(jitem.get<int>()), &jitem));
+      auto hitem  = m_mp_tree.InsertNode(hparent, new Node(key));
+      auto number = utils::json_get(jobject, key, 0);
+      return m_mp_tree.InsertNode(hitem, new Node(std::to_string(number), &jobject[key]));
     };
 
     for (auto& module : g_jdata.items())
     {
-      auto hmodule = m_mp_tree.InsertNode(root, new JNode(module.key()));
+      auto hmodule = m_mp_tree.InsertNode(root, new jnode_t(module.key()));
       assert(hmodule != nullptr);
 
       for (auto& jpatch : module.value())
       {
-        auto name = jpatch.contains("name") ? jpatch["name"].get<std::string>() : UNNAMED;
-        if (auto hpatch = m_mp_tree.InsertNode(hmodule, new JNode(name, &jpatch, module.key())))
+        auto name = utils::json_get(jpatch, "name", UNNAMED);
+        if (auto hpatch = m_mp_tree.InsertNode(hmodule, new jnode_t(name, &jpatch, module.key())))
         {
           fn_tree_add_node_str(hpatch, jpatch, "pattern");
           fn_tree_add_node_str(hpatch, jpatch, "replacement");
@@ -477,38 +478,42 @@ void CQickLoaderDlg::OnBnClickedLaunch()
   vu::CProcessA process;
   process.Attach(pi.hProcess);
 
-  // get Entry Point of the target process
+  // get base address of the target process
 
   DWORD size = 0;
   PROCESS_BASIC_INFORMATION pbi = { 0 };
   NTSTATUS status = NtQueryInformationProcess(pi.hProcess, ProcessBasicInformation, &pbi, sizeof(pbi), &size);
   assert(NT_SUCCESS(status));
 
-  vu::ulongptr va_oep = 0;
+  vu::ulongptr base_address = 0;
 
   if (process.Bits() == vu::eXBit::x64)
   {
     PEB_T<vu::pe64> peb;
     process.Read(vu::ulongptr(pbi.PebBaseAddress), &peb, sizeof(peb));
-    va_oep += peb.ImageBaseAddress;
+    base_address = peb.ImageBaseAddress;
   }
   else // x86
   {
-    PEB_T<vu::pe64> peb;
+    PEB_T<vu::pe32> peb;
     process.Read(vu::ulongptr(pbi.PebBaseAddress), &peb, sizeof(peb));
-    va_oep += peb.ImageBaseAddress;
+    base_address = peb.ImageBaseAddress;
   }
 
-  // get RVA Entry Point in the PE file
+  // get rva original entry point of the target process
+
+  vu::ulongptr rva_oep = 0;
   {
     std::vector<byte> file;
     utils::read_file(m_pe_path.GetBuffer(0), file);
     auto pNTHeaders = ImageNtHeader(file.data());
     assert(pNTHeaders != nullptr);
-    va_oep += pNTHeaders->OptionalHeader.AddressOfEntryPoint;
+    rva_oep = pNTHeaders->OptionalHeader.AddressOfEntryPoint;
   }
 
-  // break the target process at entry point then resume and wait for fully loaded on memory
+  // break the target process at va original entry point then resume and wait for fully loaded on memory
+
+  auto va_oep = base_address + rva_oep;
 
   std::vector<byte> bp = { 0xEB, 0xFE }, ep(2);
   process.Read(va_oep, ep.data(), ep.size());
@@ -578,7 +583,7 @@ void CQickLoaderDlg::OnBnClickedLaunch()
 
     m_mp_tree.Iterate(m_mp_tree.GetRootItem(), [&](HTREEITEM pItem) -> void
     {
-      auto ptr_jnode = reinterpret_cast<JNode*>(m_mp_tree.GetItemData(pItem));
+      auto ptr_jnode = reinterpret_cast<jnode_t*>(m_mp_tree.GetItemData(pItem));
       auto ptr_json = utils::to_ptr_json(ptr_jnode);
       if (ptr_json == nullptr) // must be json binding
       {
@@ -594,7 +599,7 @@ void CQickLoaderDlg::OnBnClickedLaunch()
 
       // extract the patch name
 
-      auto name = jpatch.contains("name") ? jpatch["name"].get<std::string>() : UNNAMED;
+      auto name = utils::json_get(jpatch, "name", UNNAMED);
       std::wstring patch_name = vu::ToStringW(name);
       line = vu::FormatW(L"Try to patch `%s`", patch_name.c_str());
       this->AddLog(line);
@@ -615,7 +620,7 @@ void CQickLoaderDlg::OnBnClickedLaunch()
       // extract the pattern bytes and search the address
 
       auto address = static_cast<const void*>(it->second.m_buffer.get());
-      auto pattern = jpatch["pattern"].get<std::string>();
+      auto pattern = utils::json_get(jpatch, "pattern", EMPTY);
       auto size = it->second.m_me.modBaseSize;
 
       auto result = vu::FindPatternA(address, size, pattern);
@@ -631,7 +636,7 @@ void CQickLoaderDlg::OnBnClickedLaunch()
 
       // extract the replacement bytes
 
-      auto replacement = jpatch["replacement"].get<std::string>();
+      auto replacement = utils::json_get(jpatch, "replacement", EMPTY);
       auto l = vu::SplitStringA(replacement, " ");
       std::vector<vu::byte> repl;
       for (auto& e : l)

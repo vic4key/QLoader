@@ -21,9 +21,9 @@ struct PEB_T
   T ImageBaseAddress;
 };
 
-struct JNode : public Node
+struct jnode_t : public Node
 {
-  JNode(const std::string& name, void* ptr_data = nullptr, const std::string& module = "")
+  jnode_t(const std::string& name, void* ptr_data = nullptr, const std::string& module = "")
     : Node(name, ptr_data), m_module(module) {}
 
   std::string m_module;
@@ -32,17 +32,23 @@ struct JNode : public Node
 namespace utils
 {
 
-template <typename Ptr>
-json* to_ptr_json(Ptr ptr)
+template <typename ptr_t>
+json* to_ptr_json(ptr_t ptr)
 {
   auto ptr_data = reinterpret_cast<void*>(ptr);
-  auto ptr_node = static_cast<JNode*>(ptr_data);
+  auto ptr_node = static_cast<jnode_t*>(ptr_data);
   if (ptr_node == nullptr)
   {
     return nullptr;
   }
 
   return static_cast<json*>(ptr_node->m_ptr_data);
+}
+
+template <typename value_t>
+value_t json_get(json& jobject, const std::string& name, const value_t def)
+{
+  return jobject.contains(name) ? jobject[name].get<value_t>() : def;
 }
 
 void read_file(const std::wstring& file_path, std::vector<byte>& data)
