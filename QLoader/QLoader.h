@@ -1,5 +1,5 @@
 
-// QickLoader.h : main header file for the PROJECT_NAME application
+// QLoader.h : main header file for the PROJECT_NAME application
 //
 
 #pragma once
@@ -11,14 +11,14 @@
 #include "resource.h"		// main symbols
 
 
-// CQickLoaderApp:
-// See QickLoader.cpp for the implementation of this class
+// CQLoaderApp:
+// See QLoader.cpp for the implementation of this class
 //
 
-class CQickLoaderApp : public CWinApp
+class CQLoaderApp : public CWinApp
 {
 public:
-	CQickLoaderApp();
+	CQLoaderApp();
 
 // Overrides
 public:
@@ -29,4 +29,4 @@ public:
 	DECLARE_MESSAGE_MAP()
 };
 
-extern CQickLoaderApp theApp;
+extern CQLoaderApp theApp;

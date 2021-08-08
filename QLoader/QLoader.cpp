@@ -1,41 +1,41 @@
 
-// QickLoader.cpp : Defines the class behaviors for the application.
+// QLoader.cpp : Defines the class behaviors for the application.
 //
 
 #include "pch.h"
 #include "framework.h"
-#include "QickLoader.h"
-#include "QickLoaderDlg.h"
+#include "QLoader.h"
+#include "QLoaderDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
 
-// CQickLoaderApp
+// CQLoaderApp
 
-BEGIN_MESSAGE_MAP(CQickLoaderApp, CWinApp)
+BEGIN_MESSAGE_MAP(CQLoaderApp, CWinApp)
 	ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
 
-// CQickLoaderApp construction
+// CQLoaderApp construction
 
-CQickLoaderApp::CQickLoaderApp()
+CQLoaderApp::CQLoaderApp()
 {
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
 }
 
 
-// The one and only CQickLoaderApp object
+// The one and only CQLoaderApp object
 
-CQickLoaderApp theApp;
+CQLoaderApp theApp;
 
 
-// CQickLoaderApp initialization
+// CQLoaderApp initialization
 
-BOOL CQickLoaderApp::InitInstance()
+BOOL CQLoaderApp::InitInstance()
 {
 	// InitCommonControlsEx() is required on Windows XP if an application
 	// manifest specifies use of ComCtl32.dll version 6 or later to enable
@@ -68,7 +68,7 @@ BOOL CQickLoaderApp::InitInstance()
 	// such as the name of your company or organization
 	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
 
-	CQickLoaderDlg dlg;
+	CQLoaderDlg dlg;
 	m_pMainWnd = &dlg;
 	INT_PTR nResponse = dlg.DoModal();
 	if (nResponse == IDOK)

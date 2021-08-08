@@ -27,10 +27,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="QickLoader.h">
+    <ClInclude Include="QLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="QickLoaderDlg.h">
+    <ClInclude Include="QLoaderDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="framework.h">
@@ -62,10 +62,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="QickLoader.cpp">
+    <ClCompile Include="QLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="QickLoaderDlg.cpp">
+    <ClCompile Include="QLoaderDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
@@ -76,17 +76,17 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="QickLoader.rc">
+    <ResourceCompile Include="QLoader.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\QickLoader.rc2">
+    <None Include="res\QLoader.rc2">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\QickLoader.ico">
+    <Image Include="res\QLoader.ico">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\log-small.bmp">

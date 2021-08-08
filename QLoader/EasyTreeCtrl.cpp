@@ -2,6 +2,8 @@
 #include "EasyTreeCtrl.h"
 #include "resource.h"
 
+#include <cassert>
+
 #pragma warning(disable : 26454)
 
 #define ID_CONTEXT_MENU_INSERT WM_USER + 100

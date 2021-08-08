@@ -1,11 +1,11 @@
 
-// QickLoaderDlg.cpp : implementation file
+// QLoaderDlg.cpp : implementation file
 //
 
 #include "pch.h"
 #include "framework.h"
-#include "QickLoader.h"
-#include "QickLoaderDlg.h"
+#include "QLoader.h"
+#include "QLoaderDlg.h"
 #include "afxdialogex.h"
 #include "utils.h"
 
@@ -59,11 +59,11 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 
-// CQickLoaderDlg dialog
+// CQLoaderDlg dialog
 
 
 
-CQickLoaderDlg::CQickLoaderDlg(CWnd* pParent /*=nullptr*/)
+CQLoaderDlg::CQLoaderDlg(CWnd* pParent /*=nullptr*/)
   : CDialogEx(IDD_QICKLOADER_DIALOG, pParent)
   , m_pe_path(_T(""))
   , m_pe_dir(_T(""))
@@ -72,7 +72,7 @@ CQickLoaderDlg::CQickLoaderDlg(CWnd* pParent /*=nullptr*/)
   m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
-void CQickLoaderDlg::DoDataExchange(CDataExchange* pDX)
+void CQLoaderDlg::DoDataExchange(CDataExchange* pDX)
 {
   __super::DoDataExchange(pDX);
   DDX_Text(pDX, IDC_PE_PATH, m_pe_path);
@@ -83,7 +83,7 @@ void CQickLoaderDlg::DoDataExchange(CDataExchange* pDX)
   DDX_Control(pDX, IDC_LOG, m_log);
 }
 
-BEGIN_MESSAGE_MAP(CQickLoaderDlg, CDialogEx)
+BEGIN_MESSAGE_MAP(CQLoaderDlg, CDialogEx)
   ON_WM_SYSCOMMAND()
   ON_WM_PAINT()
   ON_WM_QUERYDRAGICON()
@@ -94,9 +94,9 @@ BEGIN_MESSAGE_MAP(CQickLoaderDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 
-// CQickLoaderDlg message handlers
+// CQLoaderDlg message handlers
 
-BOOL CQickLoaderDlg::OnInitDialog()
+BOOL CQLoaderDlg::OnInitDialog()
 {
   __super::OnInitDialog();
 
@@ -138,7 +138,7 @@ BOOL CQickLoaderDlg::OnInitDialog()
   return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
-void CQickLoaderDlg::OnSysCommand(UINT nID, LPARAM lParam)
+void CQLoaderDlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
   if ((nID & 0xFFF0) == IDM_ABOUTBOX)
   {
@@ -155,7 +155,7 @@ void CQickLoaderDlg::OnSysCommand(UINT nID, LPARAM lParam)
 //  to draw the icon.  For MFC applications using the document/view model,
 //  this is automatically done for you by the framework.
 
-void CQickLoaderDlg::OnPaint()
+void CQLoaderDlg::OnPaint()
 {
   if (IsIconic())
   {
@@ -182,12 +182,12 @@ void CQickLoaderDlg::OnPaint()
 
 // The system calls this function to obtain the cursor to display while the user drags
 //  the minimized window.
-HCURSOR CQickLoaderDlg::OnQueryDragIcon()
+HCURSOR CQLoaderDlg::OnQueryDragIcon()
 {
   return static_cast<HCURSOR>(m_hIcon);
 }
 
-void CQickLoaderDlg::OnSize(UINT nType, int cx, int cy)
+void CQLoaderDlg::OnSize(UINT nType, int cx, int cy)
 {
   __super::OnSize(nType, cx, cy);
 
@@ -201,7 +201,7 @@ void CQickLoaderDlg::OnSize(UINT nType, int cx, int cy)
   }
 }
 
-void CQickLoaderDlg::OnDropFiles(HDROP hDropInfo)
+void CQLoaderDlg::OnDropFiles(HDROP hDropInfo)
 {
   // TODO: Add your message handler code here and/or call default
 
@@ -227,12 +227,12 @@ void CQickLoaderDlg::OnDropFiles(HDROP hDropInfo)
   this->UpdateUI();
 }
 
-void CQickLoaderDlg::OnBnClickedClear()
+void CQLoaderDlg::OnBnClickedClear()
 {
   this->ResetUI();
 }
 
-bool CQickLoaderDlg::IsUsableFile(const CString& file_path)
+bool CQLoaderDlg::IsUsableFile(const CString& file_path)
 {
   // if (filePath.IsEmpty())
   // {
@@ -251,7 +251,7 @@ bool CQickLoaderDlg::IsUsableFile(const CString& file_path)
   return true;
 }
 
-void CQickLoaderDlg::AddLog(const std::wstring& line, const status_t status)
+void CQLoaderDlg::AddLog(const std::wstring& line, const status_t status)
 {
   LVITEM lvi = { 0 };
   lvi.mask = LVIF_IMAGE;
@@ -263,7 +263,7 @@ void CQickLoaderDlg::AddLog(const std::wstring& line, const status_t status)
   m_log.SetItemText(index, 1, line.c_str());
 }
 
-void CQickLoaderDlg::ResetUI()
+void CQLoaderDlg::ResetUI()
 {
   m_file_paths.clear();
 
@@ -279,7 +279,7 @@ void CQickLoaderDlg::ResetUI()
   UpdateData(FALSE);
 }
 
-void CQickLoaderDlg::UpdateUI()
+void CQLoaderDlg::UpdateUI()
 {
   if (m_file_paths.empty())
   {
@@ -321,7 +321,7 @@ void CQickLoaderDlg::UpdateUI()
   RedrawWindow();
 }
 
-void CQickLoaderDlg::InitializeUI()
+void CQLoaderDlg::InitializeUI()
 {
   m_mp_tree.OnNotify([&](EasyTreeCtrl::eNotifyType action, Node* pNode) -> bool
   {
@@ -401,7 +401,7 @@ void CQickLoaderDlg::InitializeUI()
   this->SendMessage(WM_SIZE); // request to re-calculate size for window and its controls
 }
 
-void CQickLoaderDlg::PopulateTree(const std::wstring& file_path)
+void CQLoaderDlg::PopulateTree(const std::wstring& file_path)
 {
   std::string s = vu::ToStringA(file_path);
   std::ifstream fs(s);
@@ -447,7 +447,7 @@ void CQickLoaderDlg::PopulateTree(const std::wstring& file_path)
   });
 }
 
-void CQickLoaderDlg::OnBnClickedLaunch()
+void CQLoaderDlg::OnBnClickedLaunch()
 {
   // create the target process as a suspend process
 

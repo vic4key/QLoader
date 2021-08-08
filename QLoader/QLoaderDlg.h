@@ -1,5 +1,5 @@
 
-// QickLoaderDlg.h : header file
+// QLoaderDlg.h : header file
 //
 
 #pragma once
@@ -9,12 +9,12 @@
 
 #include "EasyTreeCtrl.h"
 
-// CQickLoaderDlg dialog
-class CQickLoaderDlg : public CDialogEx
+// CQLoaderDlg dialog
+class CQLoaderDlg : public CDialogEx
 {
   // Construction
 public:
-  CQickLoaderDlg(CWnd* pParent = nullptr);	// standard constructor
+  CQLoaderDlg(CWnd* pParent = nullptr);	// standard constructor
 
 // Dialog Data
 #ifdef AFX_DESIGN_TIME

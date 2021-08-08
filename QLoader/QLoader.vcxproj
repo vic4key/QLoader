@@ -22,7 +22,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{059B5E5A-9C0F-46D6-94BF-1C37DEFA11BE}</ProjectGuid>
     <Keyword>MFCProj</Keyword>
-    <RootNamespace>QickLoader</RootNamespace>
+    <RootNamespace>QLoader</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -200,8 +200,8 @@
     <ClInclude Include="EasyTreeCtrl.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="QickLoader.h" />
-    <ClInclude Include="QickLoaderDlg.h" />
+    <ClInclude Include="QLoader.h" />
+    <ClInclude Include="QLoaderDlg.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="types.h" />
@@ -215,18 +215,18 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="QickLoader.cpp" />
-    <ClCompile Include="QickLoaderDlg.cpp" />
+    <ClCompile Include="QLoader.cpp" />
+    <ClCompile Include="QLoaderDlg.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="QickLoader.rc" />
+    <ResourceCompile Include="QLoader.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\QickLoader.rc2" />
+    <None Include="res\QLoader.rc2" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\log-small.bmp" />
-    <Image Include="res\QickLoader.ico" />
+    <Image Include="res\QLoader.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
