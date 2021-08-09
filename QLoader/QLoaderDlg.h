@@ -52,6 +52,8 @@ protected:
   afx_msg void OnSize(UINT nType, int cx, int cy);
   afx_msg void OnDropFiles(HDROP hDropInfo);
   // Generated user message map functions
+  afx_msg void OnBnClickedPEOpen();
+  afx_msg void OnBnClickedMPOpen();
   afx_msg void OnBnClickedClear();
   afx_msg void OnBnClickedLaunch();
   DECLARE_MESSAGE_MAP()

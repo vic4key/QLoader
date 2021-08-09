@@ -89,6 +89,8 @@ BEGIN_MESSAGE_MAP(CQLoaderDlg, CDialogEx)
   ON_WM_QUERYDRAGICON()
   ON_WM_SIZE()
   ON_WM_DROPFILES()
+  ON_BN_CLICKED(IDC_PE_OPEN, &OnBnClickedPEOpen)
+  ON_BN_CLICKED(IDC_MP_OPEN, &OnBnClickedMPOpen)
   ON_BN_CLICKED(IDC_CLEAR, &OnBnClickedClear)
   ON_BN_CLICKED(IDC_LAUNCH, &OnBnClickedLaunch)
 END_MESSAGE_MAP()
@@ -227,6 +229,36 @@ void CQLoaderDlg::OnDropFiles(HDROP hDropInfo)
   this->UpdateUI();
 }
 
+void CQLoaderDlg::OnBnClickedPEOpen()
+{
+  m_file_paths.clear();
+
+  CString filter = L"PE Files (*.exe)|*.exe|All Files (*.*)|*.*||";
+  CFileDialog dialog(TRUE, nullptr, nullptr, OFN_HIDEREADONLY | OFN_FILEMUSTEXIST, filter, this);
+  if (dialog.DoModal() == IDOK)
+  {
+    std::wstring file_path = dialog.GetPathName();
+    m_file_paths.push_back(file_path);
+  }
+
+  this->UpdateUI();
+}
+
+void CQLoaderDlg::OnBnClickedMPOpen()
+{
+  m_file_paths.clear();
+
+  CString filter = L"MP Files (*.json)|*.json|All Files (*.*)|*.*||";
+  CFileDialog dialog(TRUE, nullptr, nullptr, OFN_HIDEREADONLY | OFN_FILEMUSTEXIST, filter, this);
+  if (dialog.DoModal() == IDOK)
+  {
+    std::wstring file_path = dialog.GetPathName();
+    m_file_paths.push_back(file_path);
+  }
+
+  this->UpdateUI();
+}
+
 void CQLoaderDlg::OnBnClickedClear()
 {
   this->ResetUI();
@@ -307,6 +339,8 @@ void CQLoaderDlg::UpdateUI()
       found_json = true;
     }
   }
+
+  m_file_paths.clear();
 
   if (found_json)
   {
