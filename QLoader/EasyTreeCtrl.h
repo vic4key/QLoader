@@ -36,6 +36,7 @@ class EasyTreeCtrl : public CTreeCtrl
   enum class eNotifyType
   {
     SELECTING,
+    BOX_CHECKING,
 
     BEFORE_INSERTING,
     AFTER_INSERTING,
@@ -64,6 +65,7 @@ public:
   afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
   afx_msg void OnContextMenuHandler(UINT ID);
 
+  afx_msg void OnLClick(NMHDR* pNMHDR, LRESULT* pResult);
   afx_msg void OnRClick(NMHDR* pNMHDR, LRESULT* pResult);
   afx_msg void OnDblclk(NMHDR* pNMHDR, LRESULT* pResult);
 
@@ -75,7 +77,7 @@ public:
   DECLARE_MESSAGE_MAP()
 
 private:
-  HTREEITEM GetpItemFocusing();
+  HTREEITEM GetpItemFocusing(UINT* pFlags = nullptr);
   bool EditItem(HTREEITEM pItem);
   bool Notify(eNotifyType action, HTREEITEM pItem);
   bool Notify(eNotifyType action, Node* pNode);

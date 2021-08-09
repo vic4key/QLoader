@@ -17,6 +17,7 @@ BEGIN_MESSAGE_MAP(EasyTreeCtrl, CTreeCtrl)
   ON_WM_CONTEXTMENU()
   ON_COMMAND_RANGE(ID_CONTEXT_MENU_INSERT, ID_CONTEXT_MENU_DELETE, OnContextMenuHandler)
 
+  ON_NOTIFY_REFLECT(NM_CLICK,  OnLClick)
   ON_NOTIFY_REFLECT(NM_RCLICK, OnRClick)
   ON_NOTIFY_REFLECT(NM_DBLCLK, OnDblclk)
   ON_NOTIFY_REFLECT(TVN_SELCHANGED, OnSelChanged)
@@ -120,6 +121,26 @@ void EasyTreeCtrl::OnSelChanged(NMHDR* pNMHDR, LRESULT* pResult)
   {
     this->Notify(eNotifyType::SELECTING, pNode);
   }
+}
+
+void EasyTreeCtrl::OnLClick(NMHDR* pNMHDR, LRESULT* pResult)
+{
+  auto pNMTreeView = (NM_TREEVIEW*)pNMHDR;
+  assert(pNMTreeView != nullptr);
+
+  UINT flags = 0;
+  auto pItem = this->GetpItemFocusing(&flags);
+  if (pItem != nullptr)
+  {
+    this->Select(pItem, TVGN_CARET);
+
+    if (flags & TVHT_ONITEMSTATEICON)
+    {
+      this->Notify(eNotifyType::BOX_CHECKING, pItem);
+    }
+  }
+
+  *pResult = TRUE;
 }
 
 void EasyTreeCtrl::OnRClick(NMHDR* pNMHDR, LRESULT* pResult)
@@ -229,12 +250,12 @@ HTREEITEM EasyTreeCtrl::InsertNode(HTREEITEM& pParent, Node* pNode)
   return item;
 }
 
-HTREEITEM EasyTreeCtrl::GetpItemFocusing()
+HTREEITEM EasyTreeCtrl::GetpItemFocusing(UINT* pFlags)
 {
   CPoint point;
   GetCursorPos(&point);
   this->ScreenToClient(&point);
-  return this->HitTest(point, nullptr);
+  return this->HitTest(point, pFlags);
 }
 
 bool EasyTreeCtrl::EditItem(HTREEITEM pItem)
