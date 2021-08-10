@@ -362,6 +362,7 @@ void CQLoaderDlg::InitializeUI()
     wchar_t* actions[] =
     {
       L"SELECTING",
+      L"BOX_CHECKING",
 
       L"BEFORE_INSERTING",
       L"AFTER_INSERTING",
@@ -397,10 +398,27 @@ void CQLoaderDlg::InitializeUI()
         }
       }
     }
+    else if (action == EasyTreeCtrl::eNotifyType::BOX_CHECKING)
+    {
+      if (pNode != nullptr && pNode->m_ptr_data != nullptr && pNode->m_ptr_tv != nullptr)
+      {
+        auto ptr_jobject = static_cast<json*>(pNode->m_ptr_data);
+        if (ptr_jobject != nullptr)
+        {
+          auto& jpatch = static_cast<json&>(*ptr_jobject);
+          bool checked = m_mp_tree.GetCheck(pNode->m_ptr_tv->hItem) == BST_CHECKED;
+          jpatch["enabled"] = !checked; // add to json object path if not exists
+          m_mp_tree.SetCheck(pNode->m_ptr_tv->hItem, checked ? BST_UNCHECKED : BST_CHECKED);
+        }
+      }
+    }
 
-    CString s;
-    s.Format(L"`%s` -> %s", actions[int(action)], pNode != nullptr ? pNode->m_name : L"<empty>");
-    OutputDebugStringW(s.GetBuffer());
+    // CString s;
+    // s.Format(L"`%s` -> %s", actions[int(action)], pNode != nullptr ? pNode->m_name : L"<empty>");
+    // OutputDebugStringW(s.GetBuffer());
+    // 
+    // std::ofstream file("test\\dump.json");
+    // file << g_jdata.dump(1, '\t');
 
     return true;
   });
@@ -444,32 +462,43 @@ void CQLoaderDlg::PopulateTree(const std::wstring& file_path)
 
   m_mp_tree.DeleteAllItems();
 
+  m_mp_tree.ModifyStyle(0, TVS_CHECKBOXES);
+
   m_mp_tree.Populate([&](HTREEITEM& root) -> void
   {
+    m_mp_tree.SetItemState(root, 0, TVIS_STATEIMAGEMASK);
+
     auto fn_tree_add_node_str = [&](HTREEITEM& hparent, json& jobject, std::string key) -> HTREEITEM
     {
-      auto hitem  = m_mp_tree.InsertNode(hparent, new jnode_t(key));
+      auto hitem = m_mp_tree.InsertNode(hparent, new jnode_t(key));
+      m_mp_tree.SetItemState(hitem, 0, TVIS_STATEIMAGEMASK);
       auto string = utils::json_get(jobject, key, EMPTY);
-      return m_mp_tree.InsertNode(hitem, new jnode_t(string, &jobject[key]));
+      hitem = m_mp_tree.InsertNode(hitem, new jnode_t(string, &jobject[key]));
+      m_mp_tree.SetItemState(hitem, 0, TVIS_STATEIMAGEMASK);
+      return hitem;
     };
 
     auto fn_tree_add_node_int = [&](HTREEITEM& hparent, json& jobject, std::string key) -> HTREEITEM
     {
-      auto hitem  = m_mp_tree.InsertNode(hparent, new Node(key));
+      auto hitem = m_mp_tree.InsertNode(hparent, new Node(key));
+      m_mp_tree.SetItemState(hitem, 0, TVIS_STATEIMAGEMASK);
       auto number = utils::json_get(jobject, key, 0);
-      return m_mp_tree.InsertNode(hitem, new Node(std::to_string(number), &jobject[key]));
+      hitem = m_mp_tree.InsertNode(hitem, new Node(std::to_string(number), &jobject[key]));
+      m_mp_tree.SetItemState(hitem, 0, TVIS_STATEIMAGEMASK);
+      return hitem;
     };
 
     for (auto& module : g_jdata.items())
     {
       auto hmodule = m_mp_tree.InsertNode(root, new jnode_t(module.key()));
-      assert(hmodule != nullptr);
+      m_mp_tree.SetItemState(hmodule, 0, TVIS_STATEIMAGEMASK);
 
       for (auto& jpatch : module.value())
       {
         auto name = utils::json_get(jpatch, "name", UNNAMED);
         if (auto hpatch = m_mp_tree.InsertNode(hmodule, new jnode_t(name, &jpatch, module.key())))
         {
+          m_mp_tree.SetCheck(hpatch, utils::json_get(jpatch, "enabled", true));
           fn_tree_add_node_str(hpatch, jpatch, "pattern");
           fn_tree_add_node_str(hpatch, jpatch, "replacement");
           fn_tree_add_node_int(hpatch, jpatch, "offset");

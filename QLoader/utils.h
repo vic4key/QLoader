@@ -23,10 +23,17 @@ struct PEB_T
 
 struct jnode_t : public Node
 {
-  jnode_t(const std::string& name, void* ptr_data = nullptr, const std::string& module = "")
-    : Node(name, ptr_data), m_module(module) {}
+  jnode_t(
+    const std::string& name,
+    void* ptr_data = nullptr,
+    const std::string& module = "",
+    const bool enabled = true)
+    : Node(name, ptr_data)
+    , m_module(module)
+    , m_enabled(enabled) {}
 
   std::string m_module;
+  bool m_enabled;
 };
 
 namespace utils

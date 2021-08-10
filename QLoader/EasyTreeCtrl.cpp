@@ -125,22 +125,19 @@ void EasyTreeCtrl::OnSelChanged(NMHDR* pNMHDR, LRESULT* pResult)
 
 void EasyTreeCtrl::OnLClick(NMHDR* pNMHDR, LRESULT* pResult)
 {
-  auto pNMTreeView = (NM_TREEVIEW*)pNMHDR;
-  assert(pNMTreeView != nullptr);
+  *pResult = FALSE;
 
   UINT flags = 0;
   auto pItem = this->GetpItemFocusing(&flags);
   if (pItem != nullptr)
   {
-    this->Select(pItem, TVGN_CARET);
-
     if (flags & TVHT_ONITEMSTATEICON)
     {
+      this->Select(pItem, TVGN_CARET);
       this->Notify(eNotifyType::BOX_CHECKING, pItem);
+      *pResult = TRUE;
     }
   }
-
-  *pResult = TRUE;
 }
 
 void EasyTreeCtrl::OnRClick(NMHDR* pNMHDR, LRESULT* pResult)
