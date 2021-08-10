@@ -300,6 +300,8 @@ void CQLoaderDlg::ResetUI()
   m_pe_dir  = _T("");
   m_mp_path = _T("");
 
+  g_jdata.clear();
+
   m_mp_tree.DeleteAllItems();
   m_log.DeleteAllItems();
 
@@ -310,10 +312,10 @@ void CQLoaderDlg::ResetUI()
 
 void CQLoaderDlg::UpdateUI()
 {
-  if (m_file_paths.empty())
-  {
-    return;
-  }
+  // if (m_file_paths.empty())
+  // {
+  //   return;
+  // }
 
   bool found_exe  = false;
   bool found_json = false;
@@ -343,8 +345,12 @@ void CQLoaderDlg::UpdateUI()
   {
     std::wstring mp_path = m_mp_path.GetBuffer(0);
     assert(vu::IsFileExists(mp_path));
-    this->PopulateTree(mp_path);
+    std::string s = vu::ToStringA(mp_path);
+    std::ifstream fs(s);
+    g_jdata = json::parse(fs);
   }
+
+  this->PopulateTree();
 
   m_launch.EnableWindow(!m_pe_dir.IsEmpty() && !m_pe_path.IsEmpty() && !m_mp_path.IsEmpty());
 
@@ -413,6 +419,8 @@ void CQLoaderDlg::InitializeUI()
       std::string  module_name = pJNode->m_module;
       std::wstring wmodule_name = vu::ToStringW(module_name);
 
+      bool deleted = false;
+
       if (pNode->m_ptr_data != nullptr) // json object patch
       {
         auto ptr_jobject = static_cast<json*>(pNode->m_ptr_data);
@@ -435,6 +443,7 @@ void CQLoaderDlg::InitializeUI()
                 auto line = vu::FormatW(L"Delete the patch `%s` succeed", wpatch_name.c_str());
                 this->AddLog(line, status_t::success);
                 jpatches.erase(it);
+                deleted = true;
                 break;
               }
             }
@@ -443,9 +452,15 @@ void CQLoaderDlg::InitializeUI()
       }
       else if (!pNode->m_name.IsEmpty()) // json object module
       {
-        auto line = vu::FormatW(L"Delete module `%s` succeed", wmodule_name.c_str());
+        auto line = vu::FormatW(L"Delete the module `%s` succeed", wmodule_name.c_str());
         this->AddLog(line, status_t::success);
         g_jdata.erase(module_name);
+        deleted = true;
+      }
+
+      if (deleted)
+      {
+        this->UpdateUI();
       }
     }
     break;
@@ -529,12 +544,12 @@ void CQLoaderDlg::InitializeUI()
   this->SendMessage(WM_SIZE); // request to re-calculate size for window and its controls
 }
 
-void CQLoaderDlg::PopulateTree(const std::wstring& file_path)
+void CQLoaderDlg::PopulateTree()
 {
-  std::string s = vu::ToStringA(file_path);
-  std::ifstream fs(s);
-
-  g_jdata = json::parse(fs);
+  if (g_jdata.is_null())
+  {
+    return;
+  }
 
   m_mp_tree.DeleteAllItems();
 

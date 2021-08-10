@@ -28,7 +28,7 @@ private:
   void ResetUI();
   void UpdateUI();
   void InitializeUI();
-  void PopulateTree(const std::wstring& file_path);
+  void PopulateTree();
 
   bool IsUsableFile(const CString& file_path);
 
