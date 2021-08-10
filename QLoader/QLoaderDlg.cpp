@@ -58,10 +58,7 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
-
 // CQLoaderDlg dialog
-
-
 
 CQLoaderDlg::CQLoaderDlg(CWnd* pParent /*=nullptr*/)
   : CDialogEx(IDD_QICKLOADER_DIALOG, pParent)

@@ -76,7 +76,6 @@ void EasyTreeCtrl::OnContextMenuHandler(UINT ID)
     {
       if (this->Notify(eNotifyType::BEFORE_INSERTING, pItem))
       {
-        // DO NOTHING
         this->Notify(eNotifyType::AFTER_INSERTING, pItem);
       }
     }
