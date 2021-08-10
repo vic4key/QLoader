@@ -359,22 +359,15 @@ void CQLoaderDlg::InitializeUI()
 {
   m_mp_tree.OnNotify([&](EasyTreeCtrl::eNotifyType action, Node* pNode) -> bool
   {
-    wchar_t* actions[] =
+    switch (action)
     {
-      L"SELECTING",
-      L"BOX_CHECKING",
+    case EasyTreeCtrl::eNotifyType::BEFORE_MODIFYING:
+    {
+      return true; // processing
+    }
+    break;
 
-      L"BEFORE_INSERTING",
-      L"AFTER_INSERTING",
-
-      L"BEFORE_MODIFYING",
-      L"AFTER_MODIFYING",
-
-      L"BEFORE_DELETING",
-      L"AFTER_DELETING",
-    };
-
-    if (action == EasyTreeCtrl::eNotifyType::AFTER_MODIFYING)
+    case EasyTreeCtrl::eNotifyType::AFTER_MODIFYING:
     {
       if (pNode != nullptr &&
           pNode->m_ptr_data != nullptr &&
@@ -398,7 +391,69 @@ void CQLoaderDlg::InitializeUI()
         }
       }
     }
-    else if (action == EasyTreeCtrl::eNotifyType::BOX_CHECKING)
+    break;
+
+    case EasyTreeCtrl::eNotifyType::BEFORE_DELETING:
+    {
+      auto pJNode = static_cast<jnode_t*>(pNode);
+      if (pJNode == nullptr || pJNode->m_module.empty())
+      {
+        return false;
+      }
+
+      return true; // processing
+    }
+    break;
+
+    case EasyTreeCtrl::eNotifyType::AFTER_DELETING:
+    {
+      auto pJNode = static_cast<jnode_t*>(pNode);
+      if (pJNode == nullptr || pJNode->m_module.empty())
+      {
+        return false;
+      }
+
+      std::string  module_name = pJNode->m_module;
+      std::wstring wmodule_name = vu::ToStringW(module_name);
+
+      if (pNode->m_ptr_data != nullptr) // json object patch
+      {
+        auto ptr_jobject = static_cast<json*>(pNode->m_ptr_data);
+        if (ptr_jobject != nullptr)
+        {
+          auto& jpatch = static_cast<json&>(*ptr_jobject);
+
+          auto it = g_jdata.find(module_name);
+          if (it != g_jdata.end())
+          {
+            auto& jpatches = *it;
+            for (auto it = jpatches.begin(); it != jpatches.end(); it++)
+            {
+              auto v1 = utils::json_get(*it, "pattern", EMPTY);
+              auto v2 = utils::json_get(jpatch, "pattern", EMPTY);
+              if (v1 == v2)
+              {
+                auto patch_name  = utils::json_get(jpatch, "name", EMPTY);
+                auto wpatch_name = vu::ToStringW(patch_name);
+                auto line = vu::FormatW(L"Delete the patch `%s` succeed", wpatch_name.c_str());
+                this->AddLog(line, status_t::success);
+                jpatches.erase(it);
+                break;
+              }
+            }
+          }
+        }
+      }
+      else if (!pNode->m_name.IsEmpty()) // json object module
+      {
+        auto line = vu::FormatW(L"Delete module `%s` succeed", wmodule_name.c_str());
+        this->AddLog(line, status_t::success);
+        g_jdata.erase(module_name);
+      }
+    }
+    break;
+
+    case EasyTreeCtrl::eNotifyType::BOX_CHECKING:
     {
       if (pNode != nullptr && pNode->m_ptr_data != nullptr && pNode->m_ptr_tv != nullptr)
       {
@@ -412,13 +467,37 @@ void CQLoaderDlg::InitializeUI()
         }
       }
     }
+    break;
 
-    // CString s;
-    // s.Format(L"`%s` -> %s", actions[int(action)], pNode != nullptr ? pNode->m_name : L"<empty>");
-    // OutputDebugStringW(s.GetBuffer());
-    // 
-    // std::ofstream file("test\\dump.json");
-    // file << g_jdata.dump(1, '\t');
+    default: // no handler
+      return false;
+    }
+
+    #ifdef _DEBUG
+
+    const wchar_t* actions[] =
+    {
+      L"SELECTING",
+      L"BOX_CHECKING",
+
+      L"BEFORE_INSERTING",
+      L"AFTER_INSERTING",
+
+      L"BEFORE_MODIFYING",
+      L"AFTER_MODIFYING",
+
+      L"BEFORE_DELETING",
+      L"AFTER_DELETING",
+    };
+
+    CString s;
+    s.Format(L"`%s` -> %s", actions[int(action)], pNode != nullptr ? pNode->m_name.GetBuffer(0) : L"<empty>");
+    OutputDebugStringW(s.GetBuffer());
+    
+    std::ofstream file("test\\dump.json");
+    file << g_jdata.dump(1, '\t');
+
+    #endif // _DEBUG
 
     return true;
   });
@@ -480,17 +559,17 @@ void CQLoaderDlg::PopulateTree(const std::wstring& file_path)
 
     auto fn_tree_add_node_int = [&](HTREEITEM& hparent, json& jobject, std::string key) -> HTREEITEM
     {
-      auto hitem = m_mp_tree.InsertNode(hparent, new Node(key));
+      auto hitem = m_mp_tree.InsertNode(hparent, new jnode_t(key));
       m_mp_tree.SetItemState(hitem, 0, TVIS_STATEIMAGEMASK);
       auto number = utils::json_get(jobject, key, 0);
-      hitem = m_mp_tree.InsertNode(hitem, new Node(std::to_string(number), &jobject[key]));
+      hitem = m_mp_tree.InsertNode(hitem, new jnode_t(std::to_string(number), &jobject[key]));
       m_mp_tree.SetItemState(hitem, 0, TVIS_STATEIMAGEMASK);
       return hitem;
     };
 
     for (auto& module : g_jdata.items())
     {
-      auto hmodule = m_mp_tree.InsertNode(root, new jnode_t(module.key()));
+      auto hmodule = m_mp_tree.InsertNode(root, new jnode_t(module.key(), nullptr, module.key()));
       m_mp_tree.SetItemState(hmodule, 0, TVIS_STATEIMAGEMASK);
 
       for (auto& jpatch : module.value())

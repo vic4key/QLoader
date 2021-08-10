@@ -61,7 +61,7 @@ void EasyTreeCtrl::OnContextMenu(CWnd* pWnd, CPoint point)
   thePopupMenu.CreatePopupMenu();
   // thePopupMenu.AppendMenu(MF_STRING | MF_POPUP, ID_CONTEXT_MENU_INSERT, L"Insert");
   thePopupMenu.AppendMenu(MF_STRING | MF_POPUP, ID_CONTEXT_MENU_MODIFY, L"Modify");
-  // thePopupMenu.AppendMenu(MF_STRING | MF_POPUP, ID_CONTEXT_MENU_DELETE, L"Delete");
+  thePopupMenu.AppendMenu(MF_STRING | MF_POPUP, ID_CONTEXT_MENU_DELETE, L"Delete");
   thePopupMenu.TrackPopupMenu(TPM_LEFTALIGN, point.x, point.y, this);
 }
 
