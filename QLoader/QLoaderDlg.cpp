@@ -290,6 +290,7 @@ void CQLoaderDlg::AddLog(const std::wstring& line, const status_t status)
   lvi.pszText  = const_cast<wchar_t*>(line.c_str());
   int index = m_log.InsertItem(&lvi);
   m_log.SetItemText(index, 1, line.c_str());
+  m_log.EnsureVisible(index, TRUE);
 }
 
 void CQLoaderDlg::ResetUI()
@@ -696,7 +697,10 @@ void CQLoaderDlg::OnBnClickedLaunch()
 
   WaitForInputIdle(pi.hProcess, 1000); // 1s
 
-  this->AddLog(L"Break the process at its entry point succeed", status_t::success);
+  auto fmt = process.Bits() == vu::eXBit::x64 ?
+    L"Break the process at its entry point %016X succeed" : L"Break the process at its entry point %08X succeed";
+  line = vu::FormatW(fmt, process.Bits() == vu::eXBit::x64 ? vu::ulong64(va_oep) : vu::ulong32(va_oep));
+  this->AddLog(line, status_t::success);
 
   // suspend the target process
 
