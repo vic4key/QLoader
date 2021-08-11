@@ -302,9 +302,8 @@ void CQLoaderDlg::ResetUI()
 
   g_jdata.clear();
 
-  m_mp_tree.DeleteAllItems();
+  m_mp_tree.Clear();
   m_log.DeleteAllItems();
-
   m_launch.EnableWindow(FALSE);
 
   UpdateData(FALSE);
@@ -382,14 +381,27 @@ void CQLoaderDlg::InitializeUI()
         auto ptr_jobject = static_cast<json*>(pNode->m_ptr_data);
         if (ptr_jobject != nullptr)
         {
+          bool modified = false;
+
           auto& jobject = static_cast<json&>(*ptr_jobject);
           if (jobject.is_string())
           {
             jobject = value;
+            modified = true;
           }
           else if (jobject.is_number())
           {
             jobject = std::atoi(value.c_str());
+            modified = true;
+          }
+
+          if (modified)
+          {
+            auto hitem = m_mp_tree.GetNextItem(pNode->m_ptr_tv->hItem, TVGN_PARENT);
+            auto hpatch = m_mp_tree.GetNextItem(hitem, TVGN_PARENT);
+            auto wpatch_name = m_mp_tree.GetItemText(hpatch);
+            auto line = vu::FormatW(L"Modify the patch `%s` succeed", wpatch_name.GetBuffer(0));
+            this->AddLog(line, status_t::success);
           }
         }
       }
@@ -472,10 +484,17 @@ void CQLoaderDlg::InitializeUI()
         auto ptr_jobject = static_cast<json*>(pNode->m_ptr_data);
         if (ptr_jobject != nullptr)
         {
-          auto& jpatch = static_cast<json&>(*ptr_jobject);
           bool checked = m_mp_tree.GetCheck(pNode->m_ptr_tv->hItem) == BST_CHECKED;
+
+          auto& jpatch = static_cast<json&>(*ptr_jobject);
           jpatch["enabled"] = !checked; // add to json object path if not exists
           m_mp_tree.SetCheck(pNode->m_ptr_tv->hItem, checked ? BST_UNCHECKED : BST_CHECKED);
+
+          auto patch_name  = utils::json_get(jpatch, "name", EMPTY);
+          auto wpatch_name = vu::ToStringW(patch_name);
+          auto line = vu::FormatW(
+            L"%s the patch `%s` succeed",checked ? L"Disable" : L"Enable", wpatch_name.c_str());
+          this->AddLog(line, status_t::success);
         }
       }
     }
@@ -551,7 +570,7 @@ void CQLoaderDlg::PopulateTree()
     return;
   }
 
-  m_mp_tree.DeleteAllItems();
+  m_mp_tree.Clear();
 
   m_mp_tree.ModifyStyle(0, TVS_CHECKBOXES);
 
@@ -791,6 +810,16 @@ void CQLoaderDlg::OnBnClickedLaunch()
       // extract the offset of patch
 
       const auto offset = utils::json_get(jpatch, "offset", 0);
+
+      // extract the enabled of patch
+
+      const bool enabled = utils::json_get(jpatch, "enabled", true);
+      if (!enabled)
+      {
+        line = vu::FormatW(L"Ignore the patch `%s`", patch_name.c_str());
+        this->AddLog(line, status_t::success);
+        return;
+      }
 
       // search pattern in the module
 

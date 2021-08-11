@@ -55,6 +55,7 @@ public:
   void Populate(std::function<void(HTREEITEM& root)> pfn, const CString& name = L"<root>");
   void Iterate(HTREEITEM pItem, std::function<void(HTREEITEM pItem)> pfn);
   HTREEITEM InsertNode(HTREEITEM& pParent, Node* pNode);
+  void Clear();
 
 public:
   void OnNotify(std::function<bool(eNotifyType action, Node* pNode)> pfn);

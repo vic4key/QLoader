@@ -36,7 +36,7 @@ EasyTreeCtrl::~EasyTreeCtrl()
 
 void EasyTreeCtrl::OnDestroy()
 {
-  this->Cleanup(this->GetRootItem());
+  this->Clear();
 }
 
 void EasyTreeCtrl::OnContextMenu(CWnd* pWnd, CPoint point)
@@ -279,6 +279,12 @@ void EasyTreeCtrl::Cleanup(HTREEITEM pItem)
       delete pNode;
     }
   });
+}
+
+void EasyTreeCtrl::Clear()
+{
+  this->Cleanup(this->GetRootItem());
+  this->DeleteAllItems();
 }
 
 void EasyTreeCtrl::Iterate(HTREEITEM hItem, std::function<void(HTREEITEM pItem)> pfn)
