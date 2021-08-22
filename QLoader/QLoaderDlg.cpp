@@ -22,6 +22,10 @@ static std::string EMPTY = "";
 static std::string UNNAMED = "<unnamed>";
 static std::vector<std::wstring> USABLE_FILE_EXTENSIONS = { L".EXE", L".JSON" };
 
+const int PW_FULLY_LOADED = 0;
+const int PW_AT_OEP       = 1;
+const int PW_UNPACKING    = 2;
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -66,20 +70,22 @@ CQLoaderDlg::CQLoaderDlg(CWnd* pParent /*=nullptr*/)
   , m_pe_dir(_T(""))
   , m_pe_arg(_T(""))
   , m_mp_path(_T(""))
+  , m_patch_when(PW_FULLY_LOADED)
 {
   m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
 void CQLoaderDlg::DoDataExchange(CDataExchange* pDX)
 {
-    __super::DoDataExchange(pDX);
-    DDX_Text(pDX, IDC_PE_NAME, m_pe_name);
-    DDX_Text(pDX, IDC_PE_DIR, m_pe_dir);
-    DDX_Text(pDX, IDC_MP_PATH, m_mp_path);
-    DDX_Text(pDX, IDC_PE_ARG, m_pe_arg);
-    DDX_Control(pDX, IDC_MP_TREE, m_mp_tree);
-    DDX_Control(pDX, IDC_LAUNCH, m_launch);
-    DDX_Control(pDX, IDC_LOG, m_log);
+  __super::DoDataExchange(pDX);
+  DDX_Text(pDX, IDC_PE_NAME, m_pe_name);
+  DDX_Text(pDX, IDC_PE_DIR, m_pe_dir);
+  DDX_Text(pDX, IDC_MP_PATH, m_mp_path);
+  DDX_Text(pDX, IDC_PE_ARG, m_pe_arg);
+  DDX_Control(pDX, IDC_MP_TREE, m_mp_tree);
+  DDX_Control(pDX, IDC_LAUNCH, m_launch);
+  DDX_Control(pDX, IDC_LOG, m_log);
+  DDX_Radio(pDX, IDC_PATCH_WHEN, m_patch_when);
 }
 
 BEGIN_MESSAGE_MAP(CQLoaderDlg, CDialogEx)
