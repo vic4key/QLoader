@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <string>
+#include <vu>
 
 #include "EasyTreeCtrl.h"
 
@@ -41,6 +42,9 @@ private:
   };
 
   void add_log(const std::wstring& line, const status_t status = none);
+
+  vu::ulongptr launch_with_patch_at_oep(
+    vu::ProcessW& process, PROCESS_INFORMATION& pi, std::vector<byte>& ep);
 
   // Implementation
 protected:

@@ -15,8 +15,6 @@
 #include <dbghelp.h>
 #pragma comment(lib,"dbghelp")
 
-#include <vu>
-
 static json g_jdata;
 static std::string EMPTY = "";
 static std::string UNNAMED = "<unnamed>";
@@ -652,10 +650,16 @@ void CQLoaderDlg::OnBnClickedLaunch()
     args = tmp + args;
   }
 
+  vu::uint creation_flags = NORMAL_PRIORITY_CLASS;
+
+  if (m_patch_when == PW_AT_OEP)
+  {
+    creation_flags |= CREATE_SUSPENDED;
+  }
+
   vu::ProcessW process;
   bool created = process.create(
-    file_path.as_string(), m_pe_dir.GetBuffer(0), args,
-    NORMAL_PRIORITY_CLASS | CREATE_SUSPENDED, false, &pi);
+    file_path.as_string(), m_pe_dir.GetBuffer(0), args, creation_flags, false, &pi);
 
   auto process_name = std::wstring(m_pe_name.GetBuffer(0));
   auto line = vu::format(L"Create the process `%s` %s", process_name.c_str(), created ? L"succeed" : L"failed");
@@ -667,60 +671,18 @@ void CQLoaderDlg::OnBnClickedLaunch()
     return;
   }
 
-  // get base address of the target process
+  vu::ulongptr va_oep = 0;
+  std::vector<byte> ep;
 
-  DWORD size = 0;
-  PROCESS_BASIC_INFORMATION pbi = { 0 };
-  NTSTATUS status = NtQueryInformationProcess(
-    pi.hProcess, ProcessBasicInformation, &pbi, sizeof(pbi), &size);
-  assert(NT_SUCCESS(status));
-
-  vu::ulongptr base_address = 0;
-
-  if (process.bit() == vu::eXBit::x64)
+  if (m_patch_when == PW_FULLY_LOADED)
   {
-    PEB_T<vu::pe64> peb;
-    process.read_memory(vu::ulongptr(pbi.PebBaseAddress), &peb, sizeof(peb));
-    base_address = peb.ImageBaseAddress;
+    WaitForInputIdle(pi.hProcess, INFINITE); // waiting for the target process fully loaded on memory
+    this->add_log(L"The created process is fully loaded on memory");
   }
-  else // x86
+  else if (m_patch_when == PW_AT_OEP)
   {
-    PEB_T<vu::pe32> peb;
-    process.read_memory(vu::ulongptr(pbi.PebBaseAddress), &peb, sizeof(peb));
-    base_address = peb.ImageBaseAddress;
+    va_oep = this->launch_with_patch_at_oep(process, pi, ep); // waiting for the target process break at oep
   }
-
-  // get rva original entry point of the target process
-
-  vu::ulongptr rva_oep = 0;
-  {
-    vu::PathW file_path = m_pe_dir.GetBuffer(0);
-    file_path.join(m_pe_name.GetBuffer(0));
-    file_path.finalize();
-
-    auto buffer = vu::FileSystem::quick_read_as_buffer(file_path.as_string());
-    auto ptr_nt_header = ImageNtHeader(buffer.get_ptr());
-    assert(ptr_nt_header != nullptr);
-
-    rva_oep = ptr_nt_header->OptionalHeader.AddressOfEntryPoint;
-  }
-
-  // break the target process at va original entry point then resume and wait for fully loaded on memory
-
-  auto va_oep = base_address + rva_oep;
-
-  std::vector<byte> bp = { 0xEB, 0xFE }, ep(2);
-  process.read_memory(va_oep, ep.data(), ep.size());
-  process.write_memory(va_oep, bp.data(), bp.size());
-
-  ResumeThread(pi.hThread);
-
-  WaitForInputIdle(pi.hProcess, 1000); // 1s
-
-  auto fmt = process.bit() == vu::eXBit::x64 ?
-    L"Break the process at its entry point %016X succeed" : L"Break the process at its entry point %08X succeed";
-  line = vu::format(fmt, process.bit() == vu::eXBit::x64 ? vu::ulong64(va_oep) : vu::ulong32(va_oep));
-  this->add_log(line, status_t::success);
 
   // suspend the target process
 
@@ -879,13 +841,78 @@ void CQLoaderDlg::OnBnClickedLaunch()
     this->add_log(L"Not found any module for patching", status_t::warn);
   }
 
-  // unbeak and resume the target process
-
-  process.write_memory(va_oep, ep.data(), ep.size());
+  if (m_patch_when == PW_AT_OEP)
+  {
+    process.write_memory(va_oep, ep.data(), ep.size()); // restore oep and resume the target process
+  }
 
   ResumeThread(pi.hThread);
 
   this->add_log(L"Resume the process succeed", status_t::success);
 
   this->add_log(L"Finished");
+}
+
+vu::ulongptr CQLoaderDlg::launch_with_patch_at_oep(
+  vu::ProcessW& process, PROCESS_INFORMATION& pi, std::vector<byte>& ep)
+{
+  ep.clear();
+
+  // get base address of the target process
+
+  DWORD size = 0;
+  PROCESS_BASIC_INFORMATION pbi = { 0 };
+  NTSTATUS status = NtQueryInformationProcess(
+    pi.hProcess, ProcessBasicInformation, &pbi, sizeof(pbi), &size);
+  assert(NT_SUCCESS(status));
+
+  vu::ulongptr base_address = 0;
+
+  if (process.bit() == vu::eXBit::x64)
+  {
+    PEB_T<vu::pe64> peb;
+    process.read_memory(vu::ulongptr(pbi.PebBaseAddress), &peb, sizeof(peb));
+    base_address = peb.ImageBaseAddress;
+  }
+  else // x86
+  {
+    PEB_T<vu::pe32> peb;
+    process.read_memory(vu::ulongptr(pbi.PebBaseAddress), &peb, sizeof(peb));
+    base_address = peb.ImageBaseAddress;
+  }
+
+  // get rva original entry point of the target process
+
+  vu::ulongptr rva_oep = 0;
+  {
+    vu::PathW file_path = m_pe_dir.GetBuffer(0);
+    file_path.join(m_pe_name.GetBuffer(0));
+    file_path.finalize();
+
+    auto buffer = vu::FileSystem::quick_read_as_buffer(file_path.as_string());
+    auto ptr_nt_header = ImageNtHeader(buffer.get_ptr());
+    assert(ptr_nt_header != nullptr);
+
+    rva_oep = ptr_nt_header->OptionalHeader.AddressOfEntryPoint;
+  }
+
+  // break the target process at va original entry point then resume and wait for fully loaded on memory
+
+  auto va_oep = base_address + rva_oep;
+
+  std::vector<byte> bp = { 0xEB, 0xFE };
+  ep.resize(bp.size());
+  process.read_memory(va_oep, ep.data(), ep.size());
+  process.write_memory(va_oep, bp.data(), bp.size());
+
+  ResumeThread(pi.hThread);
+
+  WaitForInputIdle(pi.hProcess, 1000); // 1s
+
+  auto fmt = process.bit() == vu::eXBit::x64 ?
+    L"Break the process at its entry point %016X succeed" : L"Break the process at its entry point %08X succeed";
+  auto line = vu::format(fmt, process.bit() == vu::eXBit::x64 ? vu::ulong64(va_oep) : vu::ulong32(va_oep));
+  this->add_log(line, status_t::success);
+
+  return va_oep;
 }
