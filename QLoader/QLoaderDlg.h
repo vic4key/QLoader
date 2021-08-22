@@ -62,6 +62,7 @@ private:
   HICON m_hIcon;
   CString m_pe_name;
   CString m_pe_dir;
+  CString m_pe_arg;
   CString m_mp_path;
   EasyTreeCtrl m_mp_tree;
   CListCtrl m_log;

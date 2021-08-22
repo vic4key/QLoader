@@ -64,6 +64,7 @@ CQLoaderDlg::CQLoaderDlg(CWnd* pParent /*=nullptr*/)
   : CDialogEx(IDD_QICKLOADER_DIALOG, pParent)
   , m_pe_name(_T(""))
   , m_pe_dir(_T(""))
+  , m_pe_arg(_T(""))
   , m_mp_path(_T(""))
 {
   m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -71,13 +72,14 @@ CQLoaderDlg::CQLoaderDlg(CWnd* pParent /*=nullptr*/)
 
 void CQLoaderDlg::DoDataExchange(CDataExchange* pDX)
 {
-  __super::DoDataExchange(pDX);
-  DDX_Text(pDX, IDC_PE_NAME, m_pe_name);
-  DDX_Text(pDX, IDC_PE_DIR, m_pe_dir);
-  DDX_Text(pDX, IDC_MP_PATH, m_mp_path);
-  DDX_Control(pDX, IDC_MP_TREE, m_mp_tree);
-  DDX_Control(pDX, IDC_LAUNCH, m_launch);
-  DDX_Control(pDX, IDC_LOG, m_log);
+    __super::DoDataExchange(pDX);
+    DDX_Text(pDX, IDC_PE_NAME, m_pe_name);
+    DDX_Text(pDX, IDC_PE_DIR, m_pe_dir);
+    DDX_Text(pDX, IDC_MP_PATH, m_mp_path);
+    DDX_Text(pDX, IDC_PE_ARG, m_pe_arg);
+    DDX_Control(pDX, IDC_MP_TREE, m_mp_tree);
+    DDX_Control(pDX, IDC_LAUNCH, m_launch);
+    DDX_Control(pDX, IDC_LOG, m_log);
 }
 
 BEGIN_MESSAGE_MAP(CQLoaderDlg, CDialogEx)
@@ -623,6 +625,8 @@ void CQLoaderDlg::populate_tree()
 
 void CQLoaderDlg::OnBnClickedLaunch()
 {
+  UpdateData();
+
   // create the target process as a suspend process
 
   vu::PathW file_path = m_pe_dir.GetBuffer(0);
@@ -631,9 +635,20 @@ void CQLoaderDlg::OnBnClickedLaunch()
 
   PROCESS_INFORMATION pi = { 0 };
 
+  std::wstring args = m_pe_arg.GetBuffer(0);
+  if (!args.empty())
+  {
+    std::wstring tmp = L"";
+    tmp  = L'\"';
+    tmp += file_path.as_string();
+    tmp += L'\"';
+    tmp += +L' ';
+    args = tmp + args;
+  }
+
   vu::ProcessW process;
   bool created = process.create(
-    file_path.as_string(), m_pe_dir.GetBuffer(0), L"",
+    file_path.as_string(), m_pe_dir.GetBuffer(0), args,
     NORMAL_PRIORITY_CLASS | CREATE_SUSPENDED, false, &pi);
 
   auto process_name = std::wstring(m_pe_name.GetBuffer(0));
