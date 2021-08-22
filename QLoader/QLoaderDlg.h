@@ -25,12 +25,12 @@ protected:
   virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
 
 private:
-  void ResetUI();
-  void UpdateUI();
-  void InitializeUI();
-  void PopulateTree();
+  void reset_ui();
+  void update_ui();
+  void initialize_ui();
+  void populate_tree();
 
-  bool IsUsableFile(const CString& file_path);
+  bool is_usable_file(const CString& file_path);
 
   enum status_t
   {
@@ -40,7 +40,7 @@ private:
     error,
   };
 
-  void AddLog(const std::wstring& line, const status_t status = none);
+  void add_log(const std::wstring& line, const status_t status = none);
 
   // Implementation
 protected:

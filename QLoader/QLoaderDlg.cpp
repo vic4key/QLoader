@@ -130,9 +130,9 @@ BOOL CQLoaderDlg::OnInitDialog()
   // ChangeWindowMessageFilter(WM_DROPFILES, MSGFLT_ADD);
   // __super::DragAcceptFiles();
 
-  this->InitializeUI();
+  this->initialize_ui();
 
-  this->ResetUI();
+  this->reset_ui();
 
   return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -212,7 +212,7 @@ void CQLoaderDlg::OnDropFiles(HDROP hDropInfo)
     CString filePath;
     DWORD filePathLength = MAX_PATH; // DragQueryFile(hDropInfo, 0, nullptr, 0) + 1;
     DragQueryFile(hDropInfo, nIndex, filePath.GetBuffer(filePathLength), filePathLength);
-    if (IsUsableFile(filePath))
+    if (is_usable_file(filePath))
     {
       m_file_paths.push_back(filePath.GetString());
     }
@@ -223,7 +223,7 @@ void CQLoaderDlg::OnDropFiles(HDROP hDropInfo)
 
   __super::OnDropFiles(hDropInfo);
 
-  this->UpdateUI();
+  this->update_ui();
 }
 
 void CQLoaderDlg::OnBnClickedPEOpen()
@@ -238,7 +238,7 @@ void CQLoaderDlg::OnBnClickedPEOpen()
     m_file_paths.push_back(file_path);
   }
 
-  this->UpdateUI();
+  this->update_ui();
 }
 
 void CQLoaderDlg::OnBnClickedMPOpen()
@@ -253,15 +253,15 @@ void CQLoaderDlg::OnBnClickedMPOpen()
     m_file_paths.push_back(file_path);
   }
 
-  this->UpdateUI();
+  this->update_ui();
 }
 
 void CQLoaderDlg::OnBnClickedClear()
 {
-  this->ResetUI();
+  this->reset_ui();
 }
 
-bool CQLoaderDlg::IsUsableFile(const CString& file_path)
+bool CQLoaderDlg::is_usable_file(const CString& file_path)
 {
   // if (filePath.IsEmpty())
   // {
@@ -280,7 +280,7 @@ bool CQLoaderDlg::IsUsableFile(const CString& file_path)
   return true;
 }
 
-void CQLoaderDlg::AddLog(const std::wstring& line, const status_t status)
+void CQLoaderDlg::add_log(const std::wstring& line, const status_t status)
 {
   LVITEM lvi = { 0 };
   lvi.mask = LVIF_IMAGE;
@@ -293,7 +293,7 @@ void CQLoaderDlg::AddLog(const std::wstring& line, const status_t status)
   m_log.EnsureVisible(index, TRUE);
 }
 
-void CQLoaderDlg::ResetUI()
+void CQLoaderDlg::reset_ui()
 {
   m_file_paths.clear();
 
@@ -310,7 +310,7 @@ void CQLoaderDlg::ResetUI()
   UpdateData(FALSE);
 }
 
-void CQLoaderDlg::UpdateUI()
+void CQLoaderDlg::update_ui()
 {
   // if (m_file_paths.empty())
   // {
@@ -350,7 +350,7 @@ void CQLoaderDlg::UpdateUI()
     g_jdata = json::parse(fs);
   }
 
-  this->PopulateTree();
+  this->populate_tree();
 
   m_launch.EnableWindow(!m_pe_dir.IsEmpty() && !m_pe_path.IsEmpty() && !m_mp_path.IsEmpty());
 
@@ -358,7 +358,7 @@ void CQLoaderDlg::UpdateUI()
   RedrawWindow();
 }
 
-void CQLoaderDlg::InitializeUI()
+void CQLoaderDlg::initialize_ui()
 {
   m_mp_tree.OnNotify([&](EasyTreeCtrl::eNotifyType action, Node* pNode) -> bool
   {
@@ -402,7 +402,7 @@ void CQLoaderDlg::InitializeUI()
             auto hpatch = m_mp_tree.GetNextItem(hitem, TVGN_PARENT);
             auto wpatch_name = m_mp_tree.GetItemText(hpatch);
             auto line = vu::format(L"Modify the patch `%s` succeed", wpatch_name.GetBuffer(0));
-            this->AddLog(line, status_t::success);
+            this->add_log(line, status_t::success);
           }
         }
       }
@@ -454,7 +454,7 @@ void CQLoaderDlg::InitializeUI()
                 auto patch_name  = utils::json_get(jpatch, "name", EMPTY);
                 auto wpatch_name = vu::to_string_W(patch_name);
                 auto line = vu::format(L"Delete the patch `%s` succeed", wpatch_name.c_str());
-                this->AddLog(line, status_t::success);
+                this->add_log(line, status_t::success);
                 jpatches.erase(it);
                 deleted = true;
                 break;
@@ -466,14 +466,14 @@ void CQLoaderDlg::InitializeUI()
       else if (!pNode->m_name.IsEmpty()) // json object module
       {
         auto line = vu::format(L"Delete the module `%s` succeed", wmodule_name.c_str());
-        this->AddLog(line, status_t::success);
+        this->add_log(line, status_t::success);
         g_jdata.erase(module_name);
         deleted = true;
       }
 
       if (deleted)
       {
-        this->UpdateUI();
+        this->update_ui();
       }
     }
     break;
@@ -495,7 +495,7 @@ void CQLoaderDlg::InitializeUI()
           auto wpatch_name = vu::to_string_W(patch_name);
           auto line = vu::format(
             L"%s the patch `%s` succeed",checked ? L"Disable" : L"Enable", wpatch_name.c_str());
-          this->AddLog(line, status_t::success);
+          this->add_log(line, status_t::success);
         }
       }
     }
@@ -564,7 +564,7 @@ void CQLoaderDlg::InitializeUI()
   this->SendMessage(WM_SIZE); // request to re-calculate size for window and its controls
 }
 
-void CQLoaderDlg::PopulateTree()
+void CQLoaderDlg::populate_tree()
 {
   if (g_jdata.is_null())
   {
@@ -625,38 +625,29 @@ void CQLoaderDlg::OnBnClickedLaunch()
 {
   // create the target process as a suspend process
 
-  STARTUPINFOW si = { 0 };
-  si.cb = sizeof(si);
-
   PROCESS_INFORMATION pi = { 0 };
 
-  BOOL created = CreateProcessW(
-    m_pe_path.GetBuffer(0),
-    nullptr, nullptr, nullptr,
-    FALSE,
-    NORMAL_PRIORITY_CLASS | CREATE_SUSPENDED,
-    nullptr,
-    m_pe_dir.GetBuffer(0),
-    &si, &pi);
+  vu::ProcessW process;
+  bool created = process.create(
+    m_pe_path.GetBuffer(0), m_pe_dir.GetBuffer(0), L"",
+    NORMAL_PRIORITY_CLASS | CREATE_SUSPENDED, false, &pi);
 
   auto process_name = vu::extract_file_name(m_pe_path.GetBuffer(0));
   auto line = vu::format(L"Create the process `%s` %s", process_name.c_str(), created ? L"succeed" : L"failed");
-  this->AddLog(line, created ? status_t::success : status_t::error);
+  this->add_log(line, created ? status_t::success : status_t::error);
 
   if (!created)
   {
-    this->AddLog(L"Finished");
+    this->add_log(L"Finished");
     return;
   }
-
-  vu::ProcessA process;
-  process.attach(pi.hProcess);
 
   // get base address of the target process
 
   DWORD size = 0;
   PROCESS_BASIC_INFORMATION pbi = { 0 };
-  NTSTATUS status = NtQueryInformationProcess(pi.hProcess, ProcessBasicInformation, &pbi, sizeof(pbi), &size);
+  NTSTATUS status = NtQueryInformationProcess(
+    pi.hProcess, ProcessBasicInformation, &pbi, sizeof(pbi), &size);
   assert(NT_SUCCESS(status));
 
   vu::ulongptr base_address = 0;
@@ -678,11 +669,10 @@ void CQLoaderDlg::OnBnClickedLaunch()
 
   vu::ulongptr rva_oep = 0;
   {
-    std::vector<byte> file;
-    utils::read_file(m_pe_path.GetBuffer(0), file);
-    auto pNTHeaders = ImageNtHeader(file.data());
-    assert(pNTHeaders != nullptr);
-    rva_oep = pNTHeaders->OptionalHeader.AddressOfEntryPoint;
+    auto buffer = vu::FileSystem::quick_read_as_buffer(m_pe_path.GetBuffer(0));
+    auto ptr_nt_header = ImageNtHeader(buffer.get_ptr());
+    assert(ptr_nt_header != nullptr);
+    rva_oep = ptr_nt_header->OptionalHeader.AddressOfEntryPoint;
   }
 
   // break the target process at va original entry point then resume and wait for fully loaded on memory
@@ -700,13 +690,13 @@ void CQLoaderDlg::OnBnClickedLaunch()
   auto fmt = process.bit() == vu::eXBit::x64 ?
     L"Break the process at its entry point %016X succeed" : L"Break the process at its entry point %08X succeed";
   line = vu::format(fmt, process.bit() == vu::eXBit::x64 ? vu::ulong64(va_oep) : vu::ulong32(va_oep));
-  this->AddLog(line, status_t::success);
+  this->add_log(line, status_t::success);
 
   // suspend the target process
 
   SuspendThread(pi.hThread);
 
-  this->AddLog(L"Suspend the process succeed", status_t::success);
+  this->add_log(L"Suspend the process succeed", status_t::success);
 
   // copy the memory image of modules and store to a map
 
@@ -714,22 +704,18 @@ void CQLoaderDlg::OnBnClickedLaunch()
 
   struct module_t
   {
-    vu::MODULEENTRY32 m_me;
+    vu::MODULEENTRY32W m_me;
     std::unique_ptr<vu::byte[]> m_buffer;
   };
 
-  std::map<std::string, module_t> copied_modules;
+  std::map<std::wstring, module_t> copied_modules;
 
   for (auto& item : g_jdata.items())
   {
-    auto it = std::find_if(modules.cbegin(), modules.cend(), [&](const vu::MODULEENTRY32& me) -> bool
+    auto it = std::find_if(modules.cbegin(), modules.cend(), [&](const vu::MODULEENTRY32W& me) -> bool
     {
-      std::string v1 = me.szModule;
-      v1 = vu::lower_string_A(v1);
-
-      std::string v2 = item.key();
-      v2 = vu::lower_string_A(v2);
-
+      std::wstring v1 = me.szModule;
+      std::wstring v2 = vu::to_string_W(item.key());
       return v1 == v2;
     });
 
@@ -738,7 +724,7 @@ void CQLoaderDlg::OnBnClickedLaunch()
       continue;
     }
 
-    auto module_name = vu::lower_string_A(it->szModule);
+    auto module_name = std::wstring(it->szModule);
     auto module_base = vu::ulongptr(it->modBaseAddr);
     auto module_size = it->modBaseSize + 1;
 
@@ -751,7 +737,7 @@ void CQLoaderDlg::OnBnClickedLaunch()
 
     // line = vu::to_string(item.key());
     // line = vu::format(L"Find the module `%s` found", line.c_str());
-    // this->AddLog(line, status_t::success);
+    // this->add_log(line, status_t::success);
   }
 
   if (!copied_modules.empty())
@@ -776,25 +762,24 @@ void CQLoaderDlg::OnBnClickedLaunch()
 
       // find the module of patch
 
-      const std::string module_name = vu::lower_string_A(ptr_jnode->m_module);
-      const std::wstring wmodule_name = vu::to_string_W(module_name);
-      auto it = copied_modules.find(module_name);
+      const std::wstring wmodule_name = vu::to_string_W(ptr_jnode->m_module);
+      auto it = copied_modules.find(wmodule_name);
       if (it == copied_modules.cend())
       {
         line = vu::format(L"Find the module `%s` not found", wmodule_name.c_str());
-        this->AddLog(line, status_t::error);
+        this->add_log(line, status_t::error);
         return;
       }
 
       line = vu::format(L"Find the module `%s` found", wmodule_name.c_str());
-      this->AddLog(line, status_t::success);
+      this->add_log(line, status_t::success);
 
       // extract the name of patch
 
       auto name = utils::json_get(jpatch, "name", UNNAMED);
       std::wstring patch_name = vu::to_string_W(name);
       line = vu::format(L"Try to patch `%s`", patch_name.c_str());
-      this->AddLog(line);
+      this->add_log(line);
 
       // extract the pattern bytes of patch
 
@@ -821,7 +806,7 @@ void CQLoaderDlg::OnBnClickedLaunch()
       if (!enabled)
       {
         line = vu::format(L"Ignore the patch `%s`", patch_name.c_str());
-        this->AddLog(line, status_t::success);
+        this->add_log(line, status_t::success);
         return;
       }
 
@@ -834,12 +819,12 @@ void CQLoaderDlg::OnBnClickedLaunch()
       if (!result.first)
       {
         line = vu::format(L"Find the patch `%s` not found", patch_name.c_str());
-        this->AddLog(line, status_t::error);
+        this->add_log(line, status_t::error);
         return;
       }
 
       line = vu::format(L"Find the patch `%s` found", patch_name.c_str());
-      this->AddLog(line, status_t::success);
+      this->add_log(line, status_t::success);
 
       // patch at the found address with the replacement bytes
 
@@ -856,12 +841,12 @@ void CQLoaderDlg::OnBnClickedLaunch()
         process.bit() == vu::eXBit::x64 ?
           vu::ulong64(found_patch_address) : vu::ulong32(found_patch_address),
         ret ? L"succeed" : L"failed");
-      this->AddLog(line, ret ? status_t::success : status_t::error);
+      this->add_log(line, ret ? status_t::success : status_t::error);
     });
   }
   else
   {
-    this->AddLog(L"Not found any module for patching", status_t::warn);
+    this->add_log(L"Not found any module for patching", status_t::warn);
   }
 
   // unbeak and resume the target process
@@ -870,7 +855,7 @@ void CQLoaderDlg::OnBnClickedLaunch()
 
   ResumeThread(pi.hThread);
 
-  this->AddLog(L"Resume the process succeed", status_t::success);
+  this->add_log(L"Resume the process succeed", status_t::success);
 
-  this->AddLog(L"Finished");
+  this->add_log(L"Finished");
 }

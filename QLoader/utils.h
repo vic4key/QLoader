@@ -58,20 +58,4 @@ value_t json_get(json& jobject, const std::string& name, const value_t def)
   return jobject.contains(name) ? jobject[name].get<value_t>() : def;
 }
 
-void read_file(const std::wstring& file_path, std::vector<byte>& data)
-{
-  FILE* file = nullptr;
-  _wfopen_s(&file, file_path.c_str(), L"rb");
-
-  fseek(file, 0, SEEK_END);
-  size_t file_size = ftell(file);
-  fseek(file, 0, SEEK_SET);
-
-  data.resize(file_size);
-
-  fread(&data[0], 1, data.size(), file);
-
-  fclose(file);
-}
-
 }; // utils
