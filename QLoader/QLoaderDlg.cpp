@@ -269,7 +269,7 @@ bool CQLoaderDlg::IsUsableFile(const CString& file_path)
   // }
 
   std::wstring file_extension = PathFindExtension(file_path);
-  file_extension = vu::UpperString(file_extension);
+  file_extension = vu::upper_string(file_extension);
 
   auto it = std::find(USABLE_FILE_EXTENSIONS.cbegin(), USABLE_FILE_EXTENSIONS.cend(), file_extension);
   if (it == USABLE_FILE_EXTENSIONS.cend())
@@ -323,16 +323,16 @@ void CQLoaderDlg::UpdateUI()
   for (auto& file_path: m_file_paths)
   {
     auto file_path_tmp = file_path;
-    file_path_tmp = vu::UpperString(file_path_tmp);
+    file_path_tmp = vu::upper_string(file_path_tmp);
 
-    if (!found_exe && vu::EndsWith(file_path_tmp, L".EXE"))
+    if (!found_exe && vu::ends_with(file_path_tmp, L".EXE"))
     {
       m_pe_path = file_path.c_str();
-      m_pe_dir  = vu::ExtractFileDirectory(file_path.c_str()).c_str();
+      m_pe_dir  = vu::extract_file_directory(file_path.c_str()).c_str();
       found_exe = true;
     }
 
-    if (!found_json && vu::EndsWith(file_path_tmp, L".JSON"))
+    if (!found_json && vu::ends_with(file_path_tmp, L".JSON"))
     {
       m_mp_path  = file_path.c_str();
       found_json = true;
@@ -344,8 +344,8 @@ void CQLoaderDlg::UpdateUI()
   if (found_json)
   {
     std::wstring mp_path = m_mp_path.GetBuffer(0);
-    assert(vu::IsFileExists(mp_path));
-    std::string s = vu::ToStringA(mp_path);
+    assert(vu::is_file_exists(mp_path));
+    std::string s = vu::to_string_A(mp_path);
     std::ifstream fs(s);
     g_jdata = json::parse(fs);
   }
@@ -377,7 +377,7 @@ void CQLoaderDlg::InitializeUI()
           pNode->m_ptr_tv != nullptr &&
           pNode->m_ptr_tv->pszText)
       {
-        auto value = vu::ToStringA(pNode->m_ptr_tv->pszText);
+        auto value = vu::to_string_A(pNode->m_ptr_tv->pszText);
 
         auto ptr_jobject = static_cast<json*>(pNode->m_ptr_data);
         if (ptr_jobject != nullptr)
@@ -401,7 +401,7 @@ void CQLoaderDlg::InitializeUI()
             auto hitem = m_mp_tree.GetNextItem(pNode->m_ptr_tv->hItem, TVGN_PARENT);
             auto hpatch = m_mp_tree.GetNextItem(hitem, TVGN_PARENT);
             auto wpatch_name = m_mp_tree.GetItemText(hpatch);
-            auto line = vu::FormatW(L"Modify the patch `%s` succeed", wpatch_name.GetBuffer(0));
+            auto line = vu::format(L"Modify the patch `%s` succeed", wpatch_name.GetBuffer(0));
             this->AddLog(line, status_t::success);
           }
         }
@@ -430,7 +430,7 @@ void CQLoaderDlg::InitializeUI()
       }
 
       std::string  module_name = pJNode->m_module;
-      std::wstring wmodule_name = vu::ToStringW(module_name);
+      std::wstring wmodule_name = vu::to_string_W(module_name);
 
       bool deleted = false;
 
@@ -452,8 +452,8 @@ void CQLoaderDlg::InitializeUI()
               if (v1 == v2)
               {
                 auto patch_name  = utils::json_get(jpatch, "name", EMPTY);
-                auto wpatch_name = vu::ToStringW(patch_name);
-                auto line = vu::FormatW(L"Delete the patch `%s` succeed", wpatch_name.c_str());
+                auto wpatch_name = vu::to_string_W(patch_name);
+                auto line = vu::format(L"Delete the patch `%s` succeed", wpatch_name.c_str());
                 this->AddLog(line, status_t::success);
                 jpatches.erase(it);
                 deleted = true;
@@ -465,7 +465,7 @@ void CQLoaderDlg::InitializeUI()
       }
       else if (!pNode->m_name.IsEmpty()) // json object module
       {
-        auto line = vu::FormatW(L"Delete the module `%s` succeed", wmodule_name.c_str());
+        auto line = vu::format(L"Delete the module `%s` succeed", wmodule_name.c_str());
         this->AddLog(line, status_t::success);
         g_jdata.erase(module_name);
         deleted = true;
@@ -492,8 +492,8 @@ void CQLoaderDlg::InitializeUI()
           m_mp_tree.SetCheck(pNode->m_ptr_tv->hItem, checked ? BST_UNCHECKED : BST_CHECKED);
 
           auto patch_name  = utils::json_get(jpatch, "name", EMPTY);
-          auto wpatch_name = vu::ToStringW(patch_name);
-          auto line = vu::FormatW(
+          auto wpatch_name = vu::to_string_W(patch_name);
+          auto line = vu::format(
             L"%s the patch `%s` succeed",checked ? L"Disable" : L"Enable", wpatch_name.c_str());
           this->AddLog(line, status_t::success);
         }
@@ -639,8 +639,8 @@ void CQLoaderDlg::OnBnClickedLaunch()
     m_pe_dir.GetBuffer(0),
     &si, &pi);
 
-  auto process_name = vu::ExtractFileName(m_pe_path.GetBuffer(0));
-  auto line = vu::FormatW(L"Create the process `%s` %s", process_name.c_str(), created ? L"succeed" : L"failed");
+  auto process_name = vu::extract_file_name(m_pe_path.GetBuffer(0));
+  auto line = vu::format(L"Create the process `%s` %s", process_name.c_str(), created ? L"succeed" : L"failed");
   this->AddLog(line, created ? status_t::success : status_t::error);
 
   if (!created)
@@ -649,8 +649,8 @@ void CQLoaderDlg::OnBnClickedLaunch()
     return;
   }
 
-  vu::CProcessA process;
-  process.Attach(pi.hProcess);
+  vu::ProcessA process;
+  process.attach(pi.hProcess);
 
   // get base address of the target process
 
@@ -661,16 +661,16 @@ void CQLoaderDlg::OnBnClickedLaunch()
 
   vu::ulongptr base_address = 0;
 
-  if (process.Bits() == vu::eXBit::x64)
+  if (process.bit() == vu::eXBit::x64)
   {
     PEB_T<vu::pe64> peb;
-    process.Read(vu::ulongptr(pbi.PebBaseAddress), &peb, sizeof(peb));
+    process.read_memory(vu::ulongptr(pbi.PebBaseAddress), &peb, sizeof(peb));
     base_address = peb.ImageBaseAddress;
   }
   else // x86
   {
     PEB_T<vu::pe32> peb;
-    process.Read(vu::ulongptr(pbi.PebBaseAddress), &peb, sizeof(peb));
+    process.read_memory(vu::ulongptr(pbi.PebBaseAddress), &peb, sizeof(peb));
     base_address = peb.ImageBaseAddress;
   }
 
@@ -690,16 +690,16 @@ void CQLoaderDlg::OnBnClickedLaunch()
   auto va_oep = base_address + rva_oep;
 
   std::vector<byte> bp = { 0xEB, 0xFE }, ep(2);
-  process.Read(va_oep, ep.data(), ep.size());
-  process.Write(va_oep, bp.data(), bp.size());
+  process.read_memory(va_oep, ep.data(), ep.size());
+  process.write_memory(va_oep, bp.data(), bp.size());
 
   ResumeThread(pi.hThread);
 
   WaitForInputIdle(pi.hProcess, 1000); // 1s
 
-  auto fmt = process.Bits() == vu::eXBit::x64 ?
+  auto fmt = process.bit() == vu::eXBit::x64 ?
     L"Break the process at its entry point %016X succeed" : L"Break the process at its entry point %08X succeed";
-  line = vu::FormatW(fmt, process.Bits() == vu::eXBit::x64 ? vu::ulong64(va_oep) : vu::ulong32(va_oep));
+  line = vu::format(fmt, process.bit() == vu::eXBit::x64 ? vu::ulong64(va_oep) : vu::ulong32(va_oep));
   this->AddLog(line, status_t::success);
 
   // suspend the target process
@@ -710,7 +710,7 @@ void CQLoaderDlg::OnBnClickedLaunch()
 
   // copy the memory image of modules and store to a map
 
-  const auto& modules = process.GetModules();
+  const auto& modules = process.get_modules();
 
   struct module_t
   {
@@ -725,10 +725,10 @@ void CQLoaderDlg::OnBnClickedLaunch()
     auto it = std::find_if(modules.cbegin(), modules.cend(), [&](const vu::MODULEENTRY32& me) -> bool
     {
       std::string v1 = me.szModule;
-      v1 = vu::LowerStringA(v1);
+      v1 = vu::lower_string_A(v1);
 
       std::string v2 = item.key();
-      v2 = vu::LowerStringA(v2);
+      v2 = vu::lower_string_A(v2);
 
       return v1 == v2;
     });
@@ -738,19 +738,19 @@ void CQLoaderDlg::OnBnClickedLaunch()
       continue;
     }
 
-    auto module_name = vu::LowerStringA(it->szModule);
+    auto module_name = vu::lower_string_A(it->szModule);
     auto module_base = vu::ulongptr(it->modBaseAddr);
     auto module_size = it->modBaseSize + 1;
 
     auto ptr_raw_buffer = new vu::byte[module_size];
-    process.Read(module_base, ptr_raw_buffer, module_size);
+    process.read_memory(module_base, ptr_raw_buffer, module_size);
 
     auto& module = copied_modules[module_name];
     module.m_buffer.reset(ptr_raw_buffer);
     module.m_me = *it;
 
-    // line = vu::ToStringW(item.key());
-    // line = vu::FormatW(L"Find the module `%s` found", line.c_str());
+    // line = vu::to_string(item.key());
+    // line = vu::format(L"Find the module `%s` found", line.c_str());
     // this->AddLog(line, status_t::success);
   }
 
@@ -776,24 +776,24 @@ void CQLoaderDlg::OnBnClickedLaunch()
 
       // find the module of patch
 
-      const std::string module_name = vu::LowerStringA(ptr_jnode->m_module);
-      const std::wstring wmodule_name = vu::ToStringW(module_name);
+      const std::string module_name = vu::lower_string_A(ptr_jnode->m_module);
+      const std::wstring wmodule_name = vu::to_string_W(module_name);
       auto it = copied_modules.find(module_name);
       if (it == copied_modules.cend())
       {
-        line = vu::FormatW(L"Find the module `%s` not found", wmodule_name.c_str());
+        line = vu::format(L"Find the module `%s` not found", wmodule_name.c_str());
         this->AddLog(line, status_t::error);
         return;
       }
 
-      line = vu::FormatW(L"Find the module `%s` found", wmodule_name.c_str());
+      line = vu::format(L"Find the module `%s` found", wmodule_name.c_str());
       this->AddLog(line, status_t::success);
 
       // extract the name of patch
 
       auto name = utils::json_get(jpatch, "name", UNNAMED);
-      std::wstring patch_name = vu::ToStringW(name);
-      line = vu::FormatW(L"Try to patch `%s`", patch_name.c_str());
+      std::wstring patch_name = vu::to_string_W(name);
+      line = vu::format(L"Try to patch `%s`", patch_name.c_str());
       this->AddLog(line);
 
       // extract the pattern bytes of patch
@@ -803,7 +803,7 @@ void CQLoaderDlg::OnBnClickedLaunch()
       // extract the replacement bytes of patch
 
       const auto replacement = utils::json_get(jpatch, "replacement", EMPTY);
-      auto l = vu::SplitStringA(replacement, " ");
+      auto l = vu::split_string_A(replacement, " ");
       std::vector<vu::byte> replacement_bytes;
       for (auto& e : l)
       {
@@ -820,7 +820,7 @@ void CQLoaderDlg::OnBnClickedLaunch()
       const bool enabled = utils::json_get(jpatch, "enabled", true);
       if (!enabled)
       {
-        line = vu::FormatW(L"Ignore the patch `%s`", patch_name.c_str());
+        line = vu::format(L"Ignore the patch `%s`", patch_name.c_str());
         this->AddLog(line, status_t::success);
         return;
       }
@@ -830,15 +830,15 @@ void CQLoaderDlg::OnBnClickedLaunch()
       auto address = static_cast<const void*>(it->second.m_buffer.get());
       auto size = it->second.m_me.modBaseSize;
 
-      auto result = vu::FindPatternA(address, size, pattern);
+      auto result = vu::find_pattern_A(address, size, pattern);
       if (!result.first)
       {
-        line = vu::FormatW(L"Find the patch `%s` not found", patch_name.c_str());
+        line = vu::format(L"Find the patch `%s` not found", patch_name.c_str());
         this->AddLog(line, status_t::error);
         return;
       }
 
-      line = vu::FormatW(L"Find the patch `%s` found", patch_name.c_str());
+      line = vu::format(L"Find the patch `%s` found", patch_name.c_str());
       this->AddLog(line, status_t::success);
 
       // patch at the found address with the replacement bytes
@@ -847,13 +847,13 @@ void CQLoaderDlg::OnBnClickedLaunch()
       found_patch_address += result.second;
       found_patch_address += offset;
 
-      bool ret = process.Write(found_patch_address, replacement_bytes.data(), replacement_bytes.size());
+      bool ret = process.write_memory(found_patch_address, replacement_bytes.data(), replacement_bytes.size());
 
-      line = vu::FormatW(
-        process.Bits() == vu::eXBit::x64 ?
+      line = vu::format(
+        process.bit() == vu::eXBit::x64 ?
           L"Patch `%s` at %016X %s" : L"Patch `%s` at %08X %s",
         patch_name.c_str(),
-        process.Bits() == vu::eXBit::x64 ?
+        process.bit() == vu::eXBit::x64 ?
           vu::ulong64(found_patch_address) : vu::ulong32(found_patch_address),
         ret ? L"succeed" : L"failed");
       this->AddLog(line, ret ? status_t::success : status_t::error);
@@ -866,7 +866,7 @@ void CQLoaderDlg::OnBnClickedLaunch()
 
   // unbeak and resume the target process
 
-  process.Write(va_oep, ep.data(), ep.size());
+  process.write_memory(va_oep, ep.data(), ep.size());
 
   ResumeThread(pi.hThread);
 
