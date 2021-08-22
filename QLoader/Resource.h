@@ -8,7 +8,7 @@
 #define IDD_QICKLOADER_DIALOG           102
 #define IDR_MAINFRAME                   128
 #define IDB_LOG_SMALL                   129
-#define IDC_PE_PATH                     1000
+#define IDC_PE_NAME                     1000
 #define IDC_PE_DIR                      1001
 #define IDC_PE_AUTO                     1002
 #define IDC_MP_PATH                     1003

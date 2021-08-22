@@ -62,7 +62,7 @@ END_MESSAGE_MAP()
 
 CQLoaderDlg::CQLoaderDlg(CWnd* pParent /*=nullptr*/)
   : CDialogEx(IDD_QICKLOADER_DIALOG, pParent)
-  , m_pe_path(_T(""))
+  , m_pe_name(_T(""))
   , m_pe_dir(_T(""))
   , m_mp_path(_T(""))
 {
@@ -72,7 +72,7 @@ CQLoaderDlg::CQLoaderDlg(CWnd* pParent /*=nullptr*/)
 void CQLoaderDlg::DoDataExchange(CDataExchange* pDX)
 {
   __super::DoDataExchange(pDX);
-  DDX_Text(pDX, IDC_PE_PATH, m_pe_path);
+  DDX_Text(pDX, IDC_PE_NAME, m_pe_name);
   DDX_Text(pDX, IDC_PE_DIR, m_pe_dir);
   DDX_Text(pDX, IDC_MP_PATH, m_mp_path);
   DDX_Control(pDX, IDC_MP_TREE, m_mp_tree);
@@ -209,14 +209,14 @@ void CQLoaderDlg::OnDropFiles(HDROP hDropInfo)
   UINT nFilesDropped = DragQueryFile(hDropInfo, 0xFFFFFFFF, nullptr, 0);
   for (UINT nIndex = 0; nIndex < nFilesDropped; ++nIndex)
   {
-    CString filePath;
-    DWORD filePathLength = MAX_PATH; // DragQueryFile(hDropInfo, 0, nullptr, 0) + 1;
-    DragQueryFile(hDropInfo, nIndex, filePath.GetBuffer(filePathLength), filePathLength);
-    if (is_usable_file(filePath))
+    CString file_path;
+    DWORD file_path_length = MAX_PATH; // DragQueryFile(hDropInfo, 0, nullptr, 0) + 1;
+    DragQueryFile(hDropInfo, nIndex, file_path.GetBuffer(file_path_length), file_path_length);
+    if (is_usable_file(file_path))
     {
-      m_file_paths.push_back(filePath.GetString());
+      m_file_paths.push_back(file_path.GetString());
     }
-    filePath.ReleaseBuffer();
+    file_path.ReleaseBuffer();
   }
 
   DragFinish(hDropInfo);
@@ -297,7 +297,7 @@ void CQLoaderDlg::reset_ui()
 {
   m_file_paths.clear();
 
-  m_pe_path = _T("");
+  m_pe_name = _T("");
   m_pe_dir  = _T("");
   m_mp_path = _T("");
 
@@ -327,7 +327,7 @@ void CQLoaderDlg::update_ui()
 
     if (!found_exe && vu::ends_with(file_path_tmp, L".EXE"))
     {
-      m_pe_path = file_path.c_str();
+      m_pe_name = vu::extract_file_name(file_path.c_str()).c_str();
       m_pe_dir  = vu::extract_file_directory(file_path.c_str()).c_str();
       found_exe = true;
     }
@@ -352,7 +352,7 @@ void CQLoaderDlg::update_ui()
 
   this->populate_tree();
 
-  m_launch.EnableWindow(!m_pe_dir.IsEmpty() && !m_pe_path.IsEmpty() && !m_mp_path.IsEmpty());
+  m_launch.EnableWindow(!m_pe_dir.IsEmpty() && !m_pe_name.IsEmpty() && !m_mp_path.IsEmpty());
 
   UpdateData(FALSE);
   RedrawWindow();
@@ -625,14 +625,18 @@ void CQLoaderDlg::OnBnClickedLaunch()
 {
   // create the target process as a suspend process
 
+  vu::PathW file_path = m_pe_dir.GetBuffer(0);
+  file_path.join(m_pe_name.GetBuffer(0));
+  file_path.finalize();
+
   PROCESS_INFORMATION pi = { 0 };
 
   vu::ProcessW process;
   bool created = process.create(
-    m_pe_path.GetBuffer(0), m_pe_dir.GetBuffer(0), L"",
+    file_path.as_string(), m_pe_dir.GetBuffer(0), L"",
     NORMAL_PRIORITY_CLASS | CREATE_SUSPENDED, false, &pi);
 
-  auto process_name = vu::extract_file_name(m_pe_path.GetBuffer(0));
+  auto process_name = std::wstring(m_pe_name.GetBuffer(0));
   auto line = vu::format(L"Create the process `%s` %s", process_name.c_str(), created ? L"succeed" : L"failed");
   this->add_log(line, created ? status_t::success : status_t::error);
 
@@ -669,9 +673,14 @@ void CQLoaderDlg::OnBnClickedLaunch()
 
   vu::ulongptr rva_oep = 0;
   {
-    auto buffer = vu::FileSystem::quick_read_as_buffer(m_pe_path.GetBuffer(0));
+    vu::PathW file_path = m_pe_dir.GetBuffer(0);
+    file_path.join(m_pe_name.GetBuffer(0));
+    file_path.finalize();
+
+    auto buffer = vu::FileSystem::quick_read_as_buffer(file_path.as_string());
     auto ptr_nt_header = ImageNtHeader(buffer.get_ptr());
     assert(ptr_nt_header != nullptr);
+
     rva_oep = ptr_nt_header->OptionalHeader.AddressOfEntryPoint;
   }
 

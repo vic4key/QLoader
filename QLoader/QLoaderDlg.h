@@ -60,7 +60,7 @@ protected:
 
 private:
   HICON m_hIcon;
-  CString m_pe_path;
+  CString m_pe_name;
   CString m_pe_dir;
   CString m_mp_path;
   EasyTreeCtrl m_mp_tree;
