@@ -18,7 +18,7 @@
 static json g_jdata;
 static std::string EMPTY = "";
 static std::string UNNAMED = "<unnamed>";
-static std::vector<std::wstring> USABLE_FILE_EXTENSIONS = { L".EXE", L".JSON" };
+static std::vector<std::wstring> USABLE_FILE_EXTENSIONS = { L".EXE", L".LNK", L".JSON"};
 
 const int PW_FULLY_LOADED = 0;
 const int PW_AT_OEP       = 1;
@@ -78,8 +78,8 @@ void CQLoaderDlg::DoDataExchange(CDataExchange* pDX)
   __super::DoDataExchange(pDX);
   DDX_Text(pDX, IDC_PE_NAME, m_pe_name);
   DDX_Text(pDX, IDC_PE_DIR, m_pe_dir);
-  DDX_Text(pDX, IDC_MP_PATH, m_mp_path);
   DDX_Text(pDX, IDC_PE_ARG, m_pe_arg);
+  DDX_Text(pDX, IDC_MP_PATH, m_mp_path);
   DDX_Control(pDX, IDC_MP_TREE, m_mp_tree);
   DDX_Control(pDX, IDC_LAUNCH, m_launch);
   DDX_Control(pDX, IDC_LOG, m_log);
@@ -305,6 +305,7 @@ void CQLoaderDlg::reset_ui()
 
   m_pe_name = _T("");
   m_pe_dir  = _T("");
+  m_pe_arg  = _T("");
   m_mp_path = _T("");
 
   g_jdata.clear();
@@ -323,31 +324,43 @@ void CQLoaderDlg::update_ui()
   //   return;
   // }
 
-  bool found_exe  = false;
-  bool found_json = false;
+  bool found_target = false;
+  bool found_pattern = false;
 
   for (auto& file_path: m_file_paths)
   {
     auto file_path_tmp = file_path;
     file_path_tmp = vu::upper_string(file_path_tmp);
 
-    if (!found_exe && vu::ends_with(file_path_tmp, L".EXE"))
+    if (!found_target && vu::ends_with(file_path_tmp, L".LNK"))
+    {
+      auto ptr_lnk = vu::parse_shortcut_lnk(this->GetSafeHwnd(), file_path);
+      if (ptr_lnk != nullptr)
+      {
+        m_pe_name = vu::extract_file_name(ptr_lnk->path).c_str();
+        m_pe_dir  = ptr_lnk->directory.c_str();
+        m_pe_arg  = ptr_lnk->argument.c_str();
+        found_target = true;
+      }
+    }
+
+    if (!found_target && vu::ends_with(file_path_tmp, L".EXE"))
     {
       m_pe_name = vu::extract_file_name(file_path.c_str()).c_str();
       m_pe_dir  = vu::extract_file_directory(file_path.c_str()).c_str();
-      found_exe = true;
+      found_target = true;
     }
 
-    if (!found_json && vu::ends_with(file_path_tmp, L".JSON"))
+    if (!found_pattern && vu::ends_with(file_path_tmp, L".JSON"))
     {
       m_mp_path  = file_path.c_str();
-      found_json = true;
+      found_pattern = true;
     }
   }
 
   m_file_paths.clear();
 
-  if (found_json)
+  if (found_pattern)
   {
     std::wstring mp_path = m_mp_path.GetBuffer(0);
     assert(vu::is_file_exists(mp_path));
