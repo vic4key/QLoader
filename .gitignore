@@ -21,9 +21,7 @@
 *.ncb
 *.o
 *.a
-*.lib
 *.obj
-*.dll
 *.exe
 *.sys
 *.pyc
