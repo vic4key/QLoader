@@ -89,18 +89,18 @@ void EasyTreeCtrl::OnContextMenuHandler(UINT ID)
 
   case ID_CONTEXT_MENU_DELETE:
     {
-      auto pNode = reinterpret_cast<Node*>(this->GetItemData(pItem));
-
       if (this->Notify(eNotifyType::BEFORE_DELETING, pItem))
       {
+        auto pNode = reinterpret_cast<Node*>(this->GetItemData(pItem));
+
         this->Cleanup(this->GetChildItem(pItem)); // cleanup all child items before deleting
         this->DeleteItem(pItem);
         this->Notify(eNotifyType::AFTER_DELETING, pNode);
-      }
 
-      if (pNode != nullptr) // after notify after deleting, cleanup the item
-      {
-        delete pNode;
+        if (pNode != nullptr) // after notify after deleting, cleanup the item
+        {
+          delete pNode;
+        }
       }
     }
     break;
