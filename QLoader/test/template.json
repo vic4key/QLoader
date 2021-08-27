@@ -14,13 +14,6 @@
 					"enabled": false
 				},
 				{
-					"name": "patch 4",
-					"pattern": "77 88",
-					"replacement": "78 87",
-					"offset": 5,
-					"enabled": false
-				},
-				{
 					"name": "patch 2",
 					"pattern": "33 44",
 					"replacement": "34 43",

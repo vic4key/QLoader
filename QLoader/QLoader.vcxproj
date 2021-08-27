@@ -200,12 +200,12 @@
     <ClInclude Include="EasyTreeCtrl.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="QLoader.h" />
     <ClInclude Include="QLoaderApp.h" />
     <ClInclude Include="QLoaderDlg.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="types.h" />
-    <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EasyTreeCtrl.cpp" />
@@ -215,6 +215,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="QLoader.cpp" />
     <ClCompile Include="QLoaderApp.cpp" />
     <ClCompile Include="QLoaderDlg.cpp" />
   </ItemGroup>

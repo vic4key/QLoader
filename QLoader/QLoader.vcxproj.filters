@@ -54,10 +54,10 @@
     <ClInclude Include="3rdparty\nlohmann\fifo_map.hpp">
       <Filter>3rdparty\nlohmann\include</Filter>
     </ClInclude>
-    <ClInclude Include="utils.h">
+    <ClInclude Include="types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="types.h">
+    <ClInclude Include="QLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -73,6 +73,9 @@
     </ClCompile>
     <ClCompile Include="EasyTreeCtrl.cpp">
       <Filter>reuse</Filter>
+    </ClCompile>
+    <ClCompile Include="QLoader.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

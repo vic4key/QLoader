@@ -4,14 +4,18 @@
 
 #pragma once
 
-#include <vector>
-#include <string>
-#include <vu>
-
+#include "QLoader.h"
 #include "EasyTreeCtrl.h"
 
+struct jnode_t : public Node
+{
+  jnode_t(const std::string& name, void* ptr = nullptr, json* ptr_parent = nullptr)
+    : Node(name, ptr), m_ptr_parent(ptr_parent) {}
+  json* m_ptr_parent;
+};
+
 // CQLoaderDlg dialog
-class CQLoaderDlg : public CDialogEx
+class CQLoaderDlg : public CDialogEx, public QLoader
 {
   // Construction
 public:
@@ -31,20 +35,7 @@ private:
   void initialize_ui();
   void populate_tree();
 
-  bool is_usable_file(const CString& file_path);
-
-  enum status_t
-  {
-    none,
-    success,
-    warn,
-    error,
-  };
-
-  void add_log(const std::wstring& line, const status_t status = none);
-
-  vu::ulongptr launch_with_patch_at_oep(
-    vu::ProcessW& process, PROCESS_INFORMATION& pi, std::vector<byte>& ep);
+  virtual void add_log(const std::wstring& line, const status_t status = status_t::none);
 
   // Implementation
 protected:
