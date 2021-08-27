@@ -712,6 +712,8 @@ void CQLoaderDlg::OnBnClickedLaunch()
     return;
   }
 
+  // select the patching mode
+
   vu::ulongptr va_oep = 0;
   std::vector<byte> ep;
 
@@ -731,9 +733,9 @@ void CQLoaderDlg::OnBnClickedLaunch()
 
   this->add_log(L"Suspend the process succeed", status_t::success);
 
-  // copy the memory image of modules and store to a map
+  // find and copy the loaded module in the target process and store them into a map
 
-  const auto& modules = process.get_modules();
+  const auto& in_target_modules = process.get_modules();
 
   struct module_t
   {
@@ -746,7 +748,8 @@ void CQLoaderDlg::OnBnClickedLaunch()
   const auto& jmodules = g_jdata["modules"];
   for (const auto& jmodule : jmodules)
   {
-    auto it = std::find_if(modules.cbegin(), modules.cend(), [&](const vu::MODULEENTRY32W& me) -> bool
+    auto it = std::find_if(in_target_modules.cbegin(), in_target_modules.cend(),
+    [&](const vu::MODULEENTRY32W& me) -> bool
     {
       std::string v1 = vu::to_string_A(me.szModule);
       v1 = vu::lower_string_A(v1);
@@ -757,10 +760,12 @@ void CQLoaderDlg::OnBnClickedLaunch()
       return v1 == v2;
     });
 
-    if (it == modules.cend())
+    if (it == in_target_modules.cend())
     {
       continue;
     }
+
+    // store the found module in the target process
 
     auto module_name = vu::lower_string_W(std::wstring(it->szModule));
     auto module_base = vu::ulongptr(it->modBaseAddr);
@@ -772,10 +777,6 @@ void CQLoaderDlg::OnBnClickedLaunch()
     auto& module = copied_modules[module_name];
     module.m_buffer.reset(ptr_raw_buffer);
     module.m_me = *it;
-
-    // line = vu::to_string(item.key());
-    // line = vu::format(L"Find the module `%s` found", line.c_str());
-    // this->add_log(line, status_t::success);
   }
 
   if (!copied_modules.empty())
@@ -877,7 +878,8 @@ void CQLoaderDlg::OnBnClickedLaunch()
         found_patch_address += result.second;
         found_patch_address += offset;
 
-        bool ret = process.write_memory(found_patch_address, replacement_bytes.data(), replacement_bytes.size());
+        bool ret = process.write_memory(
+          found_patch_address, replacement_bytes.data(), replacement_bytes.size());
 
         line = vu::format(
           process.bit() == vu::eXBit::x64 ?
