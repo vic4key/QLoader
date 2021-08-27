@@ -23,17 +23,9 @@ struct PEB_T
 
 struct jnode_t : public Node
 {
-  jnode_t(
-    const std::string& name,
-    void* ptr_data = nullptr,
-    const std::string& module = "",
-    const bool enabled = true)
-    : Node(name, ptr_data)
-    , m_module(module)
-    , m_enabled(enabled) {}
-
-  std::string m_module;
-  bool m_enabled;
+  jnode_t(const std::string& name, void* ptr = nullptr, json* ptr_parent = nullptr)
+    : Node(name, ptr), m_ptr_parent(ptr_parent) {}
+  json* m_ptr_parent;
 };
 
 namespace utils
@@ -53,7 +45,7 @@ json* to_ptr_json(ptr_t ptr)
 }
 
 template <typename value_t>
-value_t json_get(json& jobject, const std::string& name, const value_t def)
+value_t json_get(const json& jobject, const std::string& name, const value_t def)
 {
   return jobject.contains(name) ? jobject[name].get<value_t>() : def;
 }

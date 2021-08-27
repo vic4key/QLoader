@@ -1,43 +1,60 @@
 {
-	"user32.dll":
-	[
+	"name": "this is a name",
+	"brief": "this is a brief",
+	"modules": [
 		{
-			"name": "patch 1",
-			"pattern": "11 22",
-			"replacement": "12 21",
-			"offset": 1,
-			"enabled": false
+			"name": "user32.dll",
+			"enabled": true,
+			"patches": [
+				{
+					"name": "patch 1",
+					"pattern": "11 22",
+					"replacement": "12 21",
+					"offset": 1,
+					"enabled": false
+				},
+				{
+					"name": "patch 4",
+					"pattern": "77 88",
+					"replacement": "78 87",
+					"offset": 5,
+					"enabled": false
+				},
+				{
+					"name": "patch 2",
+					"pattern": "33 44",
+					"replacement": "34 43",
+					"offset": 2,
+					"enabled": true
+				}
+			]
 		},
 		{
-			"name": "patch 2",
-			"pattern": "33 44",
-			"replacement": "34 43",
-			"offset": 2,
-			"enabled": true
-		}
-	],
-	"kernel32.dll":
-	[
-		{
-			"name": "patch 3",
-			"pattern": "55 66",
-			"replacement": "56 65",
-			"offset": 3,
-			"enabled": true
-		},
-		{
-			"name": "patch 4",
-			"pattern": "77 88",
-			"replacement": "78 87",
-			"offset": 4,
-			"enabled": false
-		},
-		{
-			"name": "patch 5",
-			"pattern": "99 00",
-			"replacement": "90 09",
-			"offset": 5,
-			"enabled": true
+			"name": "kernel32.dll",
+			"enabled": false,
+			"patches": [
+				{
+					"name": "patch 3",
+					"pattern": "55 66",
+					"replacement": "56 65",
+					"offset": 3,
+					"enabled": true
+				},
+				{
+					"name": "patch 4",
+					"pattern": "77 88",
+					"replacement": "78 87",
+					"offset": 4,
+					"enabled": false
+				},
+				{
+					"name": "patch 5",
+					"pattern": "99 00",
+					"replacement": "90 09",
+					"offset": 5,
+					"enabled": true
+				}
+			]
 		}
 	]
 }

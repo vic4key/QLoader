@@ -385,7 +385,11 @@ void CQLoaderDlg::initialize_ui()
     {
     case EasyTreeCtrl::eNotifyType::BEFORE_MODIFYING:
     {
-      return true; // processing
+      auto ptr_jnode = static_cast<jnode_t*>(pNode);
+      return // continue processing if data node
+        ptr_jnode != nullptr &&
+        ptr_jnode->m_ptr_data != nullptr &&
+        ptr_jnode->m_ptr_tv->state & TVIS_STATEIMAGEMASK;
     }
     break;
 
@@ -396,31 +400,31 @@ void CQLoaderDlg::initialize_ui()
           pNode->m_ptr_tv != nullptr &&
           pNode->m_ptr_tv->pszText)
       {
-        auto value = vu::to_string_A(pNode->m_ptr_tv->pszText);
-
         auto ptr_jobject = static_cast<json*>(pNode->m_ptr_data);
         if (ptr_jobject != nullptr)
         {
+          auto new_value = vu::to_string_A(pNode->m_ptr_tv->pszText);
+          auto old_value = EMPTY;
+
           bool modified = false;
 
           auto& jobject = static_cast<json&>(*ptr_jobject);
           if (jobject.is_string())
           {
-            jobject = value;
+            old_value = jobject.get<std::string>();
+            jobject = new_value;
             modified = true;
           }
           else if (jobject.is_number())
           {
-            jobject = std::atoi(value.c_str());
+            old_value = std::to_string(jobject.get<int>());
+            jobject = std::atoi(new_value.c_str());
             modified = true;
           }
 
           if (modified)
           {
-            auto hitem = m_mp_tree.GetNextItem(pNode->m_ptr_tv->hItem, TVGN_PARENT);
-            auto hpatch = m_mp_tree.GetNextItem(hitem, TVGN_PARENT);
-            auto wpatch_name = m_mp_tree.GetItemText(hpatch);
-            auto line = vu::format(L"Modify the patch `%s` succeed", wpatch_name.GetBuffer(0));
+            auto line = vu::format(L"Modify `%S` to `%S` succeed", old_value.c_str(), new_value.c_str());
             this->add_log(line, status_t::success);
           }
         }
@@ -430,90 +434,107 @@ void CQLoaderDlg::initialize_ui()
 
     case EasyTreeCtrl::eNotifyType::BEFORE_DELETING:
     {
-      auto pJNode = static_cast<jnode_t*>(pNode);
-      if (pJNode == nullptr || pJNode->m_module.empty())
-      {
-        return false;
-      }
-
-      return true; // processing
+      auto ptr_jnode = static_cast<jnode_t*>(pNode);
+      return // continue processing if data node
+        ptr_jnode != nullptr &&
+        ptr_jnode->m_ptr_data != nullptr &&
+        ptr_jnode->m_ptr_tv->state & TVIS_STATEIMAGEMASK;
     }
     break;
 
     case EasyTreeCtrl::eNotifyType::AFTER_DELETING:
     {
-      auto pJNode = static_cast<jnode_t*>(pNode);
-      if (pJNode == nullptr || pJNode->m_module.empty())
+      auto ptr_jnode = static_cast<jnode_t*>(pNode);
+      if (ptr_jnode == nullptr)
       {
         return false;
       }
 
-      std::string  module_name = pJNode->m_module;
-      std::wstring wmodule_name = vu::to_string_W(module_name);
+      assert(pNode->m_ptr_data != nullptr);
 
-      bool deleted = false;
-
-      if (pNode->m_ptr_data != nullptr) // json object patch
+      auto ptr_jobject = static_cast<json*>(pNode->m_ptr_data);
+      if (ptr_jobject != nullptr)
       {
-        auto ptr_jobject = static_cast<json*>(pNode->m_ptr_data);
-        if (ptr_jobject != nullptr)
-        {
-          auto& jpatch = static_cast<json&>(*ptr_jobject);
+        auto  ptr_jparent = static_cast<jnode_t*>(pNode)->m_ptr_parent;
+        auto& jparent = static_cast<json&>(*ptr_jparent);
+        auto& jobject = static_cast<json&>(*ptr_jobject);
 
-          auto it = g_jdata.find(module_name);
-          if (it != g_jdata.end())
+        bool  deleted = false;
+        json* ptr_jitems = nullptr;
+
+        auto& jmodules  = g_jdata["modules"];
+        auto  item_name = jobject.get<std::string>();
+
+        const auto fn_find_and_delete = [&](json& jitems, const std::string& item, bool patch)
+        {
+          for (auto it = jitems.begin(); it != jitems.end(); it++)
           {
-            auto& jpatches = *it;
-            for (auto it = jpatches.begin(); it != jpatches.end(); it++)
+            auto& jitem = *it;
+
+            bool checked = true;
+            if (patch)
             {
-              auto v1 = utils::json_get(*it, "pattern", EMPTY);
-              auto v2 = utils::json_get(jpatch, "pattern", EMPTY);
-              if (v1 == v2)
-              {
-                auto patch_name  = utils::json_get(jpatch, "name", EMPTY);
-                auto wpatch_name = vu::to_string_W(patch_name);
-                auto line = vu::format(L"Delete the patch `%s` succeed", wpatch_name.c_str());
-                this->add_log(line, status_t::success);
-                jpatches.erase(it);
-                deleted = true;
-                break;
-              }
+              checked &= jitem["pattern"] == jparent["pattern"];
+              checked &= jitem["replacement"] == jparent["replacement"];
+              checked &= jitem["offset"] == jparent["offset"];
+            }
+
+            auto key = utils::json_get(jitem, "name", EMPTY);
+            if (key != EMPTY && item != EMPTY && item == key && checked)
+            {
+              jitems.erase(it);
+              return true;
+            }
+          }
+
+          return false; 
+        };
+
+        if (jparent.find("offset") != jparent.end()) // delete a patch
+        {
+          for (auto& jmodule : jmodules)
+          {
+            if (fn_find_and_delete(jmodule["patches"], item_name, true))
+            {
+              deleted = true;
+              break;
             }
           }
         }
-      }
-      else if (!pNode->m_name.IsEmpty()) // json object module
-      {
-        auto line = vu::format(L"Delete the module `%s` succeed", wmodule_name.c_str());
-        this->add_log(line, status_t::success);
-        g_jdata.erase(module_name);
-        deleted = true;
-      }
+        else // delete a module
+        {
+          deleted = fn_find_and_delete(jmodules, item_name, false);
+        }
 
-      if (deleted)
-      {
-        this->update_ui();
+        if (deleted)
+        {
+          auto line = vu::format(L"Delete `%S` succeed", item_name.c_str());
+          this->add_log(line, status_t::success);
+
+          this->update_ui();
+        }
       }
     }
     break;
 
     case EasyTreeCtrl::eNotifyType::BOX_CHECKING:
     {
-      if (pNode != nullptr && pNode->m_ptr_data != nullptr && pNode->m_ptr_tv != nullptr)
+      if (pNode != nullptr &&
+          pNode->m_ptr_data != nullptr &&
+          pNode->m_ptr_tv != nullptr)
       {
         auto ptr_jobject = static_cast<json*>(pNode->m_ptr_data);
         if (ptr_jobject != nullptr)
         {
-          bool checked = m_mp_tree.GetCheck(pNode->m_ptr_tv->hItem) == BST_CHECKED;
+          auto  ptr_jparent = static_cast<jnode_t*>(pNode)->m_ptr_parent;
+          auto& jparent = static_cast<json&>(*ptr_jparent);
 
-          auto& jpatch = static_cast<json&>(*ptr_jobject);
-          jpatch["enabled"] = !checked; // add to json object path if not exists
+          bool checked = m_mp_tree.GetCheck(pNode->m_ptr_tv->hItem) == BST_CHECKED;
+          jparent["enabled"] = !checked; // this will add to json object if not exists
           m_mp_tree.SetCheck(pNode->m_ptr_tv->hItem, checked ? BST_UNCHECKED : BST_CHECKED);
 
-          auto patch_name  = utils::json_get(jpatch, "name", EMPTY);
-          auto wpatch_name = vu::to_string_W(patch_name);
-          auto line = vu::format(
-            L"%s the patch `%s` succeed",checked ? L"Disable" : L"Enable", wpatch_name.c_str());
+          auto line = vu::to_string_W(utils::json_get(jparent, "name", EMPTY));
+          line = vu::format(L"%s `%s` succeed", checked ? L"Disable" : L"Enable", line.c_str());
           this->add_log(line, status_t::success);
         }
       }
@@ -603,7 +624,7 @@ void CQLoaderDlg::populate_tree()
       auto hitem = m_mp_tree.InsertNode(hparent, new jnode_t(key));
       m_mp_tree.SetItemState(hitem, 0, TVIS_STATEIMAGEMASK);
       auto string = utils::json_get(jobject, key, EMPTY);
-      hitem = m_mp_tree.InsertNode(hitem, new jnode_t(string, &jobject[key]));
+      hitem = m_mp_tree.InsertNode(hitem, new jnode_t(string, &jobject[key], &jobject));
       m_mp_tree.SetItemState(hitem, 0, TVIS_STATEIMAGEMASK);
       return hitem;
     };
@@ -613,20 +634,27 @@ void CQLoaderDlg::populate_tree()
       auto hitem = m_mp_tree.InsertNode(hparent, new jnode_t(key));
       m_mp_tree.SetItemState(hitem, 0, TVIS_STATEIMAGEMASK);
       auto number = utils::json_get(jobject, key, 0);
-      hitem = m_mp_tree.InsertNode(hitem, new jnode_t(std::to_string(number), &jobject[key]));
+      hitem = m_mp_tree.InsertNode(hitem, new jnode_t(std::to_string(number), &jobject[key], &jobject));
       m_mp_tree.SetItemState(hitem, 0, TVIS_STATEIMAGEMASK);
       return hitem;
     };
 
-    for (auto& module : g_jdata.items())
-    {
-      auto hmodule = m_mp_tree.InsertNode(root, new jnode_t(module.key(), nullptr, module.key()));
-      m_mp_tree.SetItemState(hmodule, 0, TVIS_STATEIMAGEMASK);
+    auto& jmodules = g_jdata["modules"];
+    assert(jmodules.is_array());
 
-      for (auto& jpatch : module.value())
+    for (auto& jmodule : jmodules)
+    {
+      auto module_name = utils::json_get(jmodule, "name", EMPTY);
+      auto hmodule = m_mp_tree.InsertNode(root, new jnode_t(module_name, &jmodule["name"], &jmodule));
+      m_mp_tree.SetCheck(hmodule, utils::json_get(jmodule, "enabled", true));
+
+      auto& jpatches = jmodule["patches"];
+      assert(jpatches.is_array());
+
+      for (auto& jpatch : jpatches)
       {
-        auto name = utils::json_get(jpatch, "name", UNNAMED);
-        if (auto hpatch = m_mp_tree.InsertNode(hmodule, new jnode_t(name, &jpatch, module.key())))
+        auto patch_name = utils::json_get(jpatch, "name", UNNAMED);
+        if (auto hpatch = m_mp_tree.InsertNode(hmodule, new jnode_t(patch_name, &jpatch["name"], &jpatch)))
         {
           m_mp_tree.SetCheck(hpatch, utils::json_get(jpatch, "enabled", true));
           fn_tree_add_node_str(hpatch, jpatch, "pattern");
@@ -715,12 +743,17 @@ void CQLoaderDlg::OnBnClickedLaunch()
 
   std::map<std::wstring, module_t> copied_modules;
 
-  for (auto& item : g_jdata.items())
+  const auto& jmodules = g_jdata["modules"];
+  for (const auto& jmodule : jmodules)
   {
     auto it = std::find_if(modules.cbegin(), modules.cend(), [&](const vu::MODULEENTRY32W& me) -> bool
     {
-      std::wstring v1 = me.szModule;
-      std::wstring v2 = vu::to_string_W(item.key());
+      std::string v1 = vu::to_string_A(me.szModule);
+      v1 = vu::lower_string_A(v1);
+
+      std::string v2 = utils::json_get(jmodule, "name", EMPTY);
+      v2 = vu::lower_string_A(v2);
+
       return v1 == v2;
     });
 
@@ -729,7 +762,7 @@ void CQLoaderDlg::OnBnClickedLaunch()
       continue;
     }
 
-    auto module_name = std::wstring(it->szModule);
+    auto module_name = vu::lower_string_W(std::wstring(it->szModule));
     auto module_base = vu::ulongptr(it->modBaseAddr);
     auto module_size = it->modBaseSize + 1;
 
@@ -747,107 +780,115 @@ void CQLoaderDlg::OnBnClickedLaunch()
 
   if (!copied_modules.empty())
   {
-    // iterate all patches and patch them all in the target process
+    // iterate all modules
 
-    m_mp_tree.Iterate(m_mp_tree.GetRootItem(), [&](HTREEITEM pItem) -> void
+    const auto& jmodules = g_jdata["modules"];
+    for (const auto& jmodule : jmodules) // iterate all modules
     {
-      auto ptr_jnode = reinterpret_cast<jnode_t*>(m_mp_tree.GetItemData(pItem));
-      auto ptr_json = utils::to_ptr_json(ptr_jnode);
-      if (ptr_json == nullptr) // must be json binding
+      const auto module_name = vu::to_string_W(utils::json_get(jmodule, "name", EMPTY));
+      if (module_name.empty())
       {
-        return;
+        continue;
       }
 
-      if (!ptr_json->is_object()) // must be json object (json object patch)
-      {
-        return;
-      }
+      // ignore the disable module
 
-      auto& jpatch = *ptr_json;
-
-      // find the module of patch
-
-      const std::wstring wmodule_name = vu::to_string_W(ptr_jnode->m_module);
-      auto it = copied_modules.find(wmodule_name);
-      if (it == copied_modules.cend())
-      {
-        line = vu::format(L"Find the module `%s` not found", wmodule_name.c_str());
-        this->add_log(line, status_t::error);
-        return;
-      }
-
-      line = vu::format(L"Find the module `%s` found", wmodule_name.c_str());
-      this->add_log(line, status_t::success);
-
-      // extract the name of patch
-
-      auto name = utils::json_get(jpatch, "name", UNNAMED);
-      std::wstring patch_name = vu::to_string_W(name);
-      line = vu::format(L"Try to patch `%s`", patch_name.c_str());
-      this->add_log(line);
-
-      // extract the pattern bytes of patch
-
-      const auto pattern = utils::json_get(jpatch, "pattern", EMPTY);
-
-      // extract the replacement bytes of patch
-
-      const auto replacement = utils::json_get(jpatch, "replacement", EMPTY);
-      auto l = vu::split_string_A(replacement, " ");
-      std::vector<vu::byte> replacement_bytes;
-      for (auto& e : l)
-      {
-        auto v = vu::byte(std::stoi(e, nullptr, 16));
-        replacement_bytes.push_back(v);
-      }
-
-      // extract the offset of patch
-
-      const auto offset = utils::json_get(jpatch, "offset", 0);
-
-      // extract the enabled of patch
-
-      const bool enabled = utils::json_get(jpatch, "enabled", true);
+      bool enabled = utils::json_get(jmodule, "enabled", true);
       if (!enabled)
       {
-        line = vu::format(L"Ignore the patch `%s`", patch_name.c_str());
-        this->add_log(line, status_t::success);
-        return;
+        auto line = vu::format(L"Ignore the module `%s`", module_name.c_str());
+        this->add_log(line, status_t::warn);
+        continue;
       }
 
-      // search pattern in the module
+      // ignore the not found module
 
-      auto address = static_cast<const void*>(it->second.m_buffer.get());
-      auto size = it->second.m_me.modBaseSize;
-
-      auto result = vu::find_pattern_A(address, size, pattern);
-      if (!result.first)
+      auto it = copied_modules.find(vu::lower_string_W(module_name));
+      if (it == copied_modules.cend()) // find the module of patch
       {
-        line = vu::format(L"Find the patch `%s` not found", patch_name.c_str());
+        auto line = vu::format(L"Find the module `%s` not found", module_name.c_str());
         this->add_log(line, status_t::error);
-        return;
+        continue;
       }
 
-      line = vu::format(L"Find the patch `%s` found", patch_name.c_str());
-      this->add_log(line, status_t::success);
+      // iterate all patches
 
-      // patch at the found address with the replacement bytes
+      const auto& jpatches = jmodule["patches"];
+      for (const auto& jpatch : jpatches)
+      {
+        auto line = vu::format(L"Find the module `%s` found", module_name.c_str());
+        this->add_log(line, status_t::success);
 
-      auto found_patch_address = vu::ulongptr(it->second.m_me.modBaseAddr);
-      found_patch_address += result.second;
-      found_patch_address += offset;
+        // extract the name of patch
 
-      bool ret = process.write_memory(found_patch_address, replacement_bytes.data(), replacement_bytes.size());
+        auto name = utils::json_get(jpatch, "name", UNNAMED);
+        std::wstring patch_name = vu::to_string_W(name);
+        line = vu::format(L"Try to patch `%s`", patch_name.c_str());
+        this->add_log(line);
 
-      line = vu::format(
-        process.bit() == vu::eXBit::x64 ?
-          L"Patch `%s` at %016X %s" : L"Patch `%s` at %08X %s",
-        patch_name.c_str(),
-        process.bit() == vu::eXBit::x64 ?
-          vu::ulong64(found_patch_address) : vu::ulong32(found_patch_address),
-        ret ? L"succeed" : L"failed");
-      this->add_log(line, ret ? status_t::success : status_t::error);
-    });
+        // extract the pattern bytes of patch
+
+        const auto pattern = utils::json_get(jpatch, "pattern", EMPTY);
+
+        // extract the replacement bytes of patch
+
+        const auto replacement = utils::json_get(jpatch, "replacement", EMPTY);
+        auto l = vu::split_string_A(replacement, " ");
+        std::vector<vu::byte> replacement_bytes;
+        for (auto& e : l)
+        {
+          auto v = vu::byte(std::stoi(e, nullptr, 16));
+          replacement_bytes.push_back(v);
+        }
+
+        // extract the offset of patch
+
+        const auto offset = utils::json_get(jpatch, "offset", 0);
+
+        // extract the enabled of patch
+
+        const bool enabled = utils::json_get(jpatch, "enabled", true);
+        if (!enabled)
+        {
+          auto line = vu::format(L"Ignore the patch `%s`", patch_name.c_str());
+          this->add_log(line, status_t::warn);
+          continue;
+        }
+
+        // search pattern in the module
+
+        auto address = static_cast<const void*>(it->second.m_buffer.get());
+        auto size = it->second.m_me.modBaseSize;
+
+        auto result = vu::find_pattern_A(address, size, pattern);
+        if (!result.first)
+        {
+          auto line = vu::format(L"Find the patch `%s` not found", patch_name.c_str());
+          this->add_log(line, status_t::error);
+          continue;
+        }
+
+        line = vu::format(L"Find the patch `%s` found", patch_name.c_str());
+        this->add_log(line, status_t::success);
+
+        // patch at the found address with the replacement bytes
+
+        auto found_patch_address = vu::ulongptr(it->second.m_me.modBaseAddr);
+        found_patch_address += result.second;
+        found_patch_address += offset;
+
+        bool ret = process.write_memory(found_patch_address, replacement_bytes.data(), replacement_bytes.size());
+
+        line = vu::format(
+          process.bit() == vu::eXBit::x64 ?
+            L"Patch `%s` at %016X %s" : L"Patch `%s` at %08X %s",
+          patch_name.c_str(),
+          process.bit() == vu::eXBit::x64 ?
+            vu::ulong64(found_patch_address) : vu::ulong32(found_patch_address),
+          ret ? L"succeed" : L"failed");
+        this->add_log(line, ret ? status_t::success : status_t::error);
+      }
+    }
   }
   else
   {
