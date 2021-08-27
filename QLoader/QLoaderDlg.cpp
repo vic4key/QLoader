@@ -4,7 +4,7 @@
 
 #include "pch.h"
 #include "framework.h"
-#include "QLoader.h"
+#include "QLoaderApp.h"
 #include "QLoaderDlg.h"
 #include "afxdialogex.h"
 #include "utils.h"

@@ -4,7 +4,7 @@
 
 #include "pch.h"
 #include "framework.h"
-#include "QLoader.h"
+#include "QLoaderApp.h"
 #include "QLoaderDlg.h"
 
 #ifdef _DEBUG

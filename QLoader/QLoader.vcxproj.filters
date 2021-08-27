@@ -27,7 +27,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="QLoader.h">
+    <ClInclude Include="QLoaderApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="QLoaderDlg.h">
@@ -62,7 +62,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="QLoader.cpp">
+    <ClCompile Include="QLoaderApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="QLoaderDlg.cpp">
