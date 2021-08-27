@@ -246,7 +246,7 @@ void CQLoaderDlg::OnBnClickedMPOpen()
 
 void CQLoaderDlg::OnBnClickedClear()
 {
-  this->reset_ui();
+  m_log.DeleteAllItems();
 }
 
 void CQLoaderDlg::add_log(const std::wstring& line, const status_t status)
@@ -555,7 +555,7 @@ void CQLoaderDlg::initialize_ui()
   lvc.mask = LVCF_FMT | LVCF_TEXT | LVCF_WIDTH;
   lvc.fmt = LVCFMT_LEFT;
   lvc.cx = DEFAULT_COLUMN_WIDTH;
-  lvc.pszText = L"?";
+  lvc.pszText = L"#";
   m_log.InsertColumn(0, &lvc);
 
   lvc.mask = LVCF_FMT | LVCF_TEXT | LVCF_WIDTH;
