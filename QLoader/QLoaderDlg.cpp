@@ -218,11 +218,11 @@ void CQLoaderDlg::OnBnClickedPEOpen()
 {
   m_file_paths.clear();
 
-  CString filter = L"PE Files (*.exe)|*.exe|All Files (*.*)|*.*||";
-  CFileDialog dialog(TRUE, nullptr, nullptr, OFN_HIDEREADONLY | OFN_FILEMUSTEXIST, filter, this);
-  if (dialog.DoModal() == IDOK)
+  std::wstring file_path;
+  const auto file_filter = L"EXE File\0*.exe\0All Files (*.*)\0*.*\0";
+  vu::Picker picker(this->GetSafeHwnd());
+  if (picker.choose_file(vu::Picker::action_t::open, file_path, L"", file_filter))
   {
-    std::wstring file_path = dialog.GetPathName();
     m_file_paths.push_back(file_path);
   }
 
@@ -233,11 +233,11 @@ void CQLoaderDlg::OnBnClickedMPOpen()
 {
   m_file_paths.clear();
 
-  CString filter = L"MP Files (*.json)|*.json|All Files (*.*)|*.*||";
-  CFileDialog dialog(TRUE, nullptr, nullptr, OFN_HIDEREADONLY | OFN_FILEMUSTEXIST, filter, this);
-  if (dialog.DoModal() == IDOK)
+  std::wstring file_path;
+  const auto file_filter = L"JSON File\0*.json\0All Files (*.*)\0*.*\0";
+  vu::Picker picker(this->GetSafeHwnd());
+  if (picker.choose_file(vu::Picker::action_t::open, file_path, L"", file_filter))
   {
-    std::wstring file_path = dialog.GetPathName();
     m_file_paths.push_back(file_path);
   }
 
