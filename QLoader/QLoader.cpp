@@ -5,10 +5,10 @@
 #include <psapi.h>
 
 #include <winternl.h>
-#pragma comment(lib,"ntdll")
+#pragma comment(lib, "ntdll")
 
 #include <dbghelp.h>
-#pragma comment(lib,"dbghelp")
+#pragma comment(lib, "dbghelp")
 
 static json g_mp_jdata;
 static const std::vector<std::wstring> USABLE_FILE_EXTENSIONS = { L".EXE", L".LNK", L".JSON" };
@@ -21,7 +21,7 @@ QLoader::~QLoader()
 {
 }
 
-bool QLoader::usable_file(const std::wstring& file_path)
+bool QLoader::file_supported(const std::wstring& file_path)
 {
   if (file_path.empty())
   {

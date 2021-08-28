@@ -200,7 +200,7 @@ void CQLoaderDlg::OnDropFiles(HDROP hDropInfo)
     CString file_path;
     DWORD file_path_length = MAX_PATH; // DragQueryFile(hDropInfo, 0, nullptr, 0) + 1;
     DragQueryFile(hDropInfo, nIndex, file_path.GetBuffer(file_path_length), file_path_length);
-    if (usable_file(file_path.GetBuffer(0)))
+    if (file_supported(file_path.GetBuffer(0)))
     {
       m_file_paths.push_back(file_path.GetString());
     }

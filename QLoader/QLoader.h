@@ -27,7 +27,7 @@ public:
     unpacking,
   };
 
-  virtual bool usable_file(const std::wstring& file_path);
+  virtual bool file_supported(const std::wstring& file_path);
 
   virtual void add_log(const std::wstring& line, const status_t status = status_t::none);
 
@@ -37,8 +37,11 @@ public:
     const std::wstring& pe_file_name,
     const std::wstring& pe_args);
 
-  virtual vu::ulongptr launch_with_patch_at_oep(
-    vu::ProcessW& process, PROCESS_INFORMATION& pi, std::vector<byte>& ep);
+private:
+  vu::ulongptr launch_with_patch_at_oep(
+    vu::ProcessW& process,
+    PROCESS_INFORMATION& pi,
+    std::vector<byte>& ep);
 
 protected:
   json& m_mp_jdata;
