@@ -12,7 +12,7 @@
 #define new DEBUG_NEW
 #endif
 
-// CAboutDlg dialog used for App About
+// CAboutDlg dialog
 
 class CAboutDlg : public CDialogEx
 {
@@ -138,10 +138,6 @@ void CQLoaderDlg::OnSysCommand(UINT nID, LPARAM lParam)
   }
 }
 
-// If you add a minimize button to your dialog, you will need the code below
-//  to draw the icon.  For MFC applications using the document/view model,
-//  this is automatically done for you by the framework.
-
 void CQLoaderDlg::OnPaint()
 {
   if (IsIconic())
@@ -167,8 +163,6 @@ void CQLoaderDlg::OnPaint()
   }
 }
 
-// The system calls this function to obtain the cursor to display while the user drags
-//  the minimized window.
 HCURSOR CQLoaderDlg::OnQueryDragIcon()
 {
   return static_cast<HCURSOR>(m_hIcon);
