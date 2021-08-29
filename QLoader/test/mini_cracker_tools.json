@@ -2,8 +2,8 @@
 	"modules":
 	[
 		{
-			"name": "Mini_Cracker_Tools_Enabled_Register.exe",
-			"patches": 
+			"name": "Mini_Cracker_Tools.exe",
+			"patches":
 			[
 				{
 					"name": "license",

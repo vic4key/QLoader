@@ -319,11 +319,10 @@ vu::ulongptr QLoader::launch_with_patch_at_oep(
 
   vu::ulongptr rva_oep = 0;
   {
-    wchar_t pe_file_path[MAX_PATH] = { 0 };
-    GetModuleFileNameExW(process.handle(), nullptr, pe_file_path, ARRAYSIZE(pe_file_path));
+    std::vector<vu::byte> buffer;
+    vu::read_file_binary(process.get_path(), buffer);
 
-    auto buffer = vu::FileSystem::quick_read_as_buffer(pe_file_path);
-    auto ptr_nt_header = ImageNtHeader(buffer.get_ptr());
+    auto ptr_nt_header = ImageNtHeader(buffer.data());
     assert(ptr_nt_header != nullptr);
 
     rva_oep = ptr_nt_header->OptionalHeader.AddressOfEntryPoint;
@@ -331,7 +330,7 @@ vu::ulongptr QLoader::launch_with_patch_at_oep(
 
   // break the target process at va original entry point then resume and wait for fully loaded on memory
 
-  auto va_oep = base_address + rva_oep;
+  const auto va_oep = base_address + rva_oep;
 
   std::vector<byte> bp = { 0xEB, 0xFE };
   ep.resize(bp.size());

@@ -1,7 +1,8 @@
 {
 	"name": "this is a name",
 	"brief": "this is a brief",
-	"modules": [
+	"modules":
+	[
 		{
 			"name": "user32.dll",
 			"enabled": true,
@@ -25,7 +26,8 @@
 		{
 			"name": "kernel32.dll",
 			"enabled": false,
-			"patches": [
+			"patches":
+			[
 				{
 					"name": "patch 3",
 					"pattern": "55 66",
