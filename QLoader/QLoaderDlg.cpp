@@ -64,9 +64,10 @@ void CQLoaderDlg::DoDataExchange(CDataExchange* pDX)
   DDX_Text(pDX, IDC_PE_ARG, m_pe_arg);
   DDX_Text(pDX, IDC_MP_PATH, m_mp_path);
   DDX_Control(pDX, IDC_MP_TREE, m_mp_tree);
-  DDX_Control(pDX, IDC_LAUNCH, m_launch);
-  DDX_Control(pDX, IDC_LOG, m_log);
+  DDX_Control(pDX, IDC_MP_SAVE, m_button_mp_save);
+  DDX_Control(pDX, IDC_LAUNCH, m_button_launch);
   DDX_Radio(pDX, IDC_PATCH_WHEN, m_patch_when);
+  DDX_Control(pDX, IDC_LOG, m_log);
 }
 
 BEGIN_MESSAGE_MAP(CQLoaderDlg, CDialogEx)
@@ -77,6 +78,7 @@ BEGIN_MESSAGE_MAP(CQLoaderDlg, CDialogEx)
   ON_WM_DROPFILES()
   ON_BN_CLICKED(IDC_PE_OPEN, &OnBnClickedPEOpen)
   ON_BN_CLICKED(IDC_MP_OPEN, &OnBnClickedMPOpen)
+  ON_BN_CLICKED(IDC_MP_SAVE, &OnBnClickedMPSave)
   ON_BN_CLICKED(IDC_CLEAR, &OnBnClickedClear)
   ON_BN_CLICKED(IDC_LAUNCH, &OnBnClickedLaunch)
 END_MESSAGE_MAP()
@@ -238,6 +240,33 @@ void CQLoaderDlg::OnBnClickedMPOpen()
   this->update_ui();
 }
 
+void CQLoaderDlg::OnBnClickedMPSave()
+{
+  std::wstring file_path = m_mp_path.GetBuffer(0);
+  const auto file_filter = L"JSON File\0*.json\0All Files (*.*)\0*.*\0";
+  vu::Picker picker(this->GetSafeHwnd());
+  if (picker.choose_file(vu::Picker::action_t::save, file_path, L"", file_filter))
+  {
+    try
+    {
+      std::ofstream ofs;
+      ofs.open(file_path);
+      ofs << m_mp_jdata.dump(1, '\t');
+      ofs.close();
+
+      auto file_name = vu::extract_file_name(file_path);
+      auto line = vu::format(L"Save MP data to `%s` succeed", file_name.c_str());
+      this->add_log(line, QLoader::status_t::success);
+    }
+    catch (...)
+    {
+      auto file_name = vu::extract_file_name(file_path);
+      auto line = vu::format(L"Save MP data to `%s` failed", file_name.c_str());
+      this->add_log(line, QLoader::status_t::error);
+    }
+  }
+}
+
 void CQLoaderDlg::OnBnClickedClear()
 {
   m_log.DeleteAllItems();
@@ -266,10 +295,10 @@ void CQLoaderDlg::reset_ui()
   m_mp_path = _T("");
 
   m_mp_jdata.clear();
-
   m_mp_tree.Clear();
   m_log.DeleteAllItems();
-  m_launch.EnableWindow(FALSE);
+  m_button_mp_save.EnableWindow(FALSE);
+  m_button_launch.EnableWindow(FALSE);
 
   UpdateData(FALSE);
 }
@@ -328,7 +357,8 @@ void CQLoaderDlg::update_ui()
 
   this->populate_tree();
 
-  m_launch.EnableWindow(!m_pe_dir.IsEmpty() && !m_pe_name.IsEmpty() && !m_mp_path.IsEmpty());
+  m_button_mp_save.EnableWindow(!m_mp_path.IsEmpty());
+  m_button_launch.EnableWindow(!m_pe_dir.IsEmpty() && !m_pe_name.IsEmpty() && !m_mp_path.IsEmpty());
 
   UpdateData(FALSE);
   RedrawWindow();
@@ -628,5 +658,6 @@ void CQLoaderDlg::populate_tree()
 void CQLoaderDlg::OnBnClickedLaunch()
 {
   UpdateData();
-  this->launch(launch_t(m_patch_when), m_pe_dir.GetBuffer(0), m_pe_name.GetBuffer(0), m_pe_arg.GetBuffer(0));
+  this->launch(
+    launch_t(m_patch_when), m_pe_dir.GetBuffer(0), m_pe_name.GetBuffer(0), m_pe_arg.GetBuffer(0));
 }

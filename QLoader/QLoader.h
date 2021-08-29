@@ -39,9 +39,7 @@ public:
 
 private:
   vu::ulongptr launch_with_patch_at_oep(
-    vu::ProcessW& process,
-    PROCESS_INFORMATION& pi,
-    std::vector<byte>& ep);
+    vu::ProcessW& process, PROCESS_INFORMATION& pi, std::vector<byte>& ep);
 
 protected:
   json& m_mp_jdata;

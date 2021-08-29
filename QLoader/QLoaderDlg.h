@@ -49,6 +49,7 @@ protected:
   // Generated user message map functions
   afx_msg void OnBnClickedPEOpen();
   afx_msg void OnBnClickedMPOpen();
+  afx_msg void OnBnClickedMPSave();
   afx_msg void OnBnClickedClear();
   afx_msg void OnBnClickedLaunch();
   DECLARE_MESSAGE_MAP()
@@ -60,9 +61,10 @@ private:
   CString m_pe_arg;
   CString m_mp_path;
   int m_patch_when;
-  EasyTreeCtrl m_mp_tree;
   CListCtrl m_log;
-  CButton m_launch;
+  EasyTreeCtrl m_mp_tree;
+  CButton m_button_mp_save;
+  CButton m_button_launch;
 
 private:
   std::vector<std::wstring> m_file_paths;
