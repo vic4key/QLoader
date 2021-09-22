@@ -9,14 +9,14 @@
 			"patches": [
 				{
 					"name": "patch 1",
-					"pattern": "11 22",
+					"pattern": "11 22 ?? 44",
 					"replacement": "12 21",
 					"offset": 1,
 					"enabled": false
 				},
 				{
 					"name": "patch 2",
-					"pattern": "33 44",
+					"pattern": "33 44 ?? ?? 77",
 					"replacement": "34 43",
 					"offset": 2,
 					"enabled": true
@@ -44,7 +44,7 @@
 				},
 				{
 					"name": "patch 5",
-					"pattern": "99 00",
+					"pattern": "99 ?? AA BB CC DD FF",
 					"replacement": "90 09",
 					"offset": 5,
 					"enabled": true

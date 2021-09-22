@@ -205,25 +205,6 @@ void QLoader::launch(
         line = vu::format(L"Try to patch `%s`", patch_name.c_str());
         this->add_log(line);
 
-        // extract the pattern bytes of patch
-
-        const auto pattern = json_get(jpatch, "pattern", EMPTY);
-
-        // extract the replacement bytes of patch
-
-        const auto replacement = json_get(jpatch, "replacement", EMPTY);
-        auto l = vu::split_string_A(replacement, " ");
-        std::vector<vu::byte> replacement_bytes;
-        for (auto& e : l)
-        {
-          auto v = vu::byte(std::stoi(e, nullptr, 16));
-          replacement_bytes.push_back(v);
-        }
-
-        // extract the offset of patch
-
-        const auto offset = json_get(jpatch, "offset", 0);
-
         // extract the enabled of patch
 
         const bool enabled = json_get(jpatch, "enabled", true);
@@ -233,6 +214,22 @@ void QLoader::launch(
           this->add_log(line, status_t::warn);
           continue;
         }
+
+        // extract the pattern bytes of patch
+
+        const auto pattern = json_get(jpatch, "pattern", EMPTY);
+        assert(!pattern.empty());
+
+        // extract the replacement bytes of patch
+
+        const auto replacement = json_get(jpatch, "replacement", EMPTY);
+        std::vector<vu::byte> replacement_bytes;
+        vu::to_hex_bytes_A(replacement, replacement_bytes);
+        assert(!replacement_bytes.empty());
+
+        // extract the offset of patch
+
+        const auto offset = json_get(jpatch, "offset", 0);
 
         // search pattern in the module
 
@@ -256,8 +253,7 @@ void QLoader::launch(
         found_patch_address += result.second;
         found_patch_address += offset;
 
-        bool ret = process.write_memory(
-          found_patch_address, replacement_bytes.data(), replacement_bytes.size());
+        bool ret = process.write_memory(found_patch_address, replacement_bytes.data(), replacement_bytes.size());
 
         line = vu::format(
           process.bit() == vu::eXBit::x64 ?
