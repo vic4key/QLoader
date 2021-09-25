@@ -669,5 +669,22 @@ void CQLoaderDlg::OnBnClicked_Launch()
 
 void CQLoaderDlg::OnBnClicked_Export()
 {
+  // UpdateData();
+  // 
+  // auto export_dir = std::wstring(CSC_DESKTOP);
+  // auto target = vu::get_current_file_path_W();
+  // auto start_in = vu::get_current_directory_W();
+  // auto shortcut_key = MAKEWORD(0, 0); // None
+  // auto comment = std::wstring(L"QLoader for ") + m_pe_name.GetBuffer(0);
+  // auto arguments = std::wstring(L"-pe <pe> -mp <mp>");
+  // 
+  // CreateShortCut csc;
+  // int result = csc.CreateLinkFileBase(
+  //   target.c_str(), start_in.c_str(), export_dir.c_str(), comment.c_str(), shortcut_key, arguments.c_str(), TRUE);
+  // 
+  // CString msg;
+  // msg.Format(L"Exported shortcut to `%s` %s.", export_dir.c_str(), result ? L"succeed" : L"failed");
+  // AfxMessageBox(msg, MB_OK | result ? MB_ICONINFORMATION : MB_ICONERROR);
+
   AfxMessageBox(_T("This feature is currently unavailable"));
 }
