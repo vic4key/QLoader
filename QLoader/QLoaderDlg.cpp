@@ -65,6 +65,7 @@ void CQLoaderDlg::DoDataExchange(CDataExchange* pDX)
   DDX_Text(pDX, IDC_MP_PATH, m_mp_path);
   DDX_Control(pDX, IDC_MP_TREE, m_mp_tree);
   DDX_Control(pDX, IDC_MP_SAVE, m_button_mp_save);
+  DDX_Control(pDX, IDC_EXPORT, m_button_export);
   DDX_Control(pDX, IDC_LAUNCH, m_button_launch);
   DDX_Radio(pDX, IDC_PATCH_WHEN, m_patch_when);
   DDX_Control(pDX, IDC_LOG, m_log);
@@ -76,11 +77,12 @@ BEGIN_MESSAGE_MAP(CQLoaderDlg, CDialogEx)
   ON_WM_QUERYDRAGICON()
   ON_WM_SIZE()
   ON_WM_DROPFILES()
-  ON_BN_CLICKED(IDC_PE_OPEN, &OnBnClickedPEOpen)
-  ON_BN_CLICKED(IDC_MP_OPEN, &OnBnClickedMPOpen)
-  ON_BN_CLICKED(IDC_MP_SAVE, &OnBnClickedMPSave)
-  ON_BN_CLICKED(IDC_CLEAR, &OnBnClickedClear)
-  ON_BN_CLICKED(IDC_LAUNCH, &OnBnClickedLaunch)
+  ON_BN_CLICKED(IDC_PE_OPEN, OnBnClicked_PEOpen)
+  ON_BN_CLICKED(IDC_MP_OPEN, OnBnClicked_MPOpen)
+  ON_BN_CLICKED(IDC_MP_SAVE, OnBnClicked_MPSave)
+  ON_BN_CLICKED(IDC_CLEAR,   OnBnClicked_Clear)
+  ON_BN_CLICKED(IDC_LAUNCH,  OnBnClicked_Launch)
+  ON_BN_CLICKED(IDC_EXPORT,  OnBnClicked_Export)
 END_MESSAGE_MAP()
 
 // CQLoaderDlg message handlers
@@ -210,7 +212,7 @@ void CQLoaderDlg::OnDropFiles(HDROP hDropInfo)
   this->update_ui();
 }
 
-void CQLoaderDlg::OnBnClickedPEOpen()
+void CQLoaderDlg::OnBnClicked_PEOpen()
 {
   m_file_paths.clear();
 
@@ -225,7 +227,7 @@ void CQLoaderDlg::OnBnClickedPEOpen()
   this->update_ui();
 }
 
-void CQLoaderDlg::OnBnClickedMPOpen()
+void CQLoaderDlg::OnBnClicked_MPOpen()
 {
   m_file_paths.clear();
 
@@ -240,7 +242,7 @@ void CQLoaderDlg::OnBnClickedMPOpen()
   this->update_ui();
 }
 
-void CQLoaderDlg::OnBnClickedMPSave()
+void CQLoaderDlg::OnBnClicked_MPSave()
 {
   std::wstring file_path = m_mp_path.GetBuffer(0);
   const auto file_filter = L"JSON File\0*.json\0All Files (*.*)\0*.*\0";
@@ -267,7 +269,7 @@ void CQLoaderDlg::OnBnClickedMPSave()
   }
 }
 
-void CQLoaderDlg::OnBnClickedClear()
+void CQLoaderDlg::OnBnClicked_Clear()
 {
   m_log.DeleteAllItems();
 }
@@ -298,6 +300,7 @@ void CQLoaderDlg::reset_ui()
   m_mp_tree.Clear();
   m_log.DeleteAllItems();
   m_button_mp_save.EnableWindow(FALSE);
+  m_button_export.EnableWindow(FALSE);
   m_button_launch.EnableWindow(FALSE);
 
   UpdateData(FALSE);
@@ -358,6 +361,7 @@ void CQLoaderDlg::update_ui()
   this->populate_tree();
 
   m_button_mp_save.EnableWindow(!m_mp_path.IsEmpty());
+  m_button_export.EnableWindow(!m_pe_dir.IsEmpty() && !m_pe_name.IsEmpty() && !m_mp_path.IsEmpty());
   m_button_launch.EnableWindow(!m_pe_dir.IsEmpty() && !m_pe_name.IsEmpty() && !m_mp_path.IsEmpty());
 
   UpdateData(FALSE);
@@ -655,9 +659,14 @@ void CQLoaderDlg::populate_tree()
   });
 }
 
-void CQLoaderDlg::OnBnClickedLaunch()
+void CQLoaderDlg::OnBnClicked_Launch()
 {
   UpdateData();
   this->launch(
     launch_t(m_patch_when), m_pe_dir.GetBuffer(0), m_pe_name.GetBuffer(0), m_pe_arg.GetBuffer(0));
+}
+
+void CQLoaderDlg::OnBnClicked_Export()
+{
+  AfxMessageBox(_T("This feature is currently unavailable"));
 }

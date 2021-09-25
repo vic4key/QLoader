@@ -43,11 +43,12 @@ protected:
   afx_msg void OnSize(UINT nType, int cx, int cy);
   afx_msg void OnDropFiles(HDROP hDropInfo);
   // Generated user message map functions
-  afx_msg void OnBnClickedPEOpen();
-  afx_msg void OnBnClickedMPOpen();
-  afx_msg void OnBnClickedMPSave();
-  afx_msg void OnBnClickedClear();
-  afx_msg void OnBnClickedLaunch();
+  afx_msg void OnBnClicked_PEOpen();
+  afx_msg void OnBnClicked_MPOpen();
+  afx_msg void OnBnClicked_MPSave();
+  afx_msg void OnBnClicked_Clear();
+  afx_msg void OnBnClicked_Export();
+  afx_msg void OnBnClicked_Launch();
   DECLARE_MESSAGE_MAP()
 
 private:
@@ -60,6 +61,7 @@ private:
   CListCtrl m_log;
   EasyTreeCtrl m_mp_tree;
   CButton m_button_mp_save;
+  CButton m_button_export;
   CButton m_button_launch;
 
 private:

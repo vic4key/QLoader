@@ -23,6 +23,7 @@
 #define IDC_PATCH_WHEN_1                1012
 #define IDC_PATCH_WHEN_2                1013
 #define IDC_MP_SAVE                     1014
+#define IDC_EXPORT                      1015
 
 // Next default values for new objects
 // 
@@ -30,7 +31,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        130
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1015
+#define _APS_NEXT_CONTROL_VALUE         1016
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
