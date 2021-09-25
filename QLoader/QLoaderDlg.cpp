@@ -49,7 +49,7 @@ END_MESSAGE_MAP()
 
 CQLoaderDlg::CQLoaderDlg(CWnd* pParent)
   : CDialogEx(CQLoaderDlg::IDD, pParent)
-  , m_pe_name(_T(""))
+  , m_pe_path(_T(""))
   , m_pe_dir(_T(""))
   , m_pe_arg(_T(""))
   , m_mp_path(_T(""))
@@ -60,7 +60,7 @@ CQLoaderDlg::CQLoaderDlg(CWnd* pParent)
 void CQLoaderDlg::DoDataExchange(CDataExchange* pDX)
 {
   __super::DoDataExchange(pDX);
-  DDX_Text(pDX, IDC_PE_NAME, m_pe_name);
+  DDX_Text(pDX, IDC_PE_PATH, m_pe_path);
   DDX_Text(pDX, IDC_PE_DIR, m_pe_dir);
   DDX_Text(pDX, IDC_PE_ARG, m_pe_arg);
   DDX_Text(pDX, IDC_MP_PATH, m_mp_path);
@@ -292,7 +292,7 @@ void CQLoaderDlg::reset_ui()
 {
   m_file_paths.clear();
 
-  m_pe_name = _T("");
+  m_pe_path = _T("");
   m_pe_dir = _T("");
   m_pe_arg = _T("");
   m_mp_path = _T("");
@@ -327,7 +327,7 @@ void CQLoaderDlg::update_ui()
       auto ptr_lnk = vu::parse_shortcut_lnk(this->GetSafeHwnd(), file_path);
       if (ptr_lnk != nullptr)
       {
-        m_pe_name = vu::extract_file_name(ptr_lnk->path).c_str();
+        m_pe_path = ptr_lnk->path.c_str();
         m_pe_dir = ptr_lnk->directory.c_str();
         m_pe_arg = ptr_lnk->argument.c_str();
         found_target = true;
@@ -336,7 +336,7 @@ void CQLoaderDlg::update_ui()
 
     if (!found_target && vu::ends_with(file_path_tmp, L".EXE"))
     {
-      m_pe_name = vu::extract_file_name(file_path.c_str()).c_str();
+      m_pe_path = file_path.c_str();
       m_pe_dir = vu::extract_file_directory(file_path.c_str()).c_str();
       found_target = true;
     }
@@ -362,8 +362,8 @@ void CQLoaderDlg::update_ui()
   this->populate_tree();
 
   m_button_mp_save.EnableWindow(!m_mp_path.IsEmpty());
-  m_button_export.EnableWindow(!m_pe_dir.IsEmpty() && !m_pe_name.IsEmpty() && !m_mp_path.IsEmpty());
-  m_button_launch.EnableWindow(!m_pe_dir.IsEmpty() && !m_pe_name.IsEmpty() && !m_mp_path.IsEmpty());
+  m_button_export.EnableWindow(!m_pe_dir.IsEmpty() && !m_pe_path.IsEmpty() && !m_mp_path.IsEmpty());
+  m_button_launch.EnableWindow(!m_pe_dir.IsEmpty() && !m_pe_path.IsEmpty() && !m_mp_path.IsEmpty());
 
   UpdateData(FALSE);
   RedrawWindow();
@@ -664,7 +664,7 @@ void CQLoaderDlg::OnBnClicked_Launch()
 {
   UpdateData();
   this->launch(
-    launch_t(m_patch_when), m_pe_dir.GetBuffer(0), m_pe_name.GetBuffer(0), m_pe_arg.GetBuffer(0));
+    launch_t(m_patch_when), m_pe_dir.GetBuffer(0), m_pe_path.GetBuffer(0), m_pe_arg.GetBuffer(0));
 }
 
 void CQLoaderDlg::OnBnClicked_Export()

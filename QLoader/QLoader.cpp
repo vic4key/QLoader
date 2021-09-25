@@ -48,14 +48,10 @@ void QLoader::add_log(const std::wstring& line, const status_t status)
 void QLoader::launch(
   const launch_t mode,
   const std::wstring& pe_file_dir,
-  const std::wstring& pe_file_name,
+  const std::wstring& pe_file_path,
   const std::wstring& pe_args)
 {
   // create the target process as a suspend process
-
-  vu::PathW pe_file_path = pe_file_dir;
-  pe_file_path.join(pe_file_name);
-  pe_file_path.finalize();
 
   PROCESS_INFORMATION pi = { 0 };
 
@@ -64,7 +60,7 @@ void QLoader::launch(
   {
     std::wstring tmp = L"";
     tmp  = L'\"';
-    tmp += pe_file_path.as_string();
+    tmp += pe_file_path;
     tmp += L'\"';
     tmp += +L' ';
     args = tmp + args;
@@ -79,8 +75,9 @@ void QLoader::launch(
 
   vu::ProcessW process;
   bool created = process.create(
-    pe_file_path.as_string(), pe_file_dir, args, creation_flags, false, &pi);
+    pe_file_path, pe_file_dir, args, creation_flags, false, &pi);
 
+  auto pe_file_name = vu::extract_file_name(pe_file_path);
   auto line = vu::format(L"Create the process `%s` %s", pe_file_name.c_str(), created ? L"succeed" : L"failed");
   this->add_log(line, created ? status_t::success : status_t::error);
 
