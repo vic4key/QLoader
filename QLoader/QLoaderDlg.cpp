@@ -7,6 +7,7 @@
 #include "QLoaderApp.h"
 #include "QLoaderDlg.h"
 #include "afxdialogex.h"
+#include "CreateShortcut.h" // https://www.codeproject.com/Articles/596642/Creating-a-shortcut-programmatically-in-Cplusplus
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

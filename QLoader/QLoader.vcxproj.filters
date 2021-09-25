@@ -60,6 +60,9 @@
     <ClInclude Include="QLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CreateShortcut.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="QLoaderApp.cpp">
@@ -75,6 +78,9 @@
       <Filter>reuse</Filter>
     </ClCompile>
     <ClCompile Include="QLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CreateShortcut.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
