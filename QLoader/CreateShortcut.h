@@ -22,8 +22,8 @@ private:
 	void ReportError(char* err);
 	int createDir(LPCWSTR pathToLink);
 	
-	int CreateLinkFileBaseA(LPCSTR pathToObj, LPCSTR pathToLink, LPCSTR description, WORD hotkey, LPCSTR cmdLine, BOOL forceCreate);
-	int CreateLinkFileBaseW(LPCWSTR pathToObj, LPCWSTR pathToLink, LPCWSTR description, WORD hotkey, LPCWSTR cmdLine, BOOL forceCreate);
+	int CreateLinkFileBaseA(LPCSTR pathToObj, LPCSTR dirToObj, LPCSTR pathToLink, LPCSTR description, WORD hotkey, LPCSTR cmdLine, BOOL forceCreate);
+	int CreateLinkFileBaseW(LPCWSTR pathToObj, LPCWSTR dirToObj, LPCWSTR pathToLink, LPCWSTR description, WORD hotkey, LPCWSTR cmdLine, BOOL forceCreate);
 
 	int CreateLinkToPrinterA(LPCSTR printerName, LPCSTR pathToLink, LPCSTR description, WORD hotkey, BOOL forceCreate);
 	int CreateLinkToPrinterW(LPCWSTR printerName, LPCWSTR pathToLink, LPCWSTR description, WORD hotkey, BOOL forceCreate);
@@ -39,11 +39,11 @@ public:
 	~CreateShortCut();
 
 	//Create shortcut to a file base object (e.g local files and folders, network files and folders, drives, etc)
-	int CreateLinkFileBase(LPCSTR pathToObj, LPCSTR pathToLink, LPCSTR description, WORD hotkey, LPCSTR cmdLine, BOOL forceCreate = FALSE);
+	int CreateLinkFileBase(LPCSTR pathToObj, LPCSTR dirToObj, LPCSTR pathToLink, LPCSTR description, WORD hotkey, LPCSTR cmdLine, BOOL forceCreate = FALSE);
 	//Create shortcut to a file base object (e.g local files and folders, network files and folders, drives, etc)
-	int CreateLinkFileBase(LPCSTR pathToObj, LPCWSTR pathToLink, LPCSTR description, WORD hotkey, LPCSTR cmdLine, BOOL forceCreate = FALSE);//For the CSC constants
+	int CreateLinkFileBase(LPCSTR pathToObj, LPCSTR dirToObj, LPCWSTR pathToLink, LPCSTR description, WORD hotkey, LPCSTR cmdLine, BOOL forceCreate = FALSE);//For the CSC constants
 	//Create shortcut to a file base object (e.g local files and folders, network files and folders, drives, etc)
-	int CreateLinkFileBase(LPCWSTR pathToObj, LPCWSTR pathToLink, LPCWSTR description, WORD hotkey, LPCWSTR cmdLine, BOOL forceCreate = FALSE);
+	int CreateLinkFileBase(LPCWSTR pathToObj, LPCWSTR dirToObj, LPCWSTR pathToLink, LPCWSTR description, WORD hotkey, LPCWSTR cmdLine, BOOL forceCreate = FALSE);
 	
 	//create shortcut to a printer
 	int CreateLinkToPrinter(LPCSTR printerName, LPCSTR pathToLink, LPCSTR description, WORD hotkey, BOOL forceCreate = FALSE);

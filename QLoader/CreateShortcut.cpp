@@ -26,21 +26,21 @@ CreateShortCut::~CreateShortCut()
 	delete [] path;
 }
 
-int CreateShortCut::CreateLinkFileBase(LPCSTR pathToObj, LPCSTR pathToLink, LPCSTR description, WORD hotkey, LPCSTR cmdLine, BOOL forceCreate)
+int CreateShortCut::CreateLinkFileBase(LPCSTR pathToObj, LPCSTR dirToObj, LPCSTR pathToLink, LPCSTR description, WORD hotkey, LPCSTR cmdLine, BOOL forceCreate)
 {
-	return CreateLinkFileBaseA(pathToObj, pathToLink, description, hotkey, cmdLine, forceCreate);
+	return CreateLinkFileBaseA(pathToObj, dirToObj, pathToLink, description, hotkey, cmdLine, forceCreate);
 }
 
-int CreateShortCut::CreateLinkFileBase(LPCSTR pathToObj, LPCWSTR pathToLink, LPCSTR description, WORD hotkey, LPCSTR cmdLine, BOOL forceCreate)
+int CreateShortCut::CreateLinkFileBase(LPCSTR pathToObj, LPCSTR dirToObj, LPCWSTR pathToLink, LPCSTR description, WORD hotkey, LPCSTR cmdLine, BOOL forceCreate)
 {
 	char pathToLinkA[MAX_PATH];
 	WideCharToMultiByte(CP_ACP, 0, pathToLink, -1, pathToLinkA, sizeof(pathToLinkA), NULL, NULL);
-	return CreateLinkFileBaseA(pathToObj, pathToLinkA, description, hotkey, cmdLine, forceCreate);
+	return CreateLinkFileBaseA(pathToObj, dirToObj, pathToLinkA, description, hotkey, cmdLine, forceCreate);
 }
 
-int CreateShortCut::CreateLinkFileBase(LPCWSTR pathToObj, LPCWSTR pathToLink, LPCWSTR description, WORD hotkey, LPCWSTR cmdLine, BOOL forceCreate)
+int CreateShortCut::CreateLinkFileBase(LPCWSTR pathToObj, LPCWSTR dirToObj, LPCWSTR pathToLink, LPCWSTR description, WORD hotkey, LPCWSTR cmdLine, BOOL forceCreate)
 {
-	return CreateLinkFileBaseW(pathToObj, pathToLink, description, hotkey, cmdLine, forceCreate);
+	return CreateLinkFileBaseW(pathToObj, dirToObj, pathToLink, description, hotkey, cmdLine, forceCreate);
 }
 
 int CreateShortCut::CreateLinkToPrinter(LPCSTR printerName, LPCSTR pathToLink, LPCSTR description, WORD hotkey, BOOL forceCreate)
@@ -66,23 +66,25 @@ int CreateShortCut::CreateLinkToPrinter(LPCWSTR printerName, LPCWSTR pathToLink,
 ***************************************************************************************************************************************/
 
 //Multibyte Version of filebase shortcut
-int CreateShortCut::CreateLinkFileBaseA(LPCSTR pathToObj, LPCSTR pathToLink, LPCSTR description, WORD hotkey, LPCSTR cmdLine, BOOL forceCreate)
+int CreateShortCut::CreateLinkFileBaseA(LPCSTR pathToObj, LPCSTR dirToObj, LPCSTR pathToLink, LPCSTR description, WORD hotkey, LPCSTR cmdLine, BOOL forceCreate)
 {
-	//convert input to wide characters and call wide charater version
+	//convert input to wide characters and call wide character version
 	wchar_t pathToObjW[MAX_PATH];
+	wchar_t dirToObjW[MAX_PATH];
 	wchar_t pathToLinkW[MAX_PATH];
 	wchar_t descriptionW[MAX_PATH];
 	wchar_t cmdLineW[MAX_PATH];
 	MultiByteToWideChar(CP_ACP, 0, pathToObj, strlen(pathToObj)+1, pathToObjW, sizeof(pathToObjW)/sizeof(pathToObjW[0]));
-    MultiByteToWideChar(CP_ACP, 0, pathToLink, strlen(pathToLink)+1, pathToLinkW, sizeof(pathToLinkW)/sizeof(pathToLinkW[0]));
+	MultiByteToWideChar(CP_ACP, 0, dirToObj, strlen(dirToObj)+1, dirToObjW, sizeof(dirToObjW)/sizeof(dirToObjW[0]));
+	MultiByteToWideChar(CP_ACP, 0, pathToLink, strlen(pathToLink)+1, pathToLinkW, sizeof(pathToLinkW)/sizeof(pathToLinkW[0]));
 	MultiByteToWideChar(CP_ACP, 0, description, strlen(description)+1, descriptionW, sizeof(descriptionW)/sizeof(descriptionW[0]));
 	MultiByteToWideChar(CP_ACP, 0, cmdLine, strlen(cmdLine)+1, cmdLineW, sizeof(cmdLineW)/sizeof(cmdLineW[0]));
 
-	return CreateLinkFileBaseW(pathToObjW, pathToLinkW,  descriptionW, hotkey, cmdLineW, forceCreate);
+	return CreateLinkFileBaseW(pathToObjW, dirToObjW, pathToLinkW,  descriptionW, hotkey, cmdLineW, forceCreate);
 }
 
 //Wide character version of filebase shortcut
-int CreateShortCut::CreateLinkFileBaseW(LPCWSTR pathToObj, LPCWSTR pathToLink, LPCWSTR description, WORD hotkey, LPCWSTR cmdLine, BOOL forceCreate)
+int CreateShortCut::CreateLinkFileBaseW(LPCWSTR pathToObj, LPCWSTR dirToObj, LPCWSTR pathToLink, LPCWSTR description, WORD hotkey, LPCWSTR cmdLine, BOOL forceCreate)
 {
 	BOOL isFile = FALSE;
 	
@@ -137,6 +139,7 @@ int CreateShortCut::CreateLinkFileBaseW(LPCWSTR pathToObj, LPCWSTR pathToLink, L
 		IPersistFile* ppf;
 
 		psl->SetPath(pathToObj);
+		psl->SetWorkingDirectory(dirToObj);
 		psl->SetDescription(description);
 		psl->SetHotkey(hotkey);
 		psl->SetArguments(cmdLine);
@@ -145,9 +148,19 @@ int CreateShortCut::CreateLinkFileBaseW(LPCWSTR pathToObj, LPCWSTR pathToLink, L
 		if(SUCCEEDED(hRes))
 		{
 			//Build the output path
-			wchar_t* fname = new wchar_t[MAX_PATH];
-			wchar_t* drive = new wchar_t[MAX_PATH];
-      _wsplitpath_s(pathToObj, drive, sizeof(drive), NULL, 0, fname, sizeof(fname), NULL, 0);
+			// wchar_t* fname = new wchar_t[MAX_PATH];
+			// wchar_t* drive = new wchar_t[MAX_PATH];
+			// _wsplitpath_s(pathToObj, drive, sizeof(drive), NULL, 0, fname, sizeof(fname), NULL, 0);
+
+			wchar_t fname[MAX_PATH] = { 0 };
+			wchar_t drive[MAX_PATH] = { 0 };
+
+			drive[0] = PathGetDriveNumberW(pathToObj) + 'A';
+			drive[1] = L':';
+
+			auto _fname = PathFindFileNameW(pathToObj);
+			PathRemoveExtensionW(_fname);
+			lstrcpyW(fname, _fname);
 
 			if(wcscmp(fname,L"") != 0)//For files
 			{
@@ -160,8 +173,8 @@ int CreateShortCut::CreateLinkFileBaseW(LPCWSTR pathToObj, LPCWSTR pathToLink, L
 				d[1] = '\0';
 				wcscat_s(path, MAX_PATH, d);
 			}
-			delete [] drive;
-			delete [] fname;
+			// delete [] drive;
+			// delete [] fname;
 			wcscat_s(path, MAX_PATH, L".lnk");
 			
 			ppf->Save(path, TRUE);
