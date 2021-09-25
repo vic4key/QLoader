@@ -47,7 +47,7 @@ END_MESSAGE_MAP()
 // CQLoaderDlg dialog
 
 CQLoaderDlg::CQLoaderDlg(CWnd* pParent)
-  : CDialogEx(IDD_QICKLOADER_DIALOG, pParent)
+  : CDialogEx(CQLoaderDlg::IDD, pParent)
   , m_pe_name(_T(""))
   , m_pe_dir(_T(""))
   , m_pe_arg(_T(""))

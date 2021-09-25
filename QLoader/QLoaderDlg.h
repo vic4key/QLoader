@@ -19,12 +19,8 @@ class CQLoaderDlg : public CDialogEx, public QLoader
 {
   // Construction
 public:
+  enum { IDD = IDD_QLOADER_DIALOG };
   CQLoaderDlg(CWnd* pParent = nullptr);	// standard constructor
-
-// Dialog Data
-#ifdef AFX_DESIGN_TIME
-  enum { IDD = IDD_QICKLOADER_DIALOG };
-#endif
 
 protected:
   virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support

@@ -5,7 +5,7 @@
 #define IDM_ABOUTBOX                    0x0010
 #define IDD_ABOUTBOX                    100
 #define IDS_ABOUTBOX                    101
-#define IDD_QICKLOADER_DIALOG           102
+#define IDD_QLOADER_DIALOG              102
 #define IDR_MAINFRAME                   128
 #define IDB_LOG_SMALL                   129
 #define IDC_PE_NAME                     1000
