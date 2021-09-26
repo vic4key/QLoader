@@ -335,6 +335,39 @@ void CQLoaderDlg::OnEnKillfocus_PEArg()
   UpdateData(TRUE);
 }
 
+void CQLoaderDlg::OnBnClicked_Launch()
+{
+  UpdateData(TRUE);
+
+  this->launch(
+    launch_t(m_patch_when), m_pe_dir.GetBuffer(0), m_pe_path.GetBuffer(0), m_pe_arg.GetBuffer(0));
+}
+
+void CQLoaderDlg::OnBnClicked_Export()
+{
+  UpdateData(TRUE);
+
+  const auto lnk = this->export_as_lnk(
+    launch_t(m_patch_when), m_pe_dir.GetBuffer(0), m_pe_path.GetBuffer(0), m_pe_arg.GetBuffer(0));
+
+  const auto lnk_export_dir = std::wstring(CSC_DESKTOP);
+
+  CreateShortCut csc;
+  int result = csc.CreateLinkFileBase(
+    lnk.path.c_str(),
+    lnk.directory.c_str(),
+    lnk_export_dir.c_str(),
+    lnk.description.c_str(),
+    MAKEWORD(0, 0),
+    lnk.argument.c_str(),
+    TRUE
+  );
+
+  CString msg;
+  msg.Format(L"Exported shortcut to `%s` %s.", lnk_export_dir.c_str(), result ? L"succeed" : L"failed");
+  AfxMessageBox(msg, MB_OK | result ? MB_ICONINFORMATION : MB_ICONERROR);
+}
+
 void CQLoaderDlg::add_log(const std::wstring& line, const status_t status)
 {
   LVITEM lvi = { 0 };
@@ -719,37 +752,4 @@ void CQLoaderDlg::populate_tree()
       m_mp_tree.Expand(hmodule, TVE_EXPAND);
     }
   });
-}
-
-void CQLoaderDlg::OnBnClicked_Launch()
-{
-  UpdateData(TRUE);
-
-  this->launch(
-    launch_t(m_patch_when), m_pe_dir.GetBuffer(0), m_pe_path.GetBuffer(0), m_pe_arg.GetBuffer(0));
-}
-
-void CQLoaderDlg::OnBnClicked_Export()
-{
-  UpdateData(TRUE);
-
-  const auto lnk = this->export_as_lnk(
-    launch_t(m_patch_when), m_pe_dir.GetBuffer(0), m_pe_path.GetBuffer(0), m_pe_arg.GetBuffer(0));
-
-  const auto lnk_export_dir = std::wstring(CSC_DESKTOP);
-
-  CreateShortCut csc;
-  int result = csc.CreateLinkFileBase(
-    lnk.path.c_str(),
-    lnk.directory.c_str(),
-    lnk_export_dir.c_str(),
-    lnk.description.c_str(),
-    MAKEWORD(0, 0),
-    lnk.argument.c_str(),
-    TRUE
-  );
-
-  CString msg;
-  msg.Format(L"Exported shortcut to `%s` %s.", lnk_export_dir.c_str(), result ? L"succeed" : L"failed");
-  AfxMessageBox(msg, MB_OK | result ? MB_ICONINFORMATION : MB_ICONERROR);
 }
