@@ -197,7 +197,6 @@
   <ItemGroup>
     <ClInclude Include="3rdparty\nlohmann\fifo_map.hpp" />
     <ClInclude Include="3rdparty\nlohmann\json.hpp" />
-    <ClInclude Include="CreateShortcut.h" />
     <ClInclude Include="EasyTreeCtrl.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
@@ -209,7 +208,6 @@
     <ClInclude Include="types.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CreateShortcut.cpp" />
     <ClCompile Include="EasyTreeCtrl.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

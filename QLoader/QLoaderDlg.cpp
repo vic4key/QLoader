@@ -7,7 +7,6 @@
 #include "QLoaderApp.h"
 #include "QLoaderDlg.h"
 #include "afxdialogex.h"
-#include "CreateShortcut.h" // https://www.codeproject.com/Articles/596642/Creating-a-shortcut-programmatically-in-Cplusplus
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -351,25 +350,28 @@ void CQLoaderDlg::OnBnClicked_Export()
 {
   UpdateData(TRUE);
 
+  vu::PickerW picker;
+  std::wstring lnk_dir;
+  if (!picker.choose_directory(lnk_dir))
+  {
+    return;
+  }
+
+  std::wstring lnk_file_name = vu::extract_file_name_W(m_pe_path.GetBuffer(0), false);
+  lnk_file_name += L" (QLoader).lnk";
+
+  vu::PathW path;
+  path.join(lnk_dir).join(lnk_file_name).finalize();
+  const std::wstring lnk_file_path = path.as_string();
+
   const auto lnk = this->export_as_lnk(
     launch_t(m_patch_when), m_pe_dir.GetBuffer(0), m_pe_path.GetBuffer(0), m_pe_arg.GetBuffer(0));
 
-  const auto lnk_export_dir = std::wstring(CSC_DESKTOP);
+  bool succeed = vu::create_shortcut_lnk_W(lnk_file_path, lnk) == vu::VU_OK;
 
-  CreateShortCut csc;
-  int result = csc.CreateLinkFileBase(
-    lnk.path.c_str(),
-    lnk.directory.c_str(),
-    lnk_export_dir.c_str(),
-    lnk.description.c_str(),
-    MAKEWORD(0, 0),
-    lnk.argument.c_str(),
-    TRUE
-  );
-
-  CString msg;
-  msg.Format(L"Exported shortcut to `%s` %s.", lnk_export_dir.c_str(), result ? L"succeed" : L"failed");
-  AfxMessageBox(msg, MB_OK | result ? MB_ICONINFORMATION : MB_ICONERROR);
+  auto line = vu::format(L"Export shortcut to `%s` %s",
+    lnk_file_path.c_str(), succeed ? L"succeed" : L"failed");
+  this->add_log(line, succeed ? QLoader::status_t::success : QLoader::status_t::error);
 }
 
 void CQLoaderDlg::add_log(const std::wstring& line, const status_t status)
