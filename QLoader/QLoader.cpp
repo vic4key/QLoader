@@ -355,9 +355,9 @@ vu::sLNKW QLoader::export_as_lnk(
   result.description = std::wstring(L"QLoader for ") + vu::extract_file_name_W(pe_file_path);
 
   json pe_jdata;
-  pe_jdata["path"] = pe_file_path;
-  pe_jdata["dir"]  = pe_file_dir;
-  pe_jdata["arg"]  = pe_args;
+  pe_jdata["path"] = vu::to_string_A(pe_file_path);
+  pe_jdata["dir"]  = vu::to_string_A(pe_file_dir);
+  pe_jdata["arg"]  = vu::to_string_A(pe_args);
   const auto pe_string = pe_jdata.dump();
   std::vector<vu::byte> pe_data(pe_string.cbegin(), pe_string.cend());
   std::wstring pe_data_encoded;

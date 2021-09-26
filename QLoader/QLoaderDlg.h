@@ -49,6 +49,8 @@ protected:
   afx_msg void OnBnClicked_Clear();
   afx_msg void OnBnClicked_Export();
   afx_msg void OnBnClicked_Launch();
+  afx_msg void OnEnKillfocus_PEDir();
+  afx_msg void OnEnKillfocus_PEArg();
   DECLARE_MESSAGE_MAP()
 
 private:
@@ -63,7 +65,5 @@ private:
   CButton m_button_mp_save;
   CButton m_button_export;
   CButton m_button_launch;
-
-private:
   std::vector<std::wstring> m_file_paths;
 };

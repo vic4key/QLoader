@@ -81,9 +81,11 @@ BEGIN_MESSAGE_MAP(CQLoaderDlg, CDialogEx)
   ON_BN_CLICKED(IDC_PE_OPEN, OnBnClicked_PEOpen)
   ON_BN_CLICKED(IDC_MP_OPEN, OnBnClicked_MPOpen)
   ON_BN_CLICKED(IDC_MP_SAVE, OnBnClicked_MPSave)
-  ON_BN_CLICKED(IDC_CLEAR,   OnBnClicked_Clear)
-  ON_BN_CLICKED(IDC_LAUNCH,  OnBnClicked_Launch)
-  ON_BN_CLICKED(IDC_EXPORT,  OnBnClicked_Export)
+  ON_BN_CLICKED(IDC_CLEAR, OnBnClicked_Clear)
+  ON_BN_CLICKED(IDC_LAUNCH, OnBnClicked_Launch)
+  ON_BN_CLICKED(IDC_EXPORT, OnBnClicked_Export)
+  ON_EN_KILLFOCUS(IDC_PE_DIR, OnEnKillfocus_PEDir)
+  ON_EN_KILLFOCUS(IDC_PE_ARG, OnEnKillfocus_PEArg)
 END_MESSAGE_MAP()
 
 // CQLoaderDlg message handlers
@@ -119,12 +121,7 @@ BOOL CQLoaderDlg::OnInitDialog()
 
   // TODO: Add extra initialization here
 
-  // ChangeWindowMessageFilter(0x0049, MSGFLT_ADD);
-  // ChangeWindowMessageFilter(WM_DROPFILES, MSGFLT_ADD);
-  // __super::DragAcceptFiles();
-
   this->initialize_ui();
-
   this->reset_ui();
 
   return TRUE;  // return TRUE  unless you set the focus to a control
@@ -273,6 +270,16 @@ void CQLoaderDlg::OnBnClicked_MPSave()
 void CQLoaderDlg::OnBnClicked_Clear()
 {
   m_log.DeleteAllItems();
+}
+
+void CQLoaderDlg::OnEnKillfocus_PEDir()
+{
+  UpdateData(TRUE);
+}
+
+void CQLoaderDlg::OnEnKillfocus_PEArg()
+{
+  UpdateData(TRUE);
 }
 
 void CQLoaderDlg::add_log(const std::wstring& line, const status_t status)
