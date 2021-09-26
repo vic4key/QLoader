@@ -11,13 +11,15 @@
 #pragma warning(disable: 4267)
 #endif // _MSC_VER
 
+#define MAX_LENGTH 1024
+
 int str_replace(LPCWSTR originalstring, wchar_t oldcharacter, wchar_t newcharacter, wchar_t* &newstring);
 void remove_last_slash(LPCWSTR originalstring, wchar_t* &newstring);
 
 CreateShortCut::CreateShortCut()
 {
 	CoInitializeEx( NULL, 0 );
-	path = new wchar_t[MAX_PATH];
+	path = new wchar_t[MAX_LENGTH];
 }
 
 CreateShortCut::~CreateShortCut()
@@ -33,7 +35,7 @@ int CreateShortCut::CreateLinkFileBase(LPCSTR pathToObj, LPCSTR dirToObj, LPCSTR
 
 int CreateShortCut::CreateLinkFileBase(LPCSTR pathToObj, LPCSTR dirToObj, LPCWSTR pathToLink, LPCSTR description, WORD hotkey, LPCSTR cmdLine, BOOL forceCreate)
 {
-	char pathToLinkA[MAX_PATH];
+	char pathToLinkA[MAX_LENGTH];
 	WideCharToMultiByte(CP_ACP, 0, pathToLink, -1, pathToLinkA, sizeof(pathToLinkA), NULL, NULL);
 	return CreateLinkFileBaseA(pathToObj, dirToObj, pathToLinkA, description, hotkey, cmdLine, forceCreate);
 }
@@ -50,7 +52,7 @@ int CreateShortCut::CreateLinkToPrinter(LPCSTR printerName, LPCSTR pathToLink, L
 
 int CreateShortCut::CreateLinkToPrinter(LPCSTR printerName, LPCWSTR pathToLink, LPCSTR description, WORD hotkey, BOOL forceCreate)
 {
-	char pathToLinkA[MAX_PATH];
+	char pathToLinkA[MAX_LENGTH];
 	WideCharToMultiByte(CP_ACP, 0, pathToLink, -1, pathToLinkA, sizeof(pathToLinkA), NULL, NULL);
 	return CreateLinkToPrinterA(printerName, pathToLinkA, description, hotkey, forceCreate);
 }
@@ -69,11 +71,11 @@ int CreateShortCut::CreateLinkToPrinter(LPCWSTR printerName, LPCWSTR pathToLink,
 int CreateShortCut::CreateLinkFileBaseA(LPCSTR pathToObj, LPCSTR dirToObj, LPCSTR pathToLink, LPCSTR description, WORD hotkey, LPCSTR cmdLine, BOOL forceCreate)
 {
 	//convert input to wide characters and call wide character version
-	wchar_t pathToObjW[MAX_PATH];
-	wchar_t dirToObjW[MAX_PATH];
-	wchar_t pathToLinkW[MAX_PATH];
-	wchar_t descriptionW[MAX_PATH];
-	wchar_t cmdLineW[MAX_PATH];
+	wchar_t pathToObjW[MAX_LENGTH];
+	wchar_t dirToObjW[MAX_LENGTH];
+  wchar_t pathToLinkW[MAX_LENGTH];
+	wchar_t descriptionW[MAX_LENGTH];
+	wchar_t cmdLineW[MAX_LENGTH];
 	MultiByteToWideChar(CP_ACP, 0, pathToObj, strlen(pathToObj)+1, pathToObjW, sizeof(pathToObjW)/sizeof(pathToObjW[0]));
 	MultiByteToWideChar(CP_ACP, 0, dirToObj, strlen(dirToObj)+1, dirToObjW, sizeof(dirToObjW)/sizeof(dirToObjW[0]));
 	MultiByteToWideChar(CP_ACP, 0, pathToLink, strlen(pathToLink)+1, pathToLinkW, sizeof(pathToLinkW)/sizeof(pathToLinkW[0]));
@@ -109,8 +111,8 @@ int CreateShortCut::CreateLinkFileBaseW(LPCWSTR pathToObj, LPCWSTR dirToObj, LPC
 	}
 	
 	//Appending '/' to pathToLink if not present
-	memset(path, '\0', MAX_PATH);
-	_wmakepath_s(path, MAX_PATH, NULL, pathToLink, NULL, NULL);
+	memset(path, '\0', MAX_LENGTH);
+	_wmakepath_s(path, MAX_LENGTH, NULL, pathToLink, NULL, NULL);
 	
 	
 	//***create the directory
@@ -148,12 +150,12 @@ int CreateShortCut::CreateLinkFileBaseW(LPCWSTR pathToObj, LPCWSTR dirToObj, LPC
 		if(SUCCEEDED(hRes))
 		{
 			//Build the output path
-			// wchar_t* fname = new wchar_t[MAX_PATH];
-			// wchar_t* drive = new wchar_t[MAX_PATH];
+			// wchar_t* fname = new wchar_t[MAX_LENGTH];
+			// wchar_t* drive = new wchar_t[MAX_LENGTH];
 			// _wsplitpath_s(pathToObj, drive, sizeof(drive), NULL, 0, fname, sizeof(fname), NULL, 0);
 
-			wchar_t fname[MAX_PATH] = { 0 };
-			wchar_t drive[MAX_PATH] = { 0 };
+			wchar_t fname[MAX_LENGTH] = { 0 };
+			wchar_t drive[MAX_LENGTH] = { 0 };
 
 			drive[0] = PathGetDriveNumberW(pathToObj) + 'A';
 			drive[1] = L':';
@@ -164,18 +166,18 @@ int CreateShortCut::CreateLinkFileBaseW(LPCWSTR pathToObj, LPCWSTR dirToObj, LPC
 
 			if(wcscmp(fname,L"") != 0)//For files
 			{
-				wcscat_s(path, MAX_PATH, fname);
+				wcscat_s(path, MAX_LENGTH, fname);
 			}
 			else if(wcscmp(drive,L"") != 0)//For drives
 			{
 				wchar_t d[2];
 				d[0] = drive[0];
 				d[1] = '\0';
-				wcscat_s(path, MAX_PATH, d);
+				wcscat_s(path, MAX_LENGTH, d);
 			}
 			// delete [] drive;
 			// delete [] fname;
-			wcscat_s(path, MAX_PATH, L".lnk");
+			wcscat_s(path, MAX_LENGTH, L".lnk");
 			
 			ppf->Save(path, TRUE);
 			ppf->Release();
@@ -194,9 +196,9 @@ int CreateShortCut::CreateLinkFileBaseW(LPCWSTR pathToObj, LPCWSTR dirToObj, LPC
 int CreateShortCut::CreateLinkToPrinterA(LPCSTR printerName, LPCSTR pathToLink, LPCSTR description, WORD hotkey, BOOL forceCreate)
 {
 	//convert input to wide characters and call wide charater version
-	wchar_t printerNameW[MAX_PATH];
-	wchar_t pathToLinkW[MAX_PATH];
-	wchar_t descriptionW[MAX_PATH];
+	wchar_t printerNameW[MAX_LENGTH];
+	wchar_t pathToLinkW[MAX_LENGTH];
+	wchar_t descriptionW[MAX_LENGTH];
 	MultiByteToWideChar(CP_ACP, 0, printerName, strlen(printerName)+1, printerNameW, sizeof(printerNameW)/sizeof(printerNameW[0]));
     MultiByteToWideChar(CP_ACP, 0, pathToLink, strlen(pathToLink)+1, pathToLinkW, sizeof(pathToLinkW)/sizeof(pathToLinkW[0]));
 	MultiByteToWideChar(CP_ACP, 0, description, strlen(description)+1, descriptionW, sizeof(descriptionW)/sizeof(descriptionW[0]));
@@ -225,8 +227,8 @@ int CreateShortCut::CreateLinkToPrinterW(LPCWSTR printerName, LPCWSTR pathToLink
 	hr = pDesktopFolder->BindToObject( netItemIdLst, NULL, IID_IShellFolder, (void **)&pPrinterFolder );
 	
 	//Appending '/' to pathToLink if not present
-	memset(path, '\0', MAX_PATH);
-	_wmakepath_s(path, MAX_PATH, NULL, pathToLink, NULL, NULL);
+	memset(path, '\0', MAX_LENGTH);
+	_wmakepath_s(path, MAX_LENGTH, NULL, pathToLink, NULL, NULL);
 	
 	//***create the directory
 	if(forceCreate)
@@ -249,8 +251,8 @@ int CreateShortCut::CreateLinkToPrinterW(LPCWSTR printerName, LPCWSTR pathToLink
 				{
 					if(_wcsicmp(strDisplayName.pOleStr, printerName) == 0)
 					{
-						wcscat_s(path, MAX_PATH, strDisplayName.pOleStr);
-						wcscat_s(path, MAX_PATH, L".lnk");
+						wcscat_s(path, MAX_LENGTH, strDisplayName.pOleStr);
+						wcscat_s(path, MAX_LENGTH, L".lnk");
 						full_pid=Append(netItemIdLst, pidlItems);
 						
 						//Create the shortcut
@@ -368,7 +370,7 @@ int CreateShortCut::createDir(LPCWSTR pathToLink)
 	struct _stat s;
 		
 	//remove any trailing slash because of _wstat
-	wchar_t* paths = new wchar_t[MAX_PATH];
+	wchar_t* paths = new wchar_t[MAX_LENGTH];
 	remove_last_slash(pathToLink, paths);
 		
 	if(_wstat(paths, &s) == 0)
@@ -383,7 +385,7 @@ int CreateShortCut::createDir(LPCWSTR pathToLink)
 	else
 	{
 		//change all '/' to '\' because of SHCreateDirectoryEx
-		wchar_t* yu = new wchar_t[MAX_PATH];
+		wchar_t* yu = new wchar_t[MAX_LENGTH];
 		str_replace(pathToLink, '/', '\\', yu);
 		
 		int res = SHCreateDirectoryEx(NULL,  yu, NULL);
@@ -404,67 +406,67 @@ int CreateShortCut::createDir(LPCWSTR pathToLink)
 /**********************************************************************************************
 	Some useful functions
 ***********************************************************************************************/
-wchar_t xStr[MAX_PATH];
+wchar_t xStr[MAX_LENGTH];
 
 wchar_t* GetDeskTopPath()
 {
-	memset(xStr, '\0', MAX_PATH);
+	memset(xStr, '\0', MAX_LENGTH);
 	SHGetFolderPath(NULL, CSIDL_DESKTOPDIRECTORY, NULL, 0, xStr);
 	return xStr;
 }
 
 wchar_t* GetAllDeskTopPath()
 {
-	memset(xStr, '\0', MAX_PATH);
+	memset(xStr, '\0', MAX_LENGTH);
 	SHGetFolderPath(NULL, CSIDL_COMMON_DESKTOPDIRECTORY, NULL, 0, xStr);
 	return xStr;
 }
 
 wchar_t* GetProgramFiles()
 {
-	memset(xStr, '\0', MAX_PATH);
+	memset(xStr, '\0', MAX_LENGTH);
 	SHGetFolderPath(NULL, CSIDL_PROGRAM_FILES, NULL, 0, xStr);
 	return xStr;
 }
 
 wchar_t* GetProgramFilesX86()
 {
-	memset(xStr, '\0', MAX_PATH);
+	memset(xStr, '\0', MAX_LENGTH);
 	SHGetFolderPath(NULL, CSIDL_PROGRAM_FILESX86, NULL, 0, xStr);
 	return xStr;
 }
 
 wchar_t* GetStartup()
 {
-	memset(xStr, '\0', MAX_PATH);
+	memset(xStr, '\0', MAX_LENGTH);
 	SHGetFolderPath(NULL, CSIDL_STARTUP, NULL, 0, xStr);
 	return xStr;
 }
 
 wchar_t* GetSendto()
 {
-	memset(xStr, '\0', MAX_PATH);
+	memset(xStr, '\0', MAX_LENGTH);
 	SHGetFolderPath(NULL, CSIDL_SENDTO, NULL, 0, xStr);
 	return xStr;
 }
 
 wchar_t* GetWindows()
 {
-	memset(xStr, '\0', MAX_PATH);
+	memset(xStr, '\0', MAX_LENGTH);
 	SHGetFolderPath(NULL, CSIDL_WINDOWS, NULL, 0, xStr);
 	return xStr;
 }
 
 wchar_t* GetSystem32()
 {
-	memset(xStr, '\0', MAX_PATH);
+	memset(xStr, '\0', MAX_LENGTH);
 	SHGetFolderPath(NULL, CSIDL_SYSTEM, NULL, 0, xStr);
 	return xStr;
 }
 
 wchar_t* GetStartmenu()
 {
-	memset(xStr, '\0', MAX_PATH);
+	memset(xStr, '\0', MAX_LENGTH);
 	SHGetFolderPath(NULL, CSIDL_STARTMENU, NULL, 0, xStr);
 	return xStr;
 }
