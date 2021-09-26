@@ -175,6 +175,10 @@ BOOL CQLoaderDlg::OnInitDialog()
     UpdateData(FALSE);
 
     this->update_ui();
+
+    this->SendMessage(WM_COMMAND, IDC_LAUNCH);
+
+    ExitProcess(0);
   }
 
   return TRUE;  // return TRUE  unless you set the focus to a control
