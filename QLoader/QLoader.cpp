@@ -354,6 +354,8 @@ vu::sLNKW QLoader::export_as_lnk(
   result.directory = vu::get_current_directory_W();
   result.description = std::wstring(L"QLoader for ") + vu::extract_file_name_W(pe_file_path);
 
+  result.argument = vu::format_W(L"-mode %d ", int(mode));
+
   json pe_jdata;
   pe_jdata["path"] = vu::to_string_A(pe_file_path);
   pe_jdata["dir"]  = vu::to_string_A(pe_file_dir);
