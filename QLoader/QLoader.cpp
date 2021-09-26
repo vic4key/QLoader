@@ -352,8 +352,25 @@ vu::sLNKW QLoader::export_as_lnk(
 
   result.path = vu::get_current_file_path_W();
   result.directory = vu::get_current_directory_W();
-  result.argument = L"-pe <pe> -mp <mp>";
   result.description = std::wstring(L"QLoader for ") + vu::extract_file_name_W(pe_file_path);
+
+  json pe_jdata;
+  pe_jdata["path"] = pe_file_path;
+  pe_jdata["dir"]  = pe_file_dir;
+  pe_jdata["arg"]  = pe_args;
+  const auto pe_string = pe_jdata.dump();
+  std::vector<vu::byte> pe_data(pe_string.cbegin(), pe_string.cend());
+  std::wstring pe_data_encoded;
+  vu::crypt_b64encode_W(pe_data, pe_data_encoded);
+  result.argument += L"-pe \"" + pe_data_encoded + L"\"";
+
+  result.argument += L" ";
+
+  const auto mp_string = m_mp_jdata.dump();
+  std::vector<vu::byte> mp_data(mp_string.cbegin(), mp_string.cend());
+  std::wstring mp_data_encoded;
+  vu::crypt_b64encode_W(mp_data, mp_data_encoded);
+  result.argument += L"-mp \"" + mp_data_encoded + L"\"";
 
   return result;
 }

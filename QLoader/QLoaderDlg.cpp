@@ -366,6 +366,7 @@ void CQLoaderDlg::update_ui()
   m_button_launch.EnableWindow(!m_pe_dir.IsEmpty() && !m_pe_path.IsEmpty() && !m_mp_path.IsEmpty());
 
   UpdateData(FALSE);
+
   RedrawWindow();
 }
 
@@ -662,34 +663,33 @@ void CQLoaderDlg::populate_tree()
 
 void CQLoaderDlg::OnBnClicked_Launch()
 {
-  UpdateData();
+  UpdateData(TRUE);
+
   this->launch(
     launch_t(m_patch_when), m_pe_dir.GetBuffer(0), m_pe_path.GetBuffer(0), m_pe_arg.GetBuffer(0));
 }
 
 void CQLoaderDlg::OnBnClicked_Export()
 {
-  // UpdateData();
-  // 
-  // const auto lnk = this->export_as_lnk(
-  //   launch_t(m_patch_when), m_pe_dir.GetBuffer(0), m_pe_path.GetBuffer(0), m_pe_arg.GetBuffer(0));
-  // 
-  // const auto lnk_export_dir = std::wstring(CSC_DESKTOP);
-  // 
-  // CreateShortCut csc;
-  // int result = csc.CreateLinkFileBase(
-  //   lnk.path.c_str(),
-  //   lnk.directory.c_str(),
-  //   lnk_export_dir.c_str(),
-  //   lnk.description.c_str(),
-  //   MAKEWORD(0, 0),
-  //   lnk.argument.c_str(),
-  //   TRUE
-  // );
-  // 
-  // CString msg;
-  // msg.Format(L"Exported shortcut to `%s` %s.", lnk_export_dir.c_str(), result ? L"succeed" : L"failed");
-  // AfxMessageBox(msg, MB_OK | result ? MB_ICONINFORMATION : MB_ICONERROR);
+  UpdateData(TRUE);
 
-  AfxMessageBox(_T("This feature is currently unavailable"));
+  const auto lnk = this->export_as_lnk(
+    launch_t(m_patch_when), m_pe_dir.GetBuffer(0), m_pe_path.GetBuffer(0), m_pe_arg.GetBuffer(0));
+
+  const auto lnk_export_dir = std::wstring(CSC_DESKTOP);
+
+  CreateShortCut csc;
+  int result = csc.CreateLinkFileBase(
+    lnk.path.c_str(),
+    lnk.directory.c_str(),
+    lnk_export_dir.c_str(),
+    lnk.description.c_str(),
+    MAKEWORD(0, 0),
+    lnk.argument.c_str(),
+    TRUE
+  );
+
+  CString msg;
+  msg.Format(L"Exported shortcut to `%s` %s.", lnk_export_dir.c_str(), result ? L"succeed" : L"failed");
+  AfxMessageBox(msg, MB_OK | result ? MB_ICONINFORMATION : MB_ICONERROR);
 }
