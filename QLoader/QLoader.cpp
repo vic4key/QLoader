@@ -341,3 +341,19 @@ vu::ulongptr QLoader::launch_with_patch_at_oep(
 
   return va_oep;
 }
+
+vu::sLNKW QLoader::export_as_lnk(
+  const launch_t mode,
+  const std::wstring& pe_file_dir,
+  const std::wstring& pe_file_path,
+  const std::wstring& pe_args)
+{
+  vu::sLNKW result;
+
+  result.path = vu::get_current_file_path_W();
+  result.directory = vu::get_current_directory_W();
+  result.argument = L"-pe <pe> -mp <mp>";
+  result.description = std::wstring(L"QLoader for ") + vu::extract_file_name_W(pe_file_path);
+
+  return result;
+}

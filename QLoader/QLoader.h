@@ -34,7 +34,13 @@ public:
   virtual void launch(
     const launch_t mode,
     const std::wstring& pe_file_dir,
-    const std::wstring& pe_file_name,
+    const std::wstring& pe_file_path,
+    const std::wstring& pe_args);
+
+  virtual vu::sLNKW export_as_lnk(
+    const launch_t mode,
+    const std::wstring& pe_file_dir,
+    const std::wstring& pe_file_path,
     const std::wstring& pe_args);
 
 private:
