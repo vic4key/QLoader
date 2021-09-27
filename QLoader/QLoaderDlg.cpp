@@ -396,7 +396,7 @@ void CQLoaderDlg::update_ui()
         json mp_jdata;
         std::wstring pe_path, pe_dir, pe_arg;
         if (this->parse_app_args(argc, argv, patch_when, pe_path, pe_dir, pe_arg, mp_jdata) &&
-            AfxMessageBox(L"Detected a QLoader file shortcut.\nWould you like to parse it?",
+            AfxMessageBox(L"Detected QLoader file shortcut.\nWould you like to parse it?",
               MB_YESNO | MB_ICONQUESTION) == IDYES)
         {
           m_patch_when = patch_when;
