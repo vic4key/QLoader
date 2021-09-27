@@ -71,6 +71,16 @@ void CQLoaderDlg::DoDataExchange(CDataExchange* pDX)
   DDX_Control(pDX, IDC_LOG, m_log);
 }
 
+BOOL CQLoaderDlg::PreTranslateMessage(MSG* pMsg)
+{
+  if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_ESCAPE)
+  {
+    return TRUE;
+  }
+
+  return __super::PreTranslateMessage(pMsg);
+}
+
 BEGIN_MESSAGE_MAP(CQLoaderDlg, CDialogEx)
   ON_WM_SYSCOMMAND()
   ON_WM_PAINT()
