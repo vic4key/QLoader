@@ -33,15 +33,24 @@ public:
 
   virtual void launch(
     const launch_t mode,
-    const std::wstring& pe_file_dir,
     const std::wstring& pe_file_path,
-    const std::wstring& pe_args);
+    const std::wstring& pe_file_dir,
+    const std::wstring& pe_file_arg);
 
   virtual vu::sLNKW export_as_lnk(
     const launch_t mode,
-    const std::wstring& pe_file_dir,
     const std::wstring& pe_file_path,
-    const std::wstring& pe_args);
+    const std::wstring& pe_file_dir,
+    const std::wstring& pe_file_arg);
+
+  bool parse_app_args(
+    int argc,
+    wchar_t** argv,
+    int& patch_when,
+    std::wstring& pe_file_path,
+    std::wstring& pe_file_dir,
+    std::wstring& pe_file_arg,
+    json& mp_jdata);
 
 private:
   vu::ulongptr launch_with_patch_at_oep(

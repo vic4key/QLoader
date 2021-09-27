@@ -2,6 +2,7 @@
 #include "QLoader.h"
 
 #include <map>
+#include <vector>
 #include <psapi.h>
 
 #include <winternl.h>
@@ -47,15 +48,15 @@ void QLoader::add_log(const std::wstring& line, const status_t status)
 
 void QLoader::launch(
   const launch_t mode,
-  const std::wstring& pe_file_dir,
   const std::wstring& pe_file_path,
-  const std::wstring& pe_args)
+  const std::wstring& pe_file_dir,
+  const std::wstring& pe_file_arg)
 {
   // create the target process as a suspend process
 
   PROCESS_INFORMATION pi = { 0 };
 
-  std::wstring args = pe_args;
+  std::wstring args = pe_file_arg;
   if (!args.empty())
   {
     std::wstring tmp = L"";
@@ -344,9 +345,9 @@ vu::ulongptr QLoader::launch_with_patch_at_oep(
 
 vu::sLNKW QLoader::export_as_lnk(
   const launch_t mode,
-  const std::wstring& pe_file_dir,
   const std::wstring& pe_file_path,
-  const std::wstring& pe_args)
+  const std::wstring& pe_file_dir,
+  const std::wstring& pe_file_arg)
 {
   vu::sLNKW result;
 
@@ -357,7 +358,7 @@ vu::sLNKW QLoader::export_as_lnk(
   json pe_jdata;
   pe_jdata["path"] = vu::to_string_A(pe_file_path);
   pe_jdata["dir"]  = vu::to_string_A(pe_file_dir);
-  pe_jdata["arg"]  = vu::to_string_A(pe_args);
+  pe_jdata["arg"]  = vu::to_string_A(pe_file_arg);
   const auto pe_string = pe_jdata.dump();
   std::vector<vu::byte> pe_data(pe_string.cbegin(), pe_string.cend());
   std::wstring pe_data_encoded;
@@ -380,4 +381,71 @@ vu::sLNKW QLoader::export_as_lnk(
   result.icon.second = 0;
 
   return result;
+}
+
+bool QLoader::parse_app_args(
+  int argc,
+  wchar_t** argv,
+  int& patch_when,
+  std::wstring& pe_file_path,
+  std::wstring& pe_file_dir,
+  std::wstring& pe_file_arg,
+  json& mp_jdata)
+{
+  patch_when = 0;
+  pe_file_path = L"";
+  pe_file_dir = L"";
+  pe_file_arg = L"";
+
+  if (argc != 6 || argv == nullptr) // Eg. `-mode <mode> -pe <pe_data> -mp <mp_data>`
+  {
+    return false;
+  }
+
+  std::vector<std::wstring> args(argc);
+  for (int i = 0; i < argc; i++)
+  {
+    args[i].assign(argv[i]);
+  }
+
+  if (args[0] == L"-mode")
+  {
+    const auto s = args[1];
+    if (s.length() == 1 && isdigit(s[0]))
+    {
+      patch_when = std::wcstol(s.c_str(), nullptr, 10);
+    }
+  }
+
+  if (args[2] == L"-pe")
+  {
+    std::vector<vu::byte> pe_data_decoded;
+    if (vu::crypt_b64decode_W(args[3], pe_data_decoded) && !pe_data_decoded.empty())
+    {
+      std::string pe_string(pe_data_decoded.cbegin(), pe_data_decoded.cend());
+      json pe_jdata = json::parse(pe_string);
+      if (pe_jdata.is_object())
+      {
+        auto pe_path = json_get(pe_jdata, "path", EMPTY);
+        auto pe_dir = json_get(pe_jdata, "dir", EMPTY);
+        auto pe_arg = json_get(pe_jdata, "arg", EMPTY);
+
+        pe_file_path = vu::to_string_W(pe_path);
+        pe_file_dir = vu::to_string_W(pe_dir);
+        pe_file_arg = vu::to_string_W(pe_arg);
+      }
+    }
+  }
+
+  if (args[4] == L"-mp")
+  {
+    std::vector<vu::byte> mp_data_decoded;
+    if (vu::crypt_b64decode_W(args[5], mp_data_decoded) && !mp_data_decoded.empty())
+    {
+      std::string mp_string(mp_data_decoded.cbegin(), mp_data_decoded.cend());
+      mp_jdata = json::parse(mp_string);
+    }
+  }
+
+  return !pe_file_path.empty() && !pe_file_dir.empty() && !mp_jdata.is_null();
 }

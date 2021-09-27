@@ -125,51 +125,14 @@ BOOL CQLoaderDlg::OnInitDialog()
 
   auto argc = 0;
   auto argv = CommandLineToArgvW(AfxGetApp()->m_lpCmdLine, &argc);
-  if (argc == 6) // Eg. `-mode <mode> -pe <pe_data> -mp <mp_data>`
+  int  patch_when = 0;
+  std::wstring pe_path, pe_dir, pe_arg;
+  if (this->parse_app_args(argc, argv, patch_when, pe_path, pe_dir, pe_arg, m_mp_jdata))
   {
-    std::vector<std::wstring> args(argc);
-    for (int i = 0; i < argc; i++)
-    {
-      args[i].assign(argv[i]);
-    }
-
-    if (args[0] == L"-mode")
-    {
-      const auto s = args[1];
-      if (s.length() == 1 && isdigit(s[0]))
-      {
-        m_patch_when = std::wcstol(s.c_str(), nullptr, 10);
-      }
-    }
-
-    if (args[2] == L"-pe")
-    {
-      std::vector<vu::byte> pe_data_decoded;
-      if (vu::crypt_b64decode_W(args[3], pe_data_decoded) && !pe_data_decoded.empty())
-      {
-        std::string pe_string(pe_data_decoded.cbegin(), pe_data_decoded.cend());
-        json pe_jdata = json::parse(pe_string);
-        if (pe_jdata.is_object())
-        {
-          auto pe_path = json_get(pe_jdata, "path", EMPTY);
-          auto pe_dir  = json_get(pe_jdata, "dir", EMPTY);
-          auto pe_arg  = json_get(pe_jdata, "arg", EMPTY);
-          m_pe_path = pe_path.c_str();
-          m_pe_dir  = pe_dir.c_str();
-          m_pe_arg  = pe_arg.c_str();
-        }
-      }
-    }
-
-    if (args[4] == L"-mp")
-    {
-      std::vector<vu::byte> mp_data_decoded;
-      if (vu::crypt_b64decode_W(args[5], mp_data_decoded) && !mp_data_decoded.empty())
-      {
-        std::string mp_string(mp_data_decoded.cbegin(), mp_data_decoded.cend());
-        m_mp_jdata = json::parse(mp_string);
-      }
-    }
+    m_patch_when = patch_when;
+    m_pe_path = pe_path.c_str();
+    m_pe_dir = pe_dir.c_str();
+    m_pe_arg = pe_arg.c_str();
 
     UpdateData(FALSE);
 
@@ -343,7 +306,7 @@ void CQLoaderDlg::OnBnClicked_Launch()
   UpdateData(TRUE);
 
   this->launch(
-    launch_t(m_patch_when), m_pe_dir.GetBuffer(0), m_pe_path.GetBuffer(0), m_pe_arg.GetBuffer(0));
+    launch_t(m_patch_when), m_pe_path.GetBuffer(0), m_pe_dir.GetBuffer(0), m_pe_arg.GetBuffer(0));
 }
 
 void CQLoaderDlg::OnBnClicked_Export()
@@ -365,9 +328,9 @@ void CQLoaderDlg::OnBnClicked_Export()
   const std::wstring lnk_file_path = path.as_string();
 
   const auto lnk = this->export_as_lnk(
-    launch_t(m_patch_when), m_pe_dir.GetBuffer(0), m_pe_path.GetBuffer(0), m_pe_arg.GetBuffer(0));
+    launch_t(m_patch_when), m_pe_path.GetBuffer(0), m_pe_dir.GetBuffer(0), m_pe_arg.GetBuffer(0));
 
-  bool succeed = vu::create_shortcut_lnk_W(lnk_file_path, lnk) == vu::VU_OK;
+  const bool succeed = vu::create_shortcut_lnk_W(lnk_file_path, lnk) == vu::VU_OK;
 
   auto line = vu::format(L"Export shortcut to `%s` %s",
     lnk_file_path.c_str(), succeed ? L"succeed" : L"failed");
