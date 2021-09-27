@@ -133,16 +133,16 @@ BOOL CQLoaderDlg::OnInitDialog()
   this->initialize_ui();
   this->reset_ui();
 
-  auto argc = 0;
-  auto argv = CommandLineToArgvW(AfxGetApp()->m_lpCmdLine, &argc);
+  json mp_jdata;
   auto patch_when = 0;
   std::wstring pe_path, pe_dir, pe_arg;
-  if (this->parse_app_args(argc, argv, patch_when, pe_path, pe_dir, pe_arg, m_mp_jdata))
+  if (this->parse_cmd_line(AfxGetApp()->m_lpCmdLine, patch_when, pe_path, pe_dir, pe_arg, mp_jdata))
   {
     m_patch_when = patch_when;
     m_pe_path = pe_path.c_str();
     m_pe_dir = pe_dir.c_str();
     m_pe_arg = pe_arg.c_str();
+    m_mp_jdata = mp_jdata;
 
     UpdateData(FALSE);
 
@@ -400,12 +400,10 @@ void CQLoaderDlg::update_ui()
       auto ptr_lnk = vu::parse_shortcut_lnk(this->GetSafeHwnd(), file_path);
       if (ptr_lnk != nullptr)
       {
-        auto argc = 0;
-        auto argv = CommandLineToArgvW(ptr_lnk->argument.c_str(), &argc);
-        auto patch_when = 0;
         json mp_jdata;
+        auto patch_when = 0;
         std::wstring pe_path, pe_dir, pe_arg;
-        if (this->parse_app_args(argc, argv, patch_when, pe_path, pe_dir, pe_arg, mp_jdata) &&
+        if (this->parse_cmd_line(ptr_lnk->argument, patch_when, pe_path, pe_dir, pe_arg, mp_jdata) &&
             AfxMessageBox(L"Detected QLoader file shortcut.\nWould you like to parse it?",
               MB_YESNO | MB_ICONQUESTION) == IDYES)
         {

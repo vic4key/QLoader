@@ -383,9 +383,8 @@ vu::sLNKW QLoader::export_as_lnk(
   return result;
 }
 
-bool QLoader::parse_app_args(
-  int argc,
-  wchar_t** argv,
+bool QLoader::parse_cmd_line(
+  const std::wstring& cmd_line,
   int& patch_when,
   std::wstring& pe_file_path,
   std::wstring& pe_file_dir,
@@ -397,6 +396,8 @@ bool QLoader::parse_app_args(
   pe_file_dir = L"";
   pe_file_arg = L"";
 
+  auto argc = 0;
+  auto argv = CommandLineToArgvW(cmd_line.c_str(), &argc);
   if (argc != 6 || argv == nullptr) // Eg. `-mode <mode> -pe <pe_data> -mp <mp_data>`
   {
     return false;

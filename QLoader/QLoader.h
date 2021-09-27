@@ -43,9 +43,8 @@ public:
     const std::wstring& pe_file_dir,
     const std::wstring& pe_file_arg);
 
-  bool parse_app_args(
-    int argc,
-    wchar_t** argv,
+  bool parse_cmd_line(
+    const std::wstring& cmd_line,
     int& patch_when,
     std::wstring& pe_file_path,
     std::wstring& pe_file_dir,
