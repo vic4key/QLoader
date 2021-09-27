@@ -484,9 +484,9 @@ void CQLoaderDlg::initialize_ui()
     case EasyTreeCtrl::eNotifyType::AFTER_MODIFYING:
     {
       if (pNode != nullptr &&
-        pNode->m_ptr_data != nullptr &&
-        pNode->m_ptr_tv != nullptr &&
-        pNode->m_ptr_tv->pszText)
+          pNode->m_ptr_data != nullptr &&
+          pNode->m_ptr_tv != nullptr &&
+          pNode->m_ptr_tv->pszText)
       {
         auto ptr_jobject = static_cast<json*>(pNode->m_ptr_data);
         if (ptr_jobject != nullptr)
@@ -608,8 +608,8 @@ void CQLoaderDlg::initialize_ui()
     case EasyTreeCtrl::eNotifyType::BOX_CHECKING:
     {
       if (pNode != nullptr &&
-        pNode->m_ptr_data != nullptr &&
-        pNode->m_ptr_tv != nullptr)
+          pNode->m_ptr_data != nullptr &&
+          pNode->m_ptr_tv != nullptr)
       {
         auto ptr_jobject = static_cast<json*>(pNode->m_ptr_data);
         if (ptr_jobject != nullptr)
