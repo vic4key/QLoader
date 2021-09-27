@@ -125,7 +125,7 @@ BOOL CQLoaderDlg::OnInitDialog()
 
   auto argc = 0;
   auto argv = CommandLineToArgvW(AfxGetApp()->m_lpCmdLine, &argc);
-  int  patch_when = 0;
+  auto patch_when = 0;
   std::wstring pe_path, pe_dir, pe_arg;
   if (this->parse_app_args(argc, argv, patch_when, pe_path, pe_dir, pe_arg, m_mp_jdata))
   {
@@ -386,12 +386,33 @@ void CQLoaderDlg::update_ui()
 
     if (!found_target && vu::ends_with(file_path_tmp, L".LNK"))
     {
+      m_mp_jdata.clear();
       auto ptr_lnk = vu::parse_shortcut_lnk(this->GetSafeHwnd(), file_path);
       if (ptr_lnk != nullptr)
       {
-        m_pe_path = ptr_lnk->path.c_str();
-        m_pe_dir = ptr_lnk->directory.c_str();
-        m_pe_arg = ptr_lnk->argument.c_str();
+        auto argc = 0;
+        auto argv = CommandLineToArgvW(ptr_lnk->argument.c_str(), &argc);
+        auto patch_when = 0;
+        json mp_jdata;
+        std::wstring pe_path, pe_dir, pe_arg;
+        if (this->parse_app_args(argc, argv, patch_when, pe_path, pe_dir, pe_arg, mp_jdata) &&
+            AfxMessageBox(L"Detected a QLoader file shortcut.\nWould you like to parse it?",
+              MB_YESNO | MB_ICONQUESTION) == IDYES)
+        {
+          m_patch_when = patch_when;
+          m_pe_path = pe_path.c_str();
+          m_pe_dir = pe_dir.c_str();
+          m_pe_arg = pe_arg.c_str();
+          m_mp_jdata = mp_jdata;
+        }
+        else
+        {
+          m_patch_when = int(launch_t::fully_loaded);
+          m_pe_path = ptr_lnk->path.c_str();
+          m_pe_dir = ptr_lnk->directory.c_str();
+          m_pe_arg = ptr_lnk->argument.c_str();
+        }
+
         found_target = true;
       }
     }
@@ -415,10 +436,12 @@ void CQLoaderDlg::update_ui()
   if (found_pattern)
   {
     std::wstring mp_path = m_mp_path.GetBuffer(0);
-    assert(vu::is_file_exists(mp_path));
-    std::string s = vu::to_string_A(mp_path);
-    std::ifstream fs(s);
-    m_mp_jdata = json::parse(fs);
+    if (vu::is_file_exists(mp_path))
+    {
+      std::string s = vu::to_string_A(mp_path);
+      std::ifstream fs(s);
+      m_mp_jdata = json::parse(fs);
+    }
   }
 
   this->populate_tree();
@@ -671,42 +694,36 @@ void CQLoaderDlg::populate_tree()
   m_mp_tree.ModifyStyle(0, TVS_CHECKBOXES);
 
   m_mp_tree.Populate([&](HTREEITEM& root) -> void
+  {
+    m_mp_tree.SetItemState(root, 0, TVIS_STATEIMAGEMASK);
+
+    auto fn_tree_add_node_str = [&](HTREEITEM& hparent, json& jobject, std::string key) -> HTREEITEM
     {
-      m_mp_tree.SetItemState(root, 0, TVIS_STATEIMAGEMASK);
+      auto hitem = m_mp_tree.InsertNode(hparent, new jnode_t(key));
+      m_mp_tree.SetItemState(hitem, 0, TVIS_STATEIMAGEMASK);
+      auto string = json_get(jobject, key, EMPTY);
+      hitem = m_mp_tree.InsertNode(hitem, new jnode_t(string, &jobject[key], &jobject));
+      m_mp_tree.SetItemState(hitem, 0, TVIS_STATEIMAGEMASK);
+      return hitem;
+    };
 
-      auto fn_tree_add_node_str = [&](HTREEITEM& hparent, json& jobject, std::string key) -> HTREEITEM
-      {
-        auto hitem = m_mp_tree.InsertNode(hparent, new jnode_t(key));
-        m_mp_tree.SetItemState(hitem, 0, TVIS_STATEIMAGEMASK);
-        auto string = json_get(jobject, key, EMPTY);
-        hitem = m_mp_tree.InsertNode(hitem, new jnode_t(string, &jobject[key], &jobject));
-        m_mp_tree.SetItemState(hitem, 0, TVIS_STATEIMAGEMASK);
-        return hitem;
-      };
+    auto fn_tree_add_node_int = [&](HTREEITEM& hparent, json& jobject, std::string key) -> HTREEITEM
+    {
+      auto hitem = m_mp_tree.InsertNode(hparent, new jnode_t(key));
+      m_mp_tree.SetItemState(hitem, 0, TVIS_STATEIMAGEMASK);
+      auto number = json_get(jobject, key, 0);
+      hitem = m_mp_tree.InsertNode(hitem, new jnode_t(std::to_string(number), &jobject[key], &jobject));
+      m_mp_tree.SetItemState(hitem, 0, TVIS_STATEIMAGEMASK);
+      return hitem;
+    };
 
-      auto fn_tree_add_node_int = [&](HTREEITEM& hparent, json& jobject, std::string key) -> HTREEITEM
-      {
-        auto hitem = m_mp_tree.InsertNode(hparent, new jnode_t(key));
-        m_mp_tree.SetItemState(hitem, 0, TVIS_STATEIMAGEMASK);
-        auto number = json_get(jobject, key, 0);
-        hitem = m_mp_tree.InsertNode(hitem, new jnode_t(std::to_string(number), &jobject[key], &jobject));
-        m_mp_tree.SetItemState(hitem, 0, TVIS_STATEIMAGEMASK);
-        return hitem;
-      };
-
-      auto& jmodules = m_mp_jdata["modules"];
-    assert(jmodules.is_array());
-
-    for (auto& jmodule : jmodules)
+    for (auto& jmodule : m_mp_jdata["modules"])
     {
       auto module_name = json_get(jmodule, "name", EMPTY);
       auto hmodule = m_mp_tree.InsertNode(root, new jnode_t(module_name, &jmodule["name"], &jmodule));
       m_mp_tree.SetCheck(hmodule, json_get(jmodule, "enabled", true));
 
-      auto& jpatches = jmodule["patches"];
-      assert(jpatches.is_array());
-
-      for (auto& jpatch : jpatches)
+      for (auto& jpatch : jmodule["patches"])
       {
         auto patch_name = json_get(jpatch, "name", UNNAMED);
         if (auto hpatch = m_mp_tree.InsertNode(hmodule, new jnode_t(patch_name, &jpatch["name"], &jpatch)))
