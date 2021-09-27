@@ -468,199 +468,199 @@ void CQLoaderDlg::update_ui()
 void CQLoaderDlg::initialize_ui()
 {
   m_mp_tree.OnNotify([&](EasyTreeCtrl::eNotifyType action, Node* pNode) -> bool
+  {
+    switch (action)
     {
-      switch (action)
-      {
-      case EasyTreeCtrl::eNotifyType::BEFORE_MODIFYING:
-      {
-        auto ptr_jnode = static_cast<jnode_t*>(pNode);
-        return // continue processing if data node
-          ptr_jnode != nullptr &&
-          ptr_jnode->m_ptr_data != nullptr &&
-          ptr_jnode->m_ptr_tv->state & TVIF_IMAGE;
-      }
-      break;
+    case EasyTreeCtrl::eNotifyType::BEFORE_MODIFYING:
+    {
+      auto ptr_jnode = static_cast<jnode_t*>(pNode);
+      return // continue processing if data node
+        ptr_jnode != nullptr &&
+        ptr_jnode->m_ptr_data != nullptr &&
+        ptr_jnode->m_ptr_tv->state & TVIF_IMAGE;
+    }
+    break;
 
-      case EasyTreeCtrl::eNotifyType::AFTER_MODIFYING:
+    case EasyTreeCtrl::eNotifyType::AFTER_MODIFYING:
+    {
+      if (pNode != nullptr &&
+        pNode->m_ptr_data != nullptr &&
+        pNode->m_ptr_tv != nullptr &&
+        pNode->m_ptr_tv->pszText)
       {
-        if (pNode != nullptr &&
-          pNode->m_ptr_data != nullptr &&
-          pNode->m_ptr_tv != nullptr &&
-          pNode->m_ptr_tv->pszText)
+        auto ptr_jobject = static_cast<json*>(pNode->m_ptr_data);
+        if (ptr_jobject != nullptr)
         {
-          auto ptr_jobject = static_cast<json*>(pNode->m_ptr_data);
-          if (ptr_jobject != nullptr)
+          auto new_value = vu::to_string_A(pNode->m_ptr_tv->pszText);
+          auto old_value = EMPTY;
+
+          bool modified = false;
+
+          auto& jobject = static_cast<json&>(*ptr_jobject);
+          if (jobject.is_string())
           {
-            auto new_value = vu::to_string_A(pNode->m_ptr_tv->pszText);
-            auto old_value = EMPTY;
+            old_value = jobject.get<std::string>();
+            jobject = new_value;
+            modified = true;
+          }
+          else if (jobject.is_number())
+          {
+            old_value = std::to_string(jobject.get<int>());
+            jobject = std::atoi(new_value.c_str());
+            modified = true;
+          }
 
-            bool modified = false;
-
-            auto& jobject = static_cast<json&>(*ptr_jobject);
-            if (jobject.is_string())
-            {
-              old_value = jobject.get<std::string>();
-              jobject = new_value;
-              modified = true;
-            }
-            else if (jobject.is_number())
-            {
-              old_value = std::to_string(jobject.get<int>());
-              jobject = std::atoi(new_value.c_str());
-              modified = true;
-            }
-
-            if (modified)
-            {
-              auto line = vu::format(L"Modify `%S` to `%S` succeed", old_value.c_str(), new_value.c_str());
-              this->add_log(line, status_t::success);
-            }
+          if (modified)
+          {
+            auto line = vu::format(L"Modify `%S` to `%S` succeed", old_value.c_str(), new_value.c_str());
+            this->add_log(line, status_t::success);
           }
         }
       }
-      break;
+    }
+    break;
 
-      case EasyTreeCtrl::eNotifyType::BEFORE_DELETING:
+    case EasyTreeCtrl::eNotifyType::BEFORE_DELETING:
+    {
+      auto ptr_jnode = static_cast<jnode_t*>(pNode);
+      return // continue processing if data node
+        ptr_jnode != nullptr &&
+        ptr_jnode->m_ptr_data != nullptr &&
+        ptr_jnode->m_ptr_tv->state & TVIS_STATEIMAGEMASK;
+    }
+    break;
+
+    case EasyTreeCtrl::eNotifyType::AFTER_DELETING:
+    {
+      auto ptr_jnode = static_cast<jnode_t*>(pNode);
+      if (ptr_jnode == nullptr)
       {
-        auto ptr_jnode = static_cast<jnode_t*>(pNode);
-        return // continue processing if data node
-          ptr_jnode != nullptr &&
-          ptr_jnode->m_ptr_data != nullptr &&
-          ptr_jnode->m_ptr_tv->state & TVIS_STATEIMAGEMASK;
+        return false;
       }
-      break;
 
-      case EasyTreeCtrl::eNotifyType::AFTER_DELETING:
+      assert(pNode->m_ptr_data != nullptr);
+
+      auto ptr_jobject = static_cast<json*>(pNode->m_ptr_data);
+      if (ptr_jobject != nullptr)
       {
-        auto ptr_jnode = static_cast<jnode_t*>(pNode);
-        if (ptr_jnode == nullptr)
+        auto  ptr_jparent = static_cast<jnode_t*>(pNode)->m_ptr_parent;
+        auto& jparent = static_cast<json&>(*ptr_jparent);
+        auto& jobject = static_cast<json&>(*ptr_jobject);
+
+        bool  deleted = false;
+        json* ptr_jitems = nullptr;
+
+        auto& jmodules = m_mp_jdata["modules"];
+        auto  item_name = jobject.get<std::string>();
+
+        const auto fn_find_and_delete = [&](json& jitems, const std::string& item, bool patch)
         {
+          for (auto it = jitems.begin(); it != jitems.end(); it++)
+          {
+            auto& jitem = *it;
+
+            bool checked = true;
+            if (patch)
+            {
+              checked &= jitem["pattern"] == jparent["pattern"];
+              checked &= jitem["replacement"] == jparent["replacement"];
+              checked &= jitem["offset"] == jparent["offset"];
+            }
+
+            auto key = json_get(jitem, "name", EMPTY);
+            if (key != EMPTY && item != EMPTY && item == key && checked)
+            {
+              jitems.erase(it);
+              return true;
+            }
+          }
+
           return false;
+        };
+
+        if (jparent.find("offset") != jparent.end()) // delete a patch
+        {
+          for (auto& jmodule : jmodules)
+          {
+            if (fn_find_and_delete(jmodule["patches"], item_name, true))
+            {
+              deleted = true;
+              break;
+            }
+          }
+        }
+        else // delete a module
+        {
+          deleted = fn_find_and_delete(jmodules, item_name, false);
         }
 
-        assert(pNode->m_ptr_data != nullptr);
+        if (deleted)
+        {
+          auto line = vu::format(L"Delete `%S` succeed", item_name.c_str());
+          this->add_log(line, status_t::success);
 
+          this->update_ui();
+        }
+      }
+    }
+    break;
+
+    case EasyTreeCtrl::eNotifyType::BOX_CHECKING:
+    {
+      if (pNode != nullptr &&
+        pNode->m_ptr_data != nullptr &&
+        pNode->m_ptr_tv != nullptr)
+      {
         auto ptr_jobject = static_cast<json*>(pNode->m_ptr_data);
         if (ptr_jobject != nullptr)
         {
           auto  ptr_jparent = static_cast<jnode_t*>(pNode)->m_ptr_parent;
           auto& jparent = static_cast<json&>(*ptr_jparent);
-          auto& jobject = static_cast<json&>(*ptr_jobject);
 
-          bool  deleted = false;
-          json* ptr_jitems = nullptr;
+          bool checked = m_mp_tree.GetCheck(pNode->m_ptr_tv->hItem) == BST_CHECKED;
+          jparent["enabled"] = !checked; // this will add to json object if not exists
+          m_mp_tree.SetCheck(pNode->m_ptr_tv->hItem, checked ? BST_UNCHECKED : BST_CHECKED);
 
-          auto& jmodules = m_mp_jdata["modules"];
-          auto  item_name = jobject.get<std::string>();
-
-          const auto fn_find_and_delete = [&](json& jitems, const std::string& item, bool patch)
-          {
-            for (auto it = jitems.begin(); it != jitems.end(); it++)
-            {
-              auto& jitem = *it;
-
-              bool checked = true;
-              if (patch)
-              {
-                checked &= jitem["pattern"] == jparent["pattern"];
-                checked &= jitem["replacement"] == jparent["replacement"];
-                checked &= jitem["offset"] == jparent["offset"];
-              }
-
-              auto key = json_get(jitem, "name", EMPTY);
-              if (key != EMPTY && item != EMPTY && item == key && checked)
-              {
-                jitems.erase(it);
-                return true;
-              }
-            }
-
-            return false;
-          };
-
-          if (jparent.find("offset") != jparent.end()) // delete a patch
-          {
-            for (auto& jmodule : jmodules)
-            {
-              if (fn_find_and_delete(jmodule["patches"], item_name, true))
-              {
-                deleted = true;
-                break;
-              }
-            }
-          }
-          else // delete a module
-          {
-            deleted = fn_find_and_delete(jmodules, item_name, false);
-          }
-
-          if (deleted)
-          {
-            auto line = vu::format(L"Delete `%S` succeed", item_name.c_str());
-            this->add_log(line, status_t::success);
-
-            this->update_ui();
-          }
+          auto line = vu::to_string_W(json_get(jparent, "name", EMPTY));
+          line = vu::format(L"%s `%s` succeed", checked ? L"Disable" : L"Enable", line.c_str());
+          this->add_log(line, status_t::success);
         }
       }
-      break;
+    }
+    break;
 
-      case EasyTreeCtrl::eNotifyType::BOX_CHECKING:
-      {
-        if (pNode != nullptr &&
-          pNode->m_ptr_data != nullptr &&
-          pNode->m_ptr_tv != nullptr)
-        {
-          auto ptr_jobject = static_cast<json*>(pNode->m_ptr_data);
-          if (ptr_jobject != nullptr)
-          {
-            auto  ptr_jparent = static_cast<jnode_t*>(pNode)->m_ptr_parent;
-            auto& jparent = static_cast<json&>(*ptr_jparent);
+    default: // no handler
+      return false;
+    }
 
-            bool checked = m_mp_tree.GetCheck(pNode->m_ptr_tv->hItem) == BST_CHECKED;
-            jparent["enabled"] = !checked; // this will add to json object if not exists
-            m_mp_tree.SetCheck(pNode->m_ptr_tv->hItem, checked ? BST_UNCHECKED : BST_CHECKED);
+    #ifdef _DEBUG
 
-            auto line = vu::to_string_W(json_get(jparent, "name", EMPTY));
-            line = vu::format(L"%s `%s` succeed", checked ? L"Disable" : L"Enable", line.c_str());
-            this->add_log(line, status_t::success);
-          }
-        }
-      }
-      break;
+    const wchar_t* actions[] =
+    {
+      L"SELECTING",
+      L"BOX_CHECKING",
 
-      default: // no handler
-        return false;
-      }
+      L"BEFORE_INSERTING",
+      L"AFTER_INSERTING",
 
-#ifdef _DEBUG
+      L"BEFORE_MODIFYING",
+      L"AFTER_MODIFYING",
 
-      const wchar_t* actions[] =
-      {
-        L"SELECTING",
-        L"BOX_CHECKING",
+      L"BEFORE_DELETING",
+      L"AFTER_DELETING",
+    };
 
-        L"BEFORE_INSERTING",
-        L"AFTER_INSERTING",
+    CString s;
+    s.Format(L"`%s` -> %s", actions[int(action)], pNode != nullptr ? pNode->m_name.GetBuffer(0) : L"<empty>");
+    OutputDebugStringW(s.GetBuffer());
 
-        L"BEFORE_MODIFYING",
-        L"AFTER_MODIFYING",
+    std::ofstream file("test\\dump.json");
+    file << m_mp_jdata.dump(1, '\t');
 
-        L"BEFORE_DELETING",
-        L"AFTER_DELETING",
-      };
+    #endif // _DEBUG
 
-      CString s;
-      s.Format(L"`%s` -> %s", actions[int(action)], pNode != nullptr ? pNode->m_name.GetBuffer(0) : L"<empty>");
-      OutputDebugStringW(s.GetBuffer());
-
-      std::ofstream file("test\\dump.json");
-      file << m_mp_jdata.dump(1, '\t');
-
-#endif // _DEBUG
-
-      return true;
-    });
+    return true;
+  });
 
   // for log ctrl
 
