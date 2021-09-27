@@ -190,6 +190,25 @@ void EasyTreeCtrl::OnNotify(std::function<bool(eNotifyType action, Node* pNode)>
   m_pfnOnNotify = pfn;
 }
 
+BOOL EasyTreeCtrl::PreTranslateMessage(MSG* pMsg)
+{
+  if (pMsg->message == WM_KEYDOWN)
+  {
+    if (pMsg->wParam == VK_RETURN)
+    {
+      this->EndEditLabelNow(FALSE);
+      return TRUE;
+    }
+    else if (pMsg->wParam == VK_ESCAPE)
+    {
+      this->EndEditLabelNow(TRUE);
+      return TRUE;
+    }
+  }
+
+  return __super::PreTranslateMessage(pMsg);
+}
+
 bool EasyTreeCtrl::Notify(eNotifyType action, HTREEITEM pItem)
 {
   if (pItem == nullptr)

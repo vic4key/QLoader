@@ -60,6 +60,9 @@ public:
 public:
   void OnNotify(std::function<bool(eNotifyType action, Node* pNode)> pfn);
 
+protected:
+  virtual BOOL PreTranslateMessage(MSG* pMsg);
+
 public:
   afx_msg void OnDestroy();
 

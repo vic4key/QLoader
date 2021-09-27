@@ -477,7 +477,7 @@ void CQLoaderDlg::initialize_ui()
         return // continue processing if data node
           ptr_jnode != nullptr &&
           ptr_jnode->m_ptr_data != nullptr &&
-          ptr_jnode->m_ptr_tv->state & TVIS_STATEIMAGEMASK;
+          ptr_jnode->m_ptr_tv->state & TVIF_IMAGE;
       }
       break;
 
