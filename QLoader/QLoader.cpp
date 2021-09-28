@@ -300,13 +300,13 @@ vu::ulongptr QLoader::launch_with_patch_at_oep(
   {
     PEB_T<vu::pe64> peb;
     process.read_memory(vu::ulongptr(pbi.PebBaseAddress), &peb, sizeof(peb));
-    base_address = peb.ImageBaseAddress;
+    base_address = vu::ulongptr(peb.ImageBaseAddress);
   }
   else // x86
   {
     PEB_T<vu::pe32> peb;
     process.read_memory(vu::ulongptr(pbi.PebBaseAddress), &peb, sizeof(peb));
-    base_address = peb.ImageBaseAddress;
+    base_address = vu::ulongptr(peb.ImageBaseAddress);
   }
 
   // get rva original entry point of the target process
