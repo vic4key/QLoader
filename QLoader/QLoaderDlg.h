@@ -50,8 +50,7 @@ protected:
   afx_msg void OnBnClicked_Clear();
   afx_msg void OnBnClicked_Export();
   afx_msg void OnBnClicked_Launch();
-  afx_msg void OnEnKillfocus_PEDir();
-  afx_msg void OnEnKillfocus_PEArg();
+  afx_msg void OnUpdate_UIData();
   DECLARE_MESSAGE_MAP()
 
 private:

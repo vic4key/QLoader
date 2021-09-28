@@ -93,8 +93,11 @@ BEGIN_MESSAGE_MAP(CQLoaderDlg, CDialogEx)
   ON_BN_CLICKED(IDC_CLEAR, OnBnClicked_Clear)
   ON_BN_CLICKED(IDC_LAUNCH, OnBnClicked_Launch)
   ON_BN_CLICKED(IDC_EXPORT, OnBnClicked_Export)
-  ON_EN_KILLFOCUS(IDC_PE_DIR, OnEnKillfocus_PEDir)
-  ON_EN_KILLFOCUS(IDC_PE_ARG, OnEnKillfocus_PEArg)
+  ON_EN_KILLFOCUS(IDC_PE_DIR, OnUpdate_UIData)
+  ON_EN_KILLFOCUS(IDC_PE_ARG, OnUpdate_UIData)
+  ON_BN_CLICKED(IDC_PATCH_WHEN, OnUpdate_UIData)
+  ON_BN_CLICKED(IDC_PATCH_WHEN_1, OnUpdate_UIData)
+  ON_BN_CLICKED(IDC_PATCH_WHEN_2, OnUpdate_UIData)
 END_MESSAGE_MAP()
 
 // CQLoaderDlg message handlers
@@ -301,16 +304,6 @@ void CQLoaderDlg::OnBnClicked_Clear()
   m_log.DeleteAllItems();
 }
 
-void CQLoaderDlg::OnEnKillfocus_PEDir()
-{
-  UpdateData(TRUE);
-}
-
-void CQLoaderDlg::OnEnKillfocus_PEArg()
-{
-  UpdateData(TRUE);
-}
-
 void CQLoaderDlg::OnBnClicked_Launch()
 {
   UpdateData(TRUE);
@@ -347,6 +340,11 @@ void CQLoaderDlg::OnBnClicked_Export()
   this->add_log(line, succeed ? QLoader::status_t::success : QLoader::status_t::error);
 }
 
+void CQLoaderDlg::OnUpdate_UIData()
+{
+  UpdateData(TRUE);
+}
+
 void CQLoaderDlg::add_log(const std::wstring& line, const status_t status)
 {
   LVITEM lvi = { 0 };
@@ -368,6 +366,7 @@ void CQLoaderDlg::reset_ui()
   m_pe_dir = _T("");
   m_pe_arg = _T("");
   m_mp_path = _T("");
+  m_patch_when = int(launch_t::fully_loaded);
 
   m_mp_jdata.clear();
   m_mp_tree.Clear();
@@ -414,7 +413,6 @@ void CQLoaderDlg::update_ui()
         }
         else
         {
-          m_patch_when = int(launch_t::fully_loaded);
           m_pe_path = ptr_lnk->path.c_str();
           m_pe_dir = ptr_lnk->directory.c_str();
           m_pe_arg = ptr_lnk->argument.c_str();

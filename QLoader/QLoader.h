@@ -12,7 +12,7 @@ public:
   QLoader();
   virtual ~QLoader();
 
-  enum class status_t : int
+  enum class status_t
   {
     none,
     success,
@@ -20,7 +20,7 @@ public:
     error,
   };
 
-  enum class launch_t : int
+  enum class launch_t
   {
     fully_loaded,
     at_entry_point,
