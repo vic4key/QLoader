@@ -396,7 +396,6 @@ void CQLoaderDlg::update_ui()
 
     if (!found_target && vu::ends_with(file_path_tmp, L".LNK"))
     {
-      m_mp_jdata.clear();
       auto ptr_lnk = vu::parse_shortcut_lnk(this->GetSafeHwnd(), file_path);
       if (ptr_lnk != nullptr)
       {
