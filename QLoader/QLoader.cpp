@@ -403,11 +403,29 @@ bool QLoader::parse_cmd_line(
   auto cmd_line_tmp = vu::trim_string_W(cmd_line);
   if (vu::contains_string_W(cmd_line_tmp, qloader_protocol_handler, true))
   {
+    std::wstring url_decoded;
+    vu::url_decode_W(cmd_line_tmp, url_decoded);
+    if (!url_decoded.empty())
+    {
+      cmd_line_tmp = url_decoded;
+    }
+
+    if (cmd_line_tmp.empty())
+    {
+      return false;
+    }
+
     cmd_line_tmp.assign(cmd_line_tmp.cbegin() + 1, cmd_line_tmp.cend() - 1);
+
     if (vu::starts_with_W(cmd_line_tmp, qloader_protocol_handler, true))
     {
       cmd_line_tmp.assign(cmd_line_tmp.cbegin() + qloader_protocol_handler.size(), cmd_line_tmp.cend());
       cmd_line_tmp = vu::trim_string_W(cmd_line_tmp);
+    }
+
+    if (cmd_line_tmp.empty())
+    {
+      return false;
     }
   }
 
