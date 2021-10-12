@@ -393,7 +393,7 @@ void CQLoaderDlg::update_ui()
     auto file_path_tmp = file_path;
     file_path_tmp = vu::upper_string(file_path_tmp);
 
-    if (!found_target && vu::ends_with(file_path_tmp, L".LNK"))
+    if (!found_target && vu::ends_with(file_path_tmp, L".LNK", true))
     {
       auto ptr_lnk = vu::parse_shortcut_lnk(this->GetSafeHwnd(), file_path);
       if (ptr_lnk != nullptr)
@@ -422,14 +422,14 @@ void CQLoaderDlg::update_ui()
       }
     }
 
-    if (!found_target && vu::ends_with(file_path_tmp, L".EXE"))
+    if (!found_target && vu::ends_with(file_path_tmp, L".EXE", true))
     {
       m_pe_path = file_path.c_str();
       m_pe_dir = vu::extract_file_directory(file_path.c_str()).c_str();
       found_target = true;
     }
 
-    if (!found_pattern && vu::ends_with(file_path_tmp, L".JSON"))
+    if (!found_pattern && vu::ends_with(file_path_tmp, L".JSON", true))
     {
       m_mp_path = file_path.c_str();
       found_pattern = true;

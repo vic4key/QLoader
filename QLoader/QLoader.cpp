@@ -12,7 +12,7 @@
 #pragma comment(lib, "dbghelp")
 
 static json g_mp_jdata;
-static const std::vector<std::wstring> USABLE_FILE_EXTENSIONS = { L".EXE", L".LNK", L".JSON" };
+static const std::vector<std::wstring> USABLE_FILE_EXTENSIONS = { L".EXE", L".JSON", L".LNK", L".URL"};
 
 QLoader::QLoader() : m_mp_jdata(g_mp_jdata)
 {
@@ -396,8 +396,25 @@ bool QLoader::parse_cmd_line(
   pe_file_dir = L"";
   pe_file_arg = L"";
 
+  // protocol handler format, convert to a command line string
+  // Eg. "qloader: -mode 0 -pe "..." -mp "...""
+
+  const std::wstring qloader_protocol_handler = L"qloader:";
+  auto cmd_line_tmp = vu::trim_string_W(cmd_line);
+  if (vu::contains_string_W(cmd_line_tmp, qloader_protocol_handler, true))
+  {
+    cmd_line_tmp.assign(cmd_line_tmp.cbegin() + 1, cmd_line_tmp.cend() - 1);
+    if (vu::starts_with_W(cmd_line_tmp, qloader_protocol_handler, true))
+    {
+      cmd_line_tmp.assign(cmd_line_tmp.cbegin() + qloader_protocol_handler.size(), cmd_line_tmp.cend());
+      cmd_line_tmp = vu::trim_string_W(cmd_line_tmp);
+    }
+  }
+
+  // serialize a command line string to a list of arguments
+
   auto argc = 0;
-  auto argv = CommandLineToArgvW(cmd_line.c_str(), &argc);
+  auto argv = CommandLineToArgvW(cmd_line_tmp.c_str(), &argc);
   if (argc != 6 || argv == nullptr) // Eg. `-mode <mode> -pe <pe_data> -mp <mp_data>`
   {
     return false;
@@ -409,6 +426,8 @@ bool QLoader::parse_cmd_line(
     args[i].assign(argv[i]);
   }
 
+  // parsing patching mode
+
   if (args[0] == L"-mode")
   {
     const auto s = args[1];
@@ -417,6 +436,8 @@ bool QLoader::parse_cmd_line(
       patch_when = std::wcstol(s.c_str(), nullptr, 10);
     }
   }
+
+  // parsing pe fields
 
   if (args[2] == L"-pe")
   {
@@ -437,6 +458,8 @@ bool QLoader::parse_cmd_line(
       }
     }
   }
+
+  // parsing mp fields
 
   if (args[4] == L"-mp")
   {
