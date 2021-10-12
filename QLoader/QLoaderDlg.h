@@ -49,6 +49,9 @@ protected:
   afx_msg void OnBnClicked_MPSave();
   afx_msg void OnBnClicked_Clear();
   afx_msg void OnBnClicked_Export();
+  afx_msg void OnBnClicked_ExportLNK();
+  afx_msg void OnBnClicked_ExportURL();
+  afx_msg void OnBnClicked_ExportHTML();
   afx_msg void OnBnClicked_Launch();
   afx_msg void OnUpdate_UIData();
   DECLARE_MESSAGE_MAP()
@@ -63,7 +66,7 @@ private:
   CListCtrl m_log;
   EasyTreeCtrl m_mp_tree;
   CButton m_button_mp_save;
-  CButton m_button_export;
+  CSplitButton m_button_export;
   CButton m_button_launch;
   std::vector<std::wstring> m_file_paths;
 };

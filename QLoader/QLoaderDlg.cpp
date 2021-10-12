@@ -93,6 +93,9 @@ BEGIN_MESSAGE_MAP(CQLoaderDlg, CDialogEx)
   ON_BN_CLICKED(IDC_CLEAR, OnBnClicked_Clear)
   ON_BN_CLICKED(IDC_LAUNCH, OnBnClicked_Launch)
   ON_BN_CLICKED(IDC_EXPORT, OnBnClicked_Export)
+  ON_COMMAND(IDM_EXPORT_LNK, OnBnClicked_ExportLNK)
+  ON_COMMAND(IDM_EXPORT_URL, OnBnClicked_ExportURL)
+  ON_COMMAND(IDM_EXPORT_HTML, OnBnClicked_ExportHTML)
   ON_EN_KILLFOCUS(IDC_PE_DIR, OnUpdate_UIData)
   ON_EN_KILLFOCUS(IDC_PE_ARG, OnUpdate_UIData)
   ON_BN_CLICKED(IDC_PATCH_WHEN, OnUpdate_UIData)
@@ -314,29 +317,135 @@ void CQLoaderDlg::OnBnClicked_Launch()
 
 void CQLoaderDlg::OnBnClicked_Export()
 {
+  this->SendMessage(WM_COMMAND, IDM_EXPORT_LNK);
+}
+
+void CQLoaderDlg::OnBnClicked_ExportLNK()
+{
   UpdateData(TRUE);
 
   vu::PickerW picker;
-  std::wstring lnk_dir;
-  if (!picker.choose_directory(lnk_dir))
+  std::wstring file_dir;
+  if (!picker.choose_directory(file_dir))
   {
     return;
   }
 
-  std::wstring lnk_file_name = vu::extract_file_name_W(m_pe_path.GetBuffer(0), false);
-  lnk_file_name += L" (QLoader).lnk";
+  std::wstring file_name = vu::extract_file_name_W(m_pe_path.GetBuffer(0), false);
+  file_name += L" (QLoader).LNK";
 
   vu::PathW path;
-  path.join(lnk_dir).join(lnk_file_name).finalize();
-  const std::wstring lnk_file_path = path.as_string();
+  path.join(file_dir).join(file_name).finalize();
+  const std::wstring file_path = path.as_string();
 
   const auto lnk = this->export_as_lnk(
     launch_t(m_patch_when), m_pe_path.GetBuffer(0), m_pe_dir.GetBuffer(0), m_pe_arg.GetBuffer(0));
 
-  const bool succeed = vu::create_shortcut_lnk_W(lnk_file_path, lnk) == vu::VU_OK;
+  const bool succeed = vu::create_shortcut_lnk_W(file_path, lnk) == vu::VU_OK;
 
-  auto line = vu::format(L"Export shortcut to `%s` %s",
-    lnk_file_path.c_str(), succeed ? L"succeed" : L"failed");
+  auto line = vu::format(L"Export as Windows Shortcut to `%s` %s",
+    file_path.c_str(), succeed ? L"succeed" : L"failed");
+  this->add_log(line, succeed ? QLoader::status_t::success : QLoader::status_t::error);
+}
+
+void CQLoaderDlg::OnBnClicked_ExportURL()
+{
+  UpdateData(TRUE);
+
+  vu::PickerW picker;
+  std::wstring file_dir;
+  if (!picker.choose_directory(file_dir))
+  {
+    return;
+  }
+
+  std::wstring file_name = vu::extract_file_name_W(m_pe_path.GetBuffer(0), false);
+  file_name += L" (QLoader).URL";
+
+  vu::PathW path;
+  path.join(file_dir).join(file_name).finalize();
+  const std::wstring file_path = path.as_string();
+
+  const auto lnk = this->export_as_lnk(
+    launch_t(m_patch_when), m_pe_path.GetBuffer(0), m_pe_dir.GetBuffer(0), m_pe_arg.GetBuffer(0));
+
+  const wchar_t* url_file_content_template =
+    L"[{000214A0-0000-0000-C000-000000000046}]\n"
+    L"Prop3=19,0\n"
+    L"[InternetShortcut]\n"
+    L"URL=%s %s\n"
+    L"IDList=\n"
+    L"HotKey=0\n"
+    L"IconFile=%s\n"
+    L"IconIndex=%d\n";
+
+  auto url_file_content_W = vu::format_W(url_file_content_template,
+    protocol_handler.c_str(), lnk.argument.c_str(), lnk.icon.first.c_str(), lnk.icon.second);
+  auto url_file_content_A = vu::to_string_A(url_file_content_W);
+
+  std::vector<vu::byte> url_file_content(url_file_content_A.cbegin(), url_file_content_A.cend());
+  const bool succeed = vu::write_file_binary_W(file_path, url_file_content);
+
+  auto line = vu::format(L"Export as Internet Shortcut to `%s` %s",
+    file_path.c_str(), succeed ? L"succeed" : L"failed");
+  this->add_log(line, succeed ? QLoader::status_t::success : QLoader::status_t::error);
+}
+
+void CQLoaderDlg::OnBnClicked_ExportHTML()
+{
+  UpdateData(TRUE);
+
+  const auto fn_copy_text_to_clipboard = [](const std::wstring& text) -> bool
+  {
+    if (text.empty())
+    {
+      return false;
+    }
+
+    size_t text_size = 2 * (text.length() + 1);
+
+    HGLOBAL hga = ::GlobalAlloc(GMEM_MOVEABLE | GMEM_ZEROINIT, text_size);
+    if (hga == nullptr)
+    {
+      return false;
+    }
+
+    LPVOID ptr = ::GlobalLock(hga);
+    if (ptr == nullptr)
+    {
+      return false;
+    }
+
+    ::CopyMemory(ptr, text.data(), text_size);
+
+    ::GlobalUnlock(hga);
+
+    ::OpenClipboard(0);
+    ::EmptyClipboard();
+    ::SetClipboardData(CF_UNICODETEXT, hga);
+    ::CloseClipboard();
+
+    ::GlobalFree(hga);
+
+    return true;
+  };
+
+  const auto lnk = this->export_as_lnk(
+    launch_t(m_patch_when), m_pe_path.GetBuffer(0), m_pe_dir.GetBuffer(0), m_pe_arg.GetBuffer(0));
+
+  std::wstring file_name = vu::extract_file_name_W(m_pe_path.GetBuffer(0), false);
+  file_name += L" (QLoader)";
+
+  std::wstring lnk_argument_url_encoded;
+  vu::url_encode_W(lnk.argument, lnk_argument_url_encoded);
+
+  const auto html_hyperlink = vu::format_W(L"<a href=\"%s %s\">%s</a>",
+    protocol_handler.c_str(), lnk_argument_url_encoded.c_str(), file_name.c_str());
+
+  const bool succeed = fn_copy_text_to_clipboard(html_hyperlink);
+
+  auto line = vu::format(L"Export as HTML Hyper-link to %s %s",
+    L"Clipboard", succeed ? L"succeed" : L"failed");
   this->add_log(line, succeed ? QLoader::status_t::success : QLoader::status_t::error);
 }
 
@@ -374,6 +483,8 @@ void CQLoaderDlg::reset_ui()
   m_button_mp_save.EnableWindow(FALSE);
   m_button_export.EnableWindow(FALSE);
   m_button_launch.EnableWindow(FALSE);
+
+  m_button_export.SetDropDownMenu(IDR_EXPORT, 0);
 
   UpdateData(FALSE);
 }

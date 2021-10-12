@@ -8,6 +8,7 @@
 #define IDD_QLOADER_DIALOG              102
 #define IDR_MAINFRAME                   128
 #define IDB_LOG_SMALL                   129
+#define IDR_EXPORT                      130
 #define IDC_PE_PATH                     1000
 #define IDC_PE_DIR                      1001
 #define IDC_PE_ARG                      1002
@@ -24,13 +25,18 @@
 #define IDC_PATCH_WHEN_2                1013
 #define IDC_MP_SAVE                     1014
 #define IDC_EXPORT                      1015
+#define ID_EXPORT_LNK                   32771
+#define IDM_EXPORT_URL                  32772
+#define ID_HTMLHYPERLINK                32773
+#define IDM_EXPORT_LNK                  32774
+#define IDM_EXPORT_HTML                 32775
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        130
-#define _APS_NEXT_COMMAND_VALUE         32771
+#define _APS_NEXT_RESOURCE_VALUE        131
+#define _APS_NEXT_COMMAND_VALUE         32776
 #define _APS_NEXT_CONTROL_VALUE         1016
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

@@ -27,6 +27,8 @@ public:
     unpacking,
   };
 
+  const std::wstring& protocol_handler = L"QLoader:";
+
   virtual bool file_supported(const std::wstring& file_path);
 
   virtual void add_log(const std::wstring& line, const status_t status = status_t::none);
