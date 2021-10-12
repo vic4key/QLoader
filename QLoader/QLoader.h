@@ -58,6 +58,8 @@ public:
     std::wstring& pe_file_arg,
     json& mp_jdata);
 
+  std::unique_ptr<vu::sLNKW> parse_shortcut(const std::wstring& file_path);
+
 private:
   vu::ulongptr launch_with_patch_at_oep(
     vu::ProcessW& process, PROCESS_INFORMATION& pi, std::vector<byte>& ep);
