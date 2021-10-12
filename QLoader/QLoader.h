@@ -29,6 +29,7 @@ public:
 
   const std::wstring& NAME = L"QLoader";
   const std::wstring& PROTOCOL_HANDLER = NAME + L":";
+  const std::vector<std::wstring>& USABLE_FILE_EXTENSIONS = { L".EXE", L".JSON", L".LNK", L".URL" };
 
   bool protocol_handler_registered();
   bool register_protocol_handler();

@@ -12,7 +12,6 @@
 #pragma comment(lib, "dbghelp")
 
 static json g_mp_jdata;
-static const std::vector<std::wstring> USABLE_FILE_EXTENSIONS = { L".EXE", L".JSON", L".LNK", L".URL"};
 
 QLoader::QLoader() : m_mp_jdata(g_mp_jdata)
 {

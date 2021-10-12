@@ -509,7 +509,7 @@ void CQLoaderDlg::update_ui()
   //   return;
   // }
 
-  bool found_target = false;
+  bool found_target  = false;
   bool found_pattern = false;
 
   for (auto& file_path : m_file_paths)
@@ -517,9 +517,35 @@ void CQLoaderDlg::update_ui()
     auto file_path_tmp = file_path;
     file_path_tmp = vu::upper_string(file_path_tmp);
 
-    if (!found_target && vu::ends_with(file_path_tmp, L".LNK", true))
+    if (!found_target)
     {
-      auto ptr_lnk = vu::parse_shortcut_lnk(this->GetSafeHwnd(), file_path);
+      std::unique_ptr<vu::sLNKW> ptr_lnk(nullptr);
+
+      if (vu::ends_with_W(file_path_tmp, L".LNK", true))
+      {
+        ptr_lnk = vu::parse_shortcut_lnk(this->GetSafeHwnd(), file_path);
+      }
+      else if (vu::ends_with_W(file_path_tmp, L".URL", true))
+      {
+        std::vector<vu::byte> url_file_content;
+        vu::read_file_binary_W(file_path_tmp, url_file_content);
+        std::string url_file_content_A(url_file_content.cbegin(), url_file_content.cend());
+        const auto lines = vu::split_string_A(url_file_content_A, "\n", true);
+        const auto url_prefix = "URL=" + vu::to_string_A(PROTOCOL_HANDLER);
+        for (auto& line : lines)
+        {
+          const auto line_tmp = vu::trim_string_A(line);
+          if (vu::starts_with_A(line_tmp, url_prefix, true))
+          {
+            std::string argument_A(line_tmp.cbegin() + url_prefix.length(), line_tmp.cend());
+            argument_A = vu::trim_string_A(argument_A);
+            ptr_lnk = std::make_unique<vu::sLNKW>();
+            ptr_lnk->argument = vu::to_string_W(argument_A);
+            break;
+          }
+        }
+      }
+
       if (ptr_lnk != nullptr)
       {
         json mp_jdata;
