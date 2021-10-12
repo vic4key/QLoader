@@ -27,7 +27,11 @@ public:
     unpacking,
   };
 
-  const std::wstring& protocol_handler = L"QLoader:";
+  const std::wstring& NAME = L"QLoader";
+  const std::wstring& PROTOCOL_HANDLER = NAME + L":";
+
+  bool protocol_handler_registered();
+  bool register_protocol_handler();
 
   virtual bool file_supported(const std::wstring& file_path);
 

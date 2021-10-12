@@ -22,6 +22,92 @@ QLoader::~QLoader()
 {
 }
 
+bool QLoader::protocol_handler_registered()
+{
+  bool result = true;
+
+  // [HKEY_CLASSES_ROOT\QLoader]
+  {
+    vu::RegistryW reg(vu::eRegRoot::HKCR, NAME);
+    result &= reg.key_exists();
+  }
+
+  // [HKEY_CLASSES_ROOT\QLoader\shell\open\command]
+  {
+    auto sub_key = vu::format_W(L"%s\\shell\\open\\command", NAME.c_str());
+    vu::RegistryW reg(vu::eRegRoot::HKCR, PWCHAR(sub_key.c_str()));
+    result &= reg.key_exists();
+  }
+
+  return result;
+}
+
+BOOL reg_create_key(HKEY hKeyParent, PWCHAR subKey)
+{
+  HKEY  hKey;
+  DWORD dwDisposition;
+  DWORD ret = RegCreateKeyEx(hKeyParent, subKey, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &hKey, &dwDisposition);
+  if (ret == ERROR_SUCCESS)
+  {
+    RegCloseKey(hKey);
+  }
+
+  return TRUE;
+}
+
+BOOL reg_write_value_string(HKEY hKeyParent, PWCHAR subKey, PWCHAR valueName, PWCHAR strData)
+{
+  HKEY hKey;
+  DWORD ret = RegOpenKeyEx(hKeyParent, subKey, 0, KEY_WRITE, &hKey);
+  if (ret == ERROR_SUCCESS)
+  {
+    ret = RegSetValueEx(hKey, valueName, 0, REG_SZ, LPBYTE(strData), ((lstrlen(strData) + 1) * 2));
+  }
+
+  if (ret == ERROR_SUCCESS)
+  {
+    RegCloseKey(hKey);
+  }
+
+  return ret == ERROR_SUCCESS;
+}
+
+bool QLoader::register_protocol_handler()
+{
+  // [HKEY_CLASSES_ROOT\QLoader]
+  // @="URL: QLoader Protocol"
+  // "URL Protocol"=""
+  // 
+  // [HKEY_CLASSES_ROOT\QLoader\DefaultIcon]
+  // @="path\\to\\QLoader.exe,0"
+  // 
+  // [HKEY_CLASSES_ROOT\QLoader\shell\open\command]
+  // @="\"path\\to\\QLoader.exe\" \"%1\""
+
+  const auto file_path = vu::get_current_file_path_W();
+
+  // [HKEY_CLASSES_ROOT\QLoader]
+  auto sub_key = NAME;
+  auto val_str = vu::format_W(L"URL: %s Protocol", NAME.c_str());
+  reg_create_key(HKEY_CLASSES_ROOT, PWCHAR(sub_key.c_str()));
+  reg_write_value_string(HKEY_CLASSES_ROOT, PWCHAR(sub_key.c_str()), L"", PWCHAR(val_str.c_str()));
+  reg_write_value_string(HKEY_CLASSES_ROOT, PWCHAR(sub_key.c_str()), L"URL Protocol", L"");
+
+  // [HKEY_CLASSES_ROOT\QLoader\DefaultIcon]
+  sub_key = vu::format_W(L"%s\\DefaultIcon", NAME.c_str());
+  val_str = vu::format_W(L"\"%s\",0", file_path.c_str());
+  reg_create_key(HKEY_CLASSES_ROOT, PWCHAR(sub_key.c_str()));
+  reg_write_value_string(HKEY_CLASSES_ROOT, PWCHAR(sub_key.c_str()), L"", PWCHAR(val_str.c_str()));
+
+  // [HKEY_CLASSES_ROOT\QLoader\shell\open\command]
+  sub_key = vu::format_W(L"%s\\shell\\open\\command", NAME.c_str());
+  val_str = vu::format_W(L"\"%s\" \"%%1\"", file_path.c_str());
+  reg_create_key(HKEY_CLASSES_ROOT, PWCHAR(sub_key.c_str()));
+  reg_write_value_string(HKEY_CLASSES_ROOT, PWCHAR(sub_key.c_str()), L"", PWCHAR(val_str.c_str()));
+
+  return this->protocol_handler_registered();
+}
+
 bool QLoader::file_supported(const std::wstring& file_path)
 {
   if (file_path.empty())
@@ -400,7 +486,7 @@ bool QLoader::parse_cmd_line(
   // Eg. "QLoader: -mode 0 -pe "..." -mp "...""
 
   auto cmd_line_tmp = vu::trim_string_W(cmd_line);
-  if (vu::contains_string_W(cmd_line_tmp, protocol_handler, true))
+  if (vu::contains_string_W(cmd_line_tmp, PROTOCOL_HANDLER, true))
   {
     std::wstring url_decoded;
     vu::url_decode_W(cmd_line_tmp, url_decoded);
@@ -416,9 +502,9 @@ bool QLoader::parse_cmd_line(
 
     cmd_line_tmp.assign(cmd_line_tmp.cbegin() + 1, cmd_line_tmp.cend() - 1);
 
-    if (vu::starts_with_W(cmd_line_tmp, protocol_handler, true))
+    if (vu::starts_with_W(cmd_line_tmp, PROTOCOL_HANDLER, true))
     {
-      cmd_line_tmp.assign(cmd_line_tmp.cbegin() + protocol_handler.size(), cmd_line_tmp.cend());
+      cmd_line_tmp.assign(cmd_line_tmp.cbegin() + PROTOCOL_HANDLER.size(), cmd_line_tmp.cend());
       cmd_line_tmp = vu::trim_string_W(cmd_line_tmp);
     }
 
