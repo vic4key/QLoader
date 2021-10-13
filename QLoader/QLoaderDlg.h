@@ -41,7 +41,6 @@ protected:
   afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
   afx_msg void OnPaint();
   afx_msg HCURSOR OnQueryDragIcon();
-  afx_msg void OnSize(UINT nType, int cx, int cy);
   afx_msg void OnDropFiles(HDROP hDropInfo);
   // Generated user message map functions
   afx_msg void OnBnClicked_PEOpen();

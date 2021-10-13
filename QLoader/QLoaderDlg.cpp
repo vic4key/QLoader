@@ -85,7 +85,6 @@ BEGIN_MESSAGE_MAP(CQLoaderDlg, CDialogEx)
   ON_WM_SYSCOMMAND()
   ON_WM_PAINT()
   ON_WM_QUERYDRAGICON()
-  ON_WM_SIZE()
   ON_WM_DROPFILES()
   ON_BN_CLICKED(IDC_PE_OPEN, OnBnClicked_PEOpen)
   ON_BN_CLICKED(IDC_MP_OPEN, OnBnClicked_MPOpen)
@@ -216,20 +215,6 @@ void CQLoaderDlg::OnPaint()
 HCURSOR CQLoaderDlg::OnQueryDragIcon()
 {
   return static_cast<HCURSOR>(m_hIcon);
-}
-
-void CQLoaderDlg::OnSize(UINT nType, int cx, int cy)
-{
-  __super::OnSize(nType, cx, cy);
-
-  if (::IsWindow(m_log.GetSafeHwnd()))
-  {
-    CRect rect;
-    m_log.GetClientRect(&rect);
-    int w_c0 = m_log.GetColumnWidth(0);
-    int w_c1 = rect.Width() - w_c0;
-    m_log.SetColumnWidth(1, w_c1);
-  }
 }
 
 void CQLoaderDlg::OnDropFiles(HDROP hDropInfo)
