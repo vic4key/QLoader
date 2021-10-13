@@ -367,16 +367,16 @@ void QLoader::launch(
 }
 
 vu::ulongptr QLoader::launch_with_patch_at_oep(
-  vu::ProcessW& process, PROCESS_INFORMATION& pi, std::vector<byte>& ep)
+  vu::ProcessW& process, PROCESS_INFORMATION& process_information, std::vector<byte>& backup_entry_point_bytes)
 {
-  ep.clear();
+  backup_entry_point_bytes.clear();
 
   // get base address of the target process
 
   DWORD size = 0;
   PROCESS_BASIC_INFORMATION pbi = { 0 };
   NTSTATUS status = NtQueryInformationProcess(
-    pi.hProcess, ProcessBasicInformation, &pbi, sizeof(pbi), &size);
+    process_information.hProcess, ProcessBasicInformation, &pbi, sizeof(pbi), &size);
   assert(NT_SUCCESS(status));
 
   vu::ulongptr base_address = 0;
@@ -411,14 +411,14 @@ vu::ulongptr QLoader::launch_with_patch_at_oep(
 
   const auto va_oep = base_address + rva_oep;
 
-  std::vector<byte> bp = { 0xEB, 0xFE };
-  ep.resize(bp.size());
-  process.read_memory(va_oep, ep.data(), ep.size());
-  process.write_memory(va_oep, bp.data(), bp.size());
+  std::vector<byte> break_point_bytes = { 0xEB, 0xFE }; // JMP XIP - a loop jump to itself that treat as a break-point
+  backup_entry_point_bytes.resize(break_point_bytes.size());
+  process.read_memory(va_oep, backup_entry_point_bytes.data(), backup_entry_point_bytes.size());
+  process.write_memory(va_oep, break_point_bytes.data(), break_point_bytes.size());
 
-  ResumeThread(pi.hThread);
+  ResumeThread(process_information.hThread);
 
-  WaitForInputIdle(pi.hProcess, 1000); // 1s
+  WaitForInputIdle(process_information.hProcess, 1000); // 1s
 
   auto fmt = process.bit() == vu::eXBit::x64 ?
     L"Break the process at its entry point %016X succeed" : L"Break the process at its entry point %08X succeed";
