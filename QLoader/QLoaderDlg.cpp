@@ -46,6 +46,12 @@ END_MESSAGE_MAP()
 
 // CQLoaderDlg dialog
 
+enum log_columns
+{
+  index,
+  desc,
+};
+
 CQLoaderDlg::CQLoaderDlg(CWnd* pParent)
   : CDialogEx(CQLoaderDlg::IDD, pParent)
   , m_pe_path(_T(""))
@@ -467,12 +473,13 @@ void CQLoaderDlg::add_log(const std::wstring& line, const status_t status)
   LVITEM lvi = { 0 };
   lvi.mask = LVIF_IMAGE;
   lvi.iItem = m_log.GetItemCount();
-  lvi.iSubItem = 0;
+  lvi.iSubItem = log_columns::index;
   lvi.iImage = int(status);
-  lvi.pszText = const_cast<wchar_t*>(line.c_str());
+  lvi.pszText = LPWSTR(line.c_str());
   int index = m_log.InsertItem(&lvi);
-  m_log.SetItemText(index, 1, line.c_str());
+  m_log.SetItemText(index, log_columns::desc, line.c_str());
   m_log.EnsureVisible(index, TRUE);
+  m_log.SetColumnWidth(log_columns::desc, LVSCW_AUTOSIZE_USEHEADER);
 }
 
 void CQLoaderDlg::reset_ui()
@@ -794,13 +801,13 @@ void CQLoaderDlg::initialize_ui()
   lvc.fmt = LVCFMT_LEFT;
   lvc.cx = DEFAULT_COLUMN_WIDTH;
   lvc.pszText = L"#";
-  m_log.InsertColumn(0, &lvc);
+  m_log.InsertColumn(log_columns::index, &lvc);
 
   lvc.mask = LVCF_FMT | LVCF_TEXT | LVCF_WIDTH;
   lvc.fmt = LVCFMT_LEFT;
   lvc.cx = DEFAULT_COLUMN_WIDTH;
   lvc.pszText = L"Description";
-  m_log.InsertColumn(1, &lvc);
+  m_log.InsertColumn(log_columns::desc, &lvc);
 
   this->SendMessage(WM_SIZE); // request to re-calculate size for window and its controls
 }
