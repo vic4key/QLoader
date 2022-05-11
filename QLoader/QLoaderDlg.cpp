@@ -135,6 +135,16 @@ BOOL CQLoaderDlg::OnInitDialog()
 
   // TODO: Add extra initialization here
 
+  CString title;
+  GetWindowText(title);
+  title += vu::is_administrator() ? L" [ELEVATED]" : L"";
+  SetWindowText(title);
+
+  // Enable Drag and Drop for an Elevated MFC application on Windows
+  ChangeWindowMessageFilter(0x0049, MSGFLT_ADD);
+  ChangeWindowMessageFilter(WM_DROPFILES, MSGFLT_ADD);
+  DragAcceptFiles(TRUE);
+
   if (!this->protocol_handler_registered())
   {
     if (vu::is_administrator())
