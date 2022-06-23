@@ -1,39 +1,79 @@
 
 # What is QLoader ?
 
-**QLoader** a.k.a **Quick Loader** is a PE loader that helps you quickly patch an application
-
-## Requirements
-
-* Windows 32/64 bit
-* MS Visual C++ 2019 or later
+**QLoader** a.k.a **Quick Loader** is a PE loader that helps you quickly create a loader for application
 
 ## Features
-* \<later\>
+* Define patterns under the JSON File Format
+* Export Loader as Windows Shortcut .LNK
+* Export Loader as Internet Shortcut .URL
+* Export Loader as HTML Hyperlink `qloader: ...` (like `tel: ...`, `skype: ...`, etc)
 
 ## License
 
 Released under the [MIT](LICENSE.md) license
 
-## Installation
+## Development
 
->$ git clone https://github.com/vic4key/QLoader.git
->
->$ cd [QLoader](https://github.com/vic4key/QLoader.git)
-
-> *Load [QLoader.sln](https://github.com/vic4key/QLoader/blob/master/QLoader.sln) into VS then build them all*
-
-## Examples
-
-> *Take a look at [test](QLoader/test)*
+> Step 1. Required Visual Studio C++ 2019 or later.
+> 
+> Step 2. Required [Vutils](https://github.com/vic4key/Vutils.git) library
+> 
+> Step 3. Check [this](https://github.com/vic4key/QLoader.git) repository and start to work.
 
 >User Interface
 >
 >![](QLoader/screenshots/ui.png?)
 
->Pattern Template
->
->![](QLoader/screenshots/template.png?)
+>Pattern File (Template)
+
+```
+{
+  "name": "this is a name",
+  "brief": "this is a brief",
+  "modules":
+  [
+    {
+      "name": "user32.dll",
+      "enabled": true,
+      "patches": [
+        {
+          "name": "patch 1",
+          "pattern": "11 22 ?? 44",
+          "replacement": "12 21",
+          "offset": 1,
+          "enabled": false
+        }
+      ]
+    },
+    {
+      "name": "kernel32.dll",
+      "enabled": false,
+      "patches":
+      [
+        {
+          "name": "patch 3",
+          "pattern": "55 66",
+          "replacement": "56 65",
+          "offset": 3,
+          "enabled": true
+        },
+        {
+          "name": "patch 4",
+          "pattern": "77 88",
+          "replacement": "78 87",
+          "offset": 4,
+          "enabled": false
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Examples
+
+> *Take a look at the [test](QLoader/test)* folder
 
 >Sublime Text 4 (64-bit application)
 >
