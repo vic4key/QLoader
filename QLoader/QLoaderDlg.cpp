@@ -409,41 +409,6 @@ void CQLoaderDlg::OnBnClicked_ExportHTML()
 {
   UpdateData(TRUE);
 
-  const auto fn_copy_text_to_clipboard = [](const std::wstring& text) -> bool
-  {
-    if (text.empty())
-    {
-      return false;
-    }
-
-    size_t text_size = 2 * (text.length() + 1);
-
-    HGLOBAL hga = ::GlobalAlloc(GMEM_MOVEABLE | GMEM_ZEROINIT, text_size);
-    if (hga == nullptr)
-    {
-      return false;
-    }
-
-    LPVOID ptr = ::GlobalLock(hga);
-    if (ptr == nullptr)
-    {
-      return false;
-    }
-
-    ::CopyMemory(ptr, text.data(), text_size);
-
-    ::GlobalUnlock(hga);
-
-    ::OpenClipboard(0);
-    ::EmptyClipboard();
-    ::SetClipboardData(CF_UNICODETEXT, hga);
-    ::CloseClipboard();
-
-    ::GlobalFree(hga);
-
-    return true;
-  };
-
   const auto lnk = this->export_as_lnk(
     launch_t(m_patch_when), m_pe_path.GetBuffer(0), m_pe_dir.GetBuffer(0), m_pe_arg.GetBuffer(0));
 
@@ -456,7 +421,7 @@ void CQLoaderDlg::OnBnClicked_ExportHTML()
   const auto html_hyperlink = vu::format_W(L"<a href=\"%s %s\">%s</a>",
     PROTOCOL_HANDLER.c_str(), lnk_argument_url_encoded.c_str(), file_name.c_str());
 
-  const bool succeed = fn_copy_text_to_clipboard(html_hyperlink);
+  const bool succeed = vu::copy_to_clipboard_W(html_hyperlink);
 
   auto line = vu::format(L"Export as HTML Hyper-link to %s %s",
     L"Clipboard", succeed ? L"succeed" : L"failed");
