@@ -570,7 +570,7 @@ void CQLoaderDlg::update_ui()
     {
       std::string s = vu::to_string_A(mp_path);
       std::ifstream fs(s);
-      m_mp_jdata = json::parse(fs);
+      m_mp_jdata = json::parse(fs, nullptr, true, true);
     }
   }
 
