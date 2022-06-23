@@ -27,14 +27,14 @@ bool QLoader::protocol_handler_registered()
 
   // [HKEY_CLASSES_ROOT\QLoader]
   {
-    vu::RegistryW reg(vu::eRegRoot::HKCR, NAME);
+    vu::RegistryW reg(vu::registry_key::HKCR, NAME);
     result &= reg.key_exists();
   }
 
   // [HKEY_CLASSES_ROOT\QLoader\shell\open\command]
   {
     auto sub_key = vu::format_W(L"%s\\shell\\open\\command", NAME.c_str());
-    vu::RegistryW reg(vu::eRegRoot::HKCR, PWCHAR(sub_key.c_str()));
+    vu::RegistryW reg(vu::registry_key::HKCR, PWCHAR(sub_key.c_str()));
     result &= reg.key_exists();
   }
 
@@ -319,8 +319,8 @@ void QLoader::launch(
         auto address = static_cast<const void*>(it->second.m_buffer.get());
         auto size = it->second.m_me.modBaseSize;
 
-        auto result = vu::find_pattern_A(address, size, pattern);
-        if (!result.first)
+        auto result = vu::find_pattern_A(address, size, pattern, true);
+        if (result.empty())
         {
           auto line = vu::format(L"Find the patch `%s` not found", patch_name.c_str());
           this->add_log(line, status_t::error);
@@ -333,16 +333,16 @@ void QLoader::launch(
         // patch at the found address with the replacement bytes
 
         auto found_patch_address = vu::ulongptr(it->second.m_me.modBaseAddr);
-        found_patch_address += result.second;
+        found_patch_address += result.at(0);
         found_patch_address += offset;
 
         bool ret = process.write_memory(found_patch_address, replacement_bytes.data(), replacement_bytes.size());
 
         line = vu::format(
-          process.bit() == vu::eXBit::x64 ?
+          process.bit() == vu::arch::x64 ?
             L"Patch `%s` at %016X %s" : L"Patch `%s` at %08X %s",
           patch_name.c_str(),
-          process.bit() == vu::eXBit::x64 ?
+          process.bit() == vu::arch::x64 ?
             vu::ulong64(found_patch_address) : vu::ulong32(found_patch_address),
           ret ? L"succeed" : L"failed");
         this->add_log(line, ret ? status_t::success : status_t::error);
@@ -381,7 +381,7 @@ vu::ulongptr QLoader::launch_with_patch_at_oep(
 
   vu::ulongptr base_address = 0;
 
-  if (process.bit() == vu::eXBit::x64)
+  if (process.bit() == vu::arch::x64)
   {
     PEB_T<vu::pe64> peb;
     process.read_memory(vu::ulongptr(pbi.PebBaseAddress), &peb, sizeof(peb));
@@ -420,21 +420,21 @@ vu::ulongptr QLoader::launch_with_patch_at_oep(
 
   WaitForInputIdle(process_information.hProcess, 1000); // 1s
 
-  auto fmt = process.bit() == vu::eXBit::x64 ?
+  auto fmt = process.bit() == vu::arch::x64 ?
     L"Break the process at its entry point %016X succeed" : L"Break the process at its entry point %08X succeed";
-  auto line = vu::format(fmt, process.bit() == vu::eXBit::x64 ? vu::ulong64(va_oep) : vu::ulong32(va_oep));
+  auto line = vu::format(fmt, process.bit() == vu::arch::x64 ? vu::ulong64(va_oep) : vu::ulong32(va_oep));
   this->add_log(line, status_t::success);
 
   return va_oep;
 }
 
-vu::sLNKW QLoader::export_as_lnk(
+vu::LNKW QLoader::export_as_lnk(
   const launch_t mode,
   const std::wstring& pe_file_path,
   const std::wstring& pe_file_dir,
   const std::wstring& pe_file_arg)
 {
-  vu::sLNKW result;
+  vu::LNKW result;
 
   result.path = vu::get_current_file_path_W();
 
@@ -576,9 +576,9 @@ bool QLoader::parse_cmd_line(
   return !pe_file_path.empty() && !pe_file_dir.empty() && !mp_jdata.is_null();
 }
 
-std::unique_ptr<vu::sLNKW> QLoader::parse_shortcut(const std::wstring& file_path)
+std::unique_ptr<vu::LNKW> QLoader::parse_shortcut(const std::wstring& file_path)
 {
-  std::unique_ptr<vu::sLNKW> ptr_lnk(nullptr);
+  std::unique_ptr<vu::LNKW> ptr_lnk(nullptr);
 
   if (vu::ends_with_W(file_path, L".LNK", true))
   {
@@ -598,7 +598,7 @@ std::unique_ptr<vu::sLNKW> QLoader::parse_shortcut(const std::wstring& file_path
       {
         std::string argument_A(line_tmp.cbegin() + url_prefix.length(), line_tmp.cend());
         argument_A = vu::trim_string_A(argument_A);
-        ptr_lnk = std::make_unique<vu::sLNKW>();
+        ptr_lnk = std::make_unique<vu::LNKW>();
         ptr_lnk->argument = vu::to_string_W(argument_A);
         break;
       }

@@ -44,7 +44,7 @@ public:
     const std::wstring& pe_file_dir,
     const std::wstring& pe_file_arg);
 
-  virtual vu::sLNKW export_as_lnk(
+  virtual vu::LNKW export_as_lnk(
     const launch_t mode,
     const std::wstring& pe_file_path,
     const std::wstring& pe_file_dir,
@@ -58,7 +58,7 @@ public:
     std::wstring& pe_file_arg,
     json& mp_jdata);
 
-  std::unique_ptr<vu::sLNKW> parse_shortcut(const std::wstring& file_path);
+  std::unique_ptr<vu::LNKW> parse_shortcut(const std::wstring& file_path);
 
 private:
   vu::ulongptr launch_with_patch_at_oep(

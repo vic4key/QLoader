@@ -266,7 +266,7 @@ void CQLoaderDlg::OnBnClicked_PEOpen()
   std::wstring file_path;
   const auto file_filter = L"EXE File\0*.exe\0All Files (*.*)\0*.*\0";
   vu::Picker picker(this->GetSafeHwnd());
-  if (picker.choose_file(vu::Picker::action_t::open, file_path, L"", file_filter))
+  if (picker.choose_file(vu::Picker::action_type::open, file_path, L"", file_filter))
   {
     m_file_paths.push_back(file_path);
   }
@@ -281,7 +281,7 @@ void CQLoaderDlg::OnBnClicked_MPOpen()
   std::wstring file_path;
   const auto file_filter = L"JSON File\0*.json\0All Files (*.*)\0*.*\0";
   vu::Picker picker(this->GetSafeHwnd());
-  if (picker.choose_file(vu::Picker::action_t::open, file_path, L"", file_filter))
+  if (picker.choose_file(vu::Picker::action_type::open, file_path, L"", file_filter))
   {
     m_file_paths.push_back(file_path);
   }
@@ -294,7 +294,7 @@ void CQLoaderDlg::OnBnClicked_MPSave()
   std::wstring file_path = m_mp_path.GetBuffer(0);
   const auto file_filter = L"JSON File\0*.json\0All Files (*.*)\0*.*\0";
   vu::Picker picker(this->GetSafeHwnd());
-  if (picker.choose_file(vu::Picker::action_t::save, file_path, L"", file_filter))
+  if (picker.choose_file(vu::Picker::action_type::save, file_path, L"", file_filter))
   {
     try
     {
