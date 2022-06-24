@@ -16,11 +16,11 @@
     <Filter Include="3rdparty">
       <UniqueIdentifier>{cbfa505b-65df-47ac-a413-81233754cc30}</UniqueIdentifier>
     </Filter>
-    <Filter Include="reuse">
-      <UniqueIdentifier>{64b0ea4a-a129-4f84-9e26-2031ad7d91da}</UniqueIdentifier>
-    </Filter>
     <Filter Include="3rdparty\3rd-json-fifo-nlohmann">
       <UniqueIdentifier>{87713b19-2c2a-4efa-af5c-36a0131b86a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdparty\3rd-easy-mfc-tree-ctrl">
+      <UniqueIdentifier>{53bd7f39-86dd-4296-8eb2-f792ec3fd48e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -42,9 +42,6 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EasyTreeCtrl.h">
-      <Filter>reuse</Filter>
-    </ClInclude>
     <ClInclude Include="types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -60,6 +57,9 @@
     <ClInclude Include="3rdparty\3rd-json-fifo-nlohmann\json-fifo-nlohmann.h">
       <Filter>3rdparty\3rd-json-fifo-nlohmann</Filter>
     </ClInclude>
+    <ClInclude Include="3rdparty\3rd-easy-mfc-tree-ctrl\EasyTreeCtrl.h">
+      <Filter>3rdparty\3rd-easy-mfc-tree-ctrl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="QLoaderApp.cpp">
@@ -71,11 +71,11 @@
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EasyTreeCtrl.cpp">
-      <Filter>reuse</Filter>
-    </ClCompile>
     <ClCompile Include="QLoader.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="3rdparty\3rd-easy-mfc-tree-ctrl\EasyTreeCtrl.cpp">
+      <Filter>3rdparty\3rd-easy-mfc-tree-ctrl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "QLoader.h"
-#include "EasyTreeCtrl.h"
+#include <3rd-easy-mfc-tree-ctrl/EasyTreeCtrl.h>
 
 struct jnode_t : public Node
 {
