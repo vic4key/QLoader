@@ -16,14 +16,11 @@
     <Filter Include="3rdparty">
       <UniqueIdentifier>{cbfa505b-65df-47ac-a413-81233754cc30}</UniqueIdentifier>
     </Filter>
-    <Filter Include="3rdparty\nlohmann">
-      <UniqueIdentifier>{32ad3af0-b760-417f-bddb-6c3d0f154320}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3rdparty\nlohmann\include">
-      <UniqueIdentifier>{88b047eb-837b-43da-856e-da36b6f58161}</UniqueIdentifier>
-    </Filter>
     <Filter Include="reuse">
       <UniqueIdentifier>{64b0ea4a-a129-4f84-9e26-2031ad7d91da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdparty\3rd-json-fifo-nlohmann">
+      <UniqueIdentifier>{87713b19-2c2a-4efa-af5c-36a0131b86a6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -48,17 +45,20 @@
     <ClInclude Include="EasyTreeCtrl.h">
       <Filter>reuse</Filter>
     </ClInclude>
-    <ClInclude Include="3rdparty\nlohmann\json.hpp">
-      <Filter>3rdparty\nlohmann\include</Filter>
-    </ClInclude>
-    <ClInclude Include="3rdparty\nlohmann\fifo_map.hpp">
-      <Filter>3rdparty\nlohmann\include</Filter>
-    </ClInclude>
     <ClInclude Include="types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="QLoader.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdparty\3rd-json-fifo-nlohmann\nlohmann\fifo_map.hpp">
+      <Filter>3rdparty\3rd-json-fifo-nlohmann</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdparty\3rd-json-fifo-nlohmann\nlohmann\json.hpp">
+      <Filter>3rdparty\3rd-json-fifo-nlohmann</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdparty\3rd-json-fifo-nlohmann\json-fifo-nlohmann.h">
+      <Filter>3rdparty\3rd-json-fifo-nlohmann</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,0 +1,3 @@
+[submodule "QLoader/3rdparty/3rd-json-fifo-nlohmann"]
+	path = QLoader/3rdparty/3rd-json-fifo-nlohmann
+	url = https://github.com/vn-os/3rd-json-fifo-nlohmann.git
