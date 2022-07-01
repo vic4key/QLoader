@@ -67,5 +67,6 @@ private:
   CButton m_button_mp_save;
   CSplitButton m_button_export;
   CButton m_button_launch;
+  CToolTipCtrl m_tool_tip;
   std::vector<std::wstring> m_file_paths;
 };

@@ -6,7 +6,7 @@
 #include "framework.h"
 #include "QLoaderApp.h"
 #include "QLoaderDlg.h"
-#include "afxdialogex.h"
+#include "AfxDialogEx.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -39,6 +39,24 @@ enum log_columns
   desc,
 };
 
+struct
+{
+  UINT id;
+  PWCHAR tool_tip;
+} list_ctrl_tool_tips[] = \
+{
+  { IDC_PE_OPEN, L"Select the target file" },
+  { IDC_MP_OPEN, L"Select the pattern file" },
+  { IDC_MP_SAVE, L"Save the pattern file" },
+  { IDC_CLEAR, L"Clear log window" },
+  { IDC_LAUNCH, L"Perform patching" },
+  { IDC_EXPORT, L"Create a Loader as ..." },
+  { IDCANCEL, L"Quit the application" },
+  { IDC_PATCH_WHEN, L"Perform patching after the target is fully loaded into RAM" },
+  { IDC_PATCH_WHEN_1, L"Perform patching when the target runs to Entry Point" },
+  { IDC_PATCH_WHEN_2, L"Perform patching after the target is unpacked in RAM (for packed target)" },
+};
+
 CQLoaderDlg::CQLoaderDlg(CWnd* pParent)
   : CDialogEx(CQLoaderDlg::IDD, pParent)
   , m_pe_path(_T(""))
@@ -62,16 +80,6 @@ void CQLoaderDlg::DoDataExchange(CDataExchange* pDX)
   DDX_Control(pDX, IDC_LAUNCH, m_button_launch);
   DDX_Radio(pDX, IDC_PATCH_WHEN, m_patch_when);
   DDX_Control(pDX, IDC_LOG, m_log);
-}
-
-BOOL CQLoaderDlg::PreTranslateMessage(MSG* pMsg)
-{
-  if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_ESCAPE)
-  {
-    return TRUE;
-  }
-
-  return __super::PreTranslateMessage(pMsg);
 }
 
 BEGIN_MESSAGE_MAP(CQLoaderDlg, CDialogEx)
@@ -128,10 +136,19 @@ BOOL CQLoaderDlg::OnInitDialog()
 
   // TODO: Add extra initialization here
 
+  // Custom application's title
   CString title;
   GetWindowText(title);
   title += vu::is_administrator() ? L" [ELEVATED]" : L"";
   SetWindowText(title);
+
+  // Enable tool-tip for controls
+  m_tool_tip.Create(this);
+  for (auto& e : list_ctrl_tool_tips)
+  {
+    m_tool_tip.AddTool(GetDlgItem(e.id), e.tool_tip);
+  }
+  m_tool_tip.Activate(TRUE);
 
   // Enable Drag and Drop for an Elevated MFC application on Windows
   ChangeWindowMessageFilter(0x0049, MSGFLT_ADD);
@@ -211,6 +228,18 @@ void CQLoaderDlg::OnPaint()
 HCURSOR CQLoaderDlg::OnQueryDragIcon()
 {
   return static_cast<HCURSOR>(m_hIcon);
+}
+
+BOOL CQLoaderDlg::PreTranslateMessage(MSG* pMsg)
+{
+  if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_ESCAPE)
+  {
+    return TRUE;
+  }
+
+  m_tool_tip.RelayEvent(pMsg);
+
+  return __super::PreTranslateMessage(pMsg);
 }
 
 void CQLoaderDlg::OnDropFiles(HDROP hDropInfo)
