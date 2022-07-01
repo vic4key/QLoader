@@ -5,9 +5,9 @@
 
 ## Features
 * Define patterns under the JSON File Format
-* Export Loader as Windows Shortcut .LNK
-* Export Loader as Internet Shortcut .URL
-* Export Loader as HTML Hyperlink `qloader: ...` (like `tel: ...`, `skype: ...`, etc)
+* Create Loader as Windows Shortcut .LNK
+* Create Loader as Internet Shortcut .URL
+* Create Loader as HTML Hyperlink `qloader: ...` (like `tel: ...`, `skype: ...`, etc)
 
 ## License
 
