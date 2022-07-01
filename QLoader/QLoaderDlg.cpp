@@ -760,9 +760,6 @@ void CQLoaderDlg::initialize_ui()
 
   m_log.SetExtendedStyle(m_log.GetExtendedStyle() | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
-  auto ptr_header = m_log.GetHeaderCtrl();
-  assert(ptr_header != nullptr);
-
   static CImageList image_list;
   image_list.Create(IDB_LOG_SMALL, 16, 1, 0xFFFFFF);
   m_log.SetImageList(&image_list, LVSIL_SMALL);
