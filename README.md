@@ -4,25 +4,31 @@
 **QLoader** a.k.a **Quick Loader** is a PE loader that helps you quickly create a loader for application
 
 ## Features
+
+* Patching Methods
+  - [x] Fully Loaded
+  - [x] At Entry Point
+  - [ ] Unpacking
+
+* Create Loader as
+  - [X] Windows Shortcut .LNK
+  - [X] Internet Shortcut .URL
+  - [X] HTML Hyperlink `qloader: ...` (like `tel: ...`, `skype: ...`, etc)
+
 * Define patterns under the JSON File Format
-* Create Loader as Windows Shortcut .LNK
-* Create Loader as Internet Shortcut .URL
-* Create Loader as HTML Hyperlink `qloader: ...` (like `tel: ...`, `skype: ...`, etc)
 
 ## License
 
 Released under the [MIT](LICENSE.md) license
 
-## Development
+## Tutorial
 
-> Step 1. Required Visual Studio C++ 2019 or later.
-> 
-> Step 2. Required [Vutils](https://github.com/vic4key/Vutils.git) library
-> 
-> Step 3. Check [this](https://github.com/vic4key/QLoader.git) repository and start to work.
-
->User Interface
+>*Note: Remember to turn on sub-title (CC) when watching*
 >
+>[![IMAGE_ALT](https://github.com/vic4key/QLoader/blob/master/QLoader/screenshots/video.png)](https://www.youtube.com/watch?v=nzyHh1CzNLM)
+
+## User Interface
+
 >![](QLoader/screenshots/ui.png?)
 
 >Pattern File (Template)
@@ -75,19 +81,23 @@ Released under the [MIT](LICENSE.md) license
 
 > *Take a look at the [test](QLoader/test)* folder
 
->Sublime Text 4 (64-bit application)
->
->![](QLoader/screenshots/ui-sublime_text_4.png?)
+>Sublime Text 4 (4107 - 64-bit)
 >
 >![](QLoader/screenshots/sublime_text_4.png?)
 
 >Cute Video Converter (32-bit application)
 >
->![](QLoader/screenshots/ui-cute_video_converter.png?)
->
 >![](QLoader/screenshots/cute_video_converter.png?)
 
 >Etc
+
+## Development
+
+> Step 1. Required Visual Studio C++ 2019 or later.
+> 
+> Step 2. Required [Vutils](https://github.com/vic4key/Vutils.git) library
+> 
+> Step 3. Clone [this](https://github.com/vic4key/QLoader.git) repository and start to work.
 
 ## Contact
 Feel free to contact via [Twitter](https://twitter.com/vic4key) / [Gmail](mailto:vic4key@gmail.com) / [Blog](https://blog.vic.onl/) / [Website](https://vic.onl/)
