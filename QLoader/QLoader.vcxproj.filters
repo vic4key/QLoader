@@ -22,6 +22,9 @@
     <Filter Include="3rdparty\3rd-easy-mfc-tree-ctrl">
       <UniqueIdentifier>{53bd7f39-86dd-4296-8eb2-f792ec3fd48e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="3rdparty\3rd-protocol-handler">
+      <UniqueIdentifier>{ae935ad1-eae5-4e3f-8a9a-8d57a27f8232}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="QLoaderApp.h">
@@ -60,6 +63,9 @@
     <ClInclude Include="3rdparty\3rd-easy-mfc-tree-ctrl\EasyTreeCtrl.h">
       <Filter>3rdparty\3rd-easy-mfc-tree-ctrl</Filter>
     </ClInclude>
+    <ClInclude Include="3rdparty\3rd-protocol-handler\protocol-handler.h">
+      <Filter>3rdparty\3rd-protocol-handler</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="QLoaderApp.cpp">
@@ -76,6 +82,9 @@
     </ClCompile>
     <ClCompile Include="3rdparty\3rd-easy-mfc-tree-ctrl\EasyTreeCtrl.cpp">
       <Filter>3rdparty\3rd-easy-mfc-tree-ctrl</Filter>
+    </ClCompile>
+    <ClCompile Include="3rdparty\3rd-protocol-handler\protocol-handler.cpp">
+      <Filter>3rdparty\3rd-protocol-handler</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -4,6 +4,8 @@
 #include <string>
 #include <vu>
 
+#include <3rd-protocol-handler/protocol-handler.h>
+
 #include "types.h"
 
 class QLoader
@@ -28,11 +30,7 @@ public:
   };
 
   const std::wstring& NAME = L"QLoader";
-  const std::wstring& PROTOCOL_HANDLER = NAME + L":";
   const std::vector<std::wstring>& USABLE_FILE_EXTENSIONS = { L".EXE", L".JSON", L".LNK", L".URL" };
-
-  bool protocol_handler_registered();
-  bool register_protocol_handler();
 
   virtual bool file_supported(const std::wstring& file_path);
 
@@ -66,4 +64,5 @@ private:
 
 protected:
   json& m_mp_jdata;
+  ProtocolHandler m_ph;
 };

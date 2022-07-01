@@ -13,98 +13,12 @@
 
 static json g_mp_jdata;
 
-QLoader::QLoader() : m_mp_jdata(g_mp_jdata)
+QLoader::QLoader() : m_mp_jdata(g_mp_jdata), m_ph(NAME)
 {
 }
 
 QLoader::~QLoader()
 {
-}
-
-bool QLoader::protocol_handler_registered()
-{
-  bool result = true;
-
-  // [HKEY_CLASSES_ROOT\QLoader]
-  {
-    vu::RegistryW reg(vu::registry_key::HKCR, NAME);
-    result &= reg.key_exists();
-  }
-
-  // [HKEY_CLASSES_ROOT\QLoader\shell\open\command]
-  {
-    auto sub_key = vu::format_W(L"%s\\shell\\open\\command", NAME.c_str());
-    vu::RegistryW reg(vu::registry_key::HKCR, PWCHAR(sub_key.c_str()));
-    result &= reg.key_exists();
-  }
-
-  return result;
-}
-
-BOOL reg_create_key(HKEY hKeyParent, PWCHAR subKey)
-{
-  HKEY  hKey;
-  DWORD dwDisposition;
-  DWORD ret = RegCreateKeyEx(hKeyParent, subKey, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &hKey, &dwDisposition);
-  if (ret == ERROR_SUCCESS)
-  {
-    RegCloseKey(hKey);
-  }
-
-  return TRUE;
-}
-
-BOOL reg_write_value_string(HKEY hKeyParent, PWCHAR subKey, PWCHAR valueName, PWCHAR strData)
-{
-  HKEY hKey;
-  DWORD ret = RegOpenKeyEx(hKeyParent, subKey, 0, KEY_WRITE, &hKey);
-  if (ret == ERROR_SUCCESS)
-  {
-    ret = RegSetValueEx(hKey, valueName, 0, REG_SZ, LPBYTE(strData), ((lstrlen(strData) + 1) * 2));
-  }
-
-  if (ret == ERROR_SUCCESS)
-  {
-    RegCloseKey(hKey);
-  }
-
-  return ret == ERROR_SUCCESS;
-}
-
-bool QLoader::register_protocol_handler()
-{
-  // [HKEY_CLASSES_ROOT\QLoader]
-  // @="URL: QLoader Protocol"
-  // "URL Protocol"=""
-  // 
-  // [HKEY_CLASSES_ROOT\QLoader\DefaultIcon]
-  // @="path\\to\\QLoader.exe,0"
-  // 
-  // [HKEY_CLASSES_ROOT\QLoader\shell\open\command]
-  // @="\"path\\to\\QLoader.exe\" \"%1\""
-
-  const auto file_path = vu::get_current_file_path_W();
-
-  // [HKEY_CLASSES_ROOT\QLoader]
-  auto sub_key = NAME;
-  auto val_str = vu::format_W(L"URL: %s Protocol", NAME.c_str());
-  reg_create_key(HKEY_CLASSES_ROOT, PWCHAR(sub_key.c_str()));
-  reg_write_value_string(HKEY_CLASSES_ROOT, PWCHAR(sub_key.c_str()), L"", PWCHAR(val_str.c_str()));
-  reg_write_value_string(HKEY_CLASSES_ROOT, PWCHAR(sub_key.c_str()), L"URL Protocol", L"");
-
-  // [HKEY_CLASSES_ROOT\QLoader\DefaultIcon]
-  sub_key = vu::format_W(L"%s\\DefaultIcon", NAME.c_str());
-  val_str = vu::format_W(L"\"%s\",0", file_path.c_str());
-  reg_create_key(HKEY_CLASSES_ROOT, PWCHAR(sub_key.c_str()));
-  reg_write_value_string(HKEY_CLASSES_ROOT, PWCHAR(sub_key.c_str()), L"", PWCHAR(val_str.c_str()));
-
-  // [HKEY_CLASSES_ROOT\QLoader\shell\open\command]
-  sub_key = vu::format_W(L"%s\\shell\\open\\command", NAME.c_str());
-  val_str = vu::format_W(L"\"%s\" \"%%1\"", file_path.c_str());
-  reg_create_key(HKEY_CLASSES_ROOT, PWCHAR(sub_key.c_str()));
-  reg_write_value_string(HKEY_CLASSES_ROOT, PWCHAR(sub_key.c_str()), L"", PWCHAR(val_str.c_str()));
-
-  return this->protocol_handler_registered();
 }
 
 bool QLoader::file_supported(const std::wstring& file_path)
@@ -485,7 +399,7 @@ bool QLoader::parse_cmd_line(
   // Eg. "QLoader: -mode 0 -pe "..." -mp "...""
 
   auto cmd_line_tmp = vu::trim_string_W(cmd_line);
-  if (vu::contains_string_W(cmd_line_tmp, PROTOCOL_HANDLER, true))
+  if (m_ph.is_me(cmd_line_tmp, true))
   {
     std::wstring url_decoded;
     vu::url_decode_W(cmd_line_tmp, url_decoded);
@@ -501,9 +415,9 @@ bool QLoader::parse_cmd_line(
 
     cmd_line_tmp.assign(cmd_line_tmp.cbegin() + 1, cmd_line_tmp.cend() - 1);
 
-    if (vu::starts_with_W(cmd_line_tmp, PROTOCOL_HANDLER, true))
+    if (m_ph.is_me(cmd_line_tmp))
     {
-      cmd_line_tmp.assign(cmd_line_tmp.cbegin() + PROTOCOL_HANDLER.size(), cmd_line_tmp.cend());
+      cmd_line_tmp.assign(cmd_line_tmp.cbegin() + m_ph.name(true).size(), cmd_line_tmp.cend());
       cmd_line_tmp = vu::trim_string_W(cmd_line_tmp);
     }
 
@@ -590,7 +504,7 @@ std::unique_ptr<vu::LNKW> QLoader::parse_shortcut(const std::wstring& file_path)
     vu::read_file_binary_W(file_path, url_file_content);
     std::string url_file_content_A(url_file_content.cbegin(), url_file_content.cend());
     const auto lines = vu::split_string_A(url_file_content_A, "\n", true);
-    const auto url_prefix = "URL=" + vu::to_string_A(PROTOCOL_HANDLER);
+    const auto url_prefix = "URL=" + vu::to_string_A(m_ph.name(true));
     for (auto& line : lines)
     {
       const auto line_tmp = vu::trim_string_A(line);

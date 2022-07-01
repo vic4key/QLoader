@@ -151,17 +151,10 @@ BOOL CQLoaderDlg::OnInitDialog()
   ChangeWindowMessageFilter(WM_DROPFILES, MSGFLT_ADD);
   DragAcceptFiles(TRUE);
 
-  if (!this->protocol_handler_registered())
+  if (!m_ph.is_registered() && !m_ph.do_register())
   {
-    if (vu::is_administrator())
-    {
-      this->register_protocol_handler();
-    }
-    else
-    {
-      vu::msg_box_W(this->GetSafeHwnd(), MB_OK | MB_ICONWARNING, NAME,
-        L"Required to run as administrator at the first time.");
-    }
+    vu::msg_box_W(this->GetSafeHwnd(), MB_OK | MB_ICONWARNING, NAME,
+      L"Required to run as administrator at the first time.");
   }
 
   this->initialize_ui();
@@ -394,7 +387,7 @@ void CQLoaderDlg::OnBnClicked_ExportURL()
     L"IconIndex=%d\n";
 
   auto url_file_content_W = vu::format_W(url_file_content_template,
-    PROTOCOL_HANDLER.c_str(), lnk.argument.c_str(), lnk.icon.first.c_str(), lnk.icon.second);
+    m_ph.name(true).c_str(), lnk.argument.c_str(), lnk.icon.first.c_str(), lnk.icon.second);
   auto url_file_content_A = vu::to_string_A(url_file_content_W);
 
   std::vector<vu::byte> url_file_content(url_file_content_A.cbegin(), url_file_content_A.cend());
@@ -419,7 +412,7 @@ void CQLoaderDlg::OnBnClicked_ExportHTML()
   vu::url_encode_W(lnk.argument, lnk_argument_url_encoded);
 
   const auto html_hyperlink = vu::format_W(L"<a href=\"%s %s\">%s</a>",
-    PROTOCOL_HANDLER.c_str(), lnk_argument_url_encoded.c_str(), file_name.c_str());
+    m_ph.name(true).c_str(), lnk_argument_url_encoded.c_str(), file_name.c_str());
 
   const bool succeed = vu::copy_to_clipboard_W(html_hyperlink);
 
