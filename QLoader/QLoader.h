@@ -1,3 +1,6 @@
+// QLoader.h : header file
+//
+
 #pragma once
 
 #include <vector>

@@ -1,3 +1,6 @@
+// QLoader.cpp : implementation file
+//
+
 #include "pch.h"
 #include "QLoader.h"
 
