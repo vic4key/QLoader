@@ -1,21 +1,23 @@
 
 # What is QLoader ?
 
-**QLoader** a.k.a **Quick Loader** is a PE loader that helps you quickly create a loader for application
+**QLoader** is a PE loader creator that helps you quickly create a non-exe loader for application
 
 ## Features
 
-* Patching Methods
-  - [x] Fully Loaded
-  - [x] At Entry Point
-  - [ ] Unpacking
-
+* Easy to Create a non-exe Loader to Avoid Anti-Virus Detection
+* Easy to Define Patching Patterns under the JSON File Format
+* Easy to Modify Patching Information (Target, Pattern, etc)
+* Support both PE 32-bit & 64-bit
+* Do Not Need `Save Project` like dUP for later (Modify Direct the Created Loader for Updating)
 * Create Loader as
   - [X] Windows Shortcut .LNK
   - [X] Internet Shortcut .URL
   - [X] HTML Hyperlink `qloader: ...` (like `tel: ...`, `skype: ...`, etc)
-
-* Define patterns under the JSON File Format
+* Patching Methods
+  - [x] Fully Loaded
+  - [x] At Entry Point
+  - [ ] Unpacking (`TODO Later`)
 
 ## License
 
@@ -31,7 +33,8 @@ Released under the [MIT](LICENSE.md) license
 
 >![](QLoader/screenshots/ui.png?)
 
->Pattern File (Template)
+<details>
+<summary>Pattern File (Template)</summary>
 
 ```
 {
@@ -76,6 +79,7 @@ Released under the [MIT](LICENSE.md) license
   ]
 }
 ```
+</details>
 
 ## Examples
 
@@ -93,11 +97,29 @@ Released under the [MIT](LICENSE.md) license
 
 ## Development
 
-> Step 1. Required Visual Studio C++ 2019 or later.
+<details>
+<summary>Required</summary>
+
+> Installed `Visual Studio C++ 2019` or later
 > 
-> Step 2. Required [Vutils](https://github.com/vic4key/Vutils.git) library
+> Installed [Vutils](https://github.com/vic4key/Vutils.git) library
+</details>
+
+<details>
+<summary>Steps</summary>
+
+> Step 1. Check [this](https://github.com/vic4key/QLoader.git) repository
 > 
-> Step 3. Clone [this](https://github.com/vic4key/QLoader.git) repository and start to work.
+> Step 2. Checkout Sub-Modules
+> 
+>> $ git submodule update --init --recursive
+>> 
+>> $ git submodule foreach --recursive git checkout master
+>> 
+>> $ git submodule foreach --recursive git pull
+> 
+> Step 3. Open `QLoader.sln` in `MS Visual Studio` and start to work
+</details>
 
 ## Contact
 Feel free to contact via [Twitter](https://twitter.com/vic4key) / [Gmail](mailto:vic4key@gmail.com) / [Blog](https://blog.vic.onl/) / [Website](https://vic.onl/)
