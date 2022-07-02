@@ -5,11 +5,11 @@
 
 ## Features
 
-* Easy to Create a non-exe Loader to Avoid Anti-Virus Detection
+* Easy to Create a non-exe Loader to avoid Anti-Virus Detection
 * Easy to Define Patching Patterns under the JSON File Format
 * Easy to Modify Patching Information (Target, Pattern, etc)
 * Support both PE 32-bit & 64-bit
-* Do Not Need `Save Project` like dUP for later (Modify Direct the Created Loader for Updating)
+* Modify direct the created Loader for updating (do not need to `Save Project` for maintenance)
 * Create Loader as
   - [X] Windows Shortcut .LNK
   - [X] Internet Shortcut .URL
@@ -83,17 +83,19 @@ Released under the [MIT](LICENSE.md) license
 
 ## Examples
 
-> *Take a look at the [test](QLoader/test)* folder
+<details>
+<summary>Screenshots</summary>
 
->Sublime Text 4 (4107 - 64-bit)
->
->![](QLoader/screenshots/sublime_text_4.png?)
+> [Sublime Text 4 (4107 - 64-bit)](https://github.com/vic4key/QLoader/blob/master/QLoader/test/sublime%20text%204.json)
+> 
+> ![](QLoader/screenshots/sublime_text_4.png?)
 
->Cute Video Converter (32-bit application)
->
->![](QLoader/screenshots/cute_video_converter.png?)
+> [Cute Video Converter (32-bit application)](https://github.com/vic4key/QLoader/blob/master/QLoader/test/cute%20video%20converter.json)
+> 
+> ![](QLoader/screenshots/cute_video_converter.png?)
+</details>
 
->Etc
+> *Take a look at the [test](QLoader/test)* folder to see more examples
 
 ## Development
 
