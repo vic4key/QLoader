@@ -19,17 +19,24 @@ class CAboutDlg : public CDialogEx
 public:
   CAboutDlg() : CDialogEx(IDD_ABOUTBOX) {}
   virtual ~CAboutDlg() {};
-
-#ifdef AFX_DESIGN_TIME
+  afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
+  #ifdef AFX_DESIGN_TIME
   enum { IDD = IDD_ABOUTBOX };
-#endif
+  #endif
 
 protected:
   DECLARE_MESSAGE_MAP()
 };
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
+  ON_WM_SHOWWINDOW()
 END_MESSAGE_MAP()
+
+afx_msg void CAboutDlg::OnShowWindow(BOOL bShow, UINT nStatus)
+{
+  __super::OnShowWindow(bShow, nStatus);
+  this->GetDlgItem(IDOK)->SetFocus();
+}
 
 // CQLoaderDlg dialog
 

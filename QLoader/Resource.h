@@ -25,6 +25,8 @@
 #define IDC_PATCH_WHEN_2                1013
 #define IDC_MP_SAVE                     1014
 #define IDC_EXPORT                      1015
+#define IDC_URL_GITHUB_REPO             1016
+#define IDC_MY_WEBSITE                  1017
 #define ID_EXPORT_LNK                   32771
 #define IDM_EXPORT_URL                  32772
 #define ID_HTMLHYPERLINK                32773
@@ -37,7 +39,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        131
 #define _APS_NEXT_COMMAND_VALUE         32776
-#define _APS_NEXT_CONTROL_VALUE         1016
+#define _APS_NEXT_CONTROL_VALUE         1018
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
