@@ -832,7 +832,7 @@ void CQLoaderDlg::populate_tree()
           m_mp_tree.SetCheck(hpatch, json_get(jpatch, "enabled", true));
           fn_tree_add_node_str(hpatch, jpatch, "pattern");
           fn_tree_add_node_str(hpatch, jpatch, "replacement");
-          fn_tree_add_node_int(hpatch, jpatch, "offset");
+          fn_tree_add_node_str(hpatch, jpatch, "offset");
         }
       }
 

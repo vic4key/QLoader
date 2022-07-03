@@ -229,7 +229,12 @@ void QLoader::launch(
 
         // extract the offset of patch
 
-        const auto offset = json_get(jpatch, "offset", 0);
+        auto offset_s = json_get(jpatch, "offset", EMPTY);
+        offset_s = vu::trim_string_A(offset_s);
+        bool is_heximal =\
+          vu::contains_string_A(offset_s, "0x", true) ||
+          vu::contains_string_A(offset_s, "h", true);
+        const int offset = std::stoi(offset_s, nullptr, is_heximal ? 16 : 10);
 
         // search pattern in the module
 
