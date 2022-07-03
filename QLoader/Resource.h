@@ -9,6 +9,7 @@
 #define IDR_MAINFRAME                   128
 #define IDB_LOG_SMALL                   129
 #define IDR_EXPORT                      130
+#define IDD_PATCH_DIALOG                131
 #define IDC_PE_PATH                     1000
 #define IDC_PE_DIR                      1001
 #define IDC_PE_ARG                      1002
@@ -27,6 +28,11 @@
 #define IDC_EXPORT                      1015
 #define IDC_URL_GITHUB_REPO             1016
 #define IDC_MY_WEBSITE                  1017
+#define IDC_PATCH_NAME                  1018
+#define IDC_PATCH_PATTERN               1019
+#define IDC_PATCH_REPLACEMENT           1020
+#define IDC_PATCH_OFFSET                1021
+#define IDC_PATCH_ENABLED               1022
 #define ID_EXPORT_LNK                   32771
 #define IDM_EXPORT_URL                  32772
 #define ID_HTMLHYPERLINK                32773
@@ -37,9 +43,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        131
+#define _APS_NEXT_RESOURCE_VALUE        132
 #define _APS_NEXT_COMMAND_VALUE         32776
-#define _APS_NEXT_CONTROL_VALUE         1018
+#define _APS_NEXT_CONTROL_VALUE         1023
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
