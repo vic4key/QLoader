@@ -123,5 +123,10 @@ Released under the [MIT](LICENSE.md) license
 > Step 3. Open `QLoader.sln` in `MS Visual Studio` and start to work
 </details>
 
+## ToDo
+
+* Support `Unpacking` patching method that using for complex packed/protected target
+* Support builtin editor or a quick way for adding new patch entry
+
 ## Contact
 Feel free to contact via [Twitter](https://twitter.com/vic4key) / [Gmail](mailto:vic4key@gmail.com) / [Blog](https://blog.vic.onl/) / [Website](https://vic.onl/)
