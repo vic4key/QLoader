@@ -40,8 +40,7 @@ Released under the [MIT](LICENSE.md) license
 {
   "name": "this is a name",
   "brief": "this is a brief",
-  "modules":
-  [
+  "modules": [
     {
       "name": "user32.dll",
       "enabled": true,
@@ -50,29 +49,42 @@ Released under the [MIT](LICENSE.md) license
           "name": "patch 1",
           "pattern": "11 22 ?? 44",
           "replacement": "12 21",
-          "offset": 1,
+          "offset": "1h",
           "enabled": false
+        },
+        {
+          "name": "patch 2",
+          "pattern": "33 44 ?? ?? 77",
+          "replacement": "34 43",
+          "offset": "0x2",
+          "enabled": true
         }
       ]
     },
     {
       "name": "kernel32.dll",
       "enabled": false,
-      "patches":
-      [
+      "patches": [
         {
           "name": "patch 3",
           "pattern": "55 66",
           "replacement": "56 65",
-          "offset": 3,
+          "offset": "3",
           "enabled": true
         },
         {
           "name": "patch 4",
           "pattern": "77 88",
           "replacement": "78 87",
-          "offset": 4,
+          "offset": "4h",
           "enabled": false
+        },
+        {
+          "name": "patch 5",
+          "pattern": "99 ?? AA BB CC DD FF",
+          "replacement": "90 09",
+          "offset": "0x5",
+          "enabled": true
         }
       ]
     }
