@@ -11,10 +11,13 @@ public:
   ModuleDlg(CWnd* pParent = nullptr);
   virtual ~ModuleDlg();
 
-  enum { IDD = IDD_PATCH_DIALOG };
+  enum { IDD = IDD_MODULE_DIALOG };
 
 protected:
   virtual void DoDataExchange(CDataExchange* pDX);
 
   DECLARE_MESSAGE_MAP()
+
+protected:
+  CString m_module_name;
 };
