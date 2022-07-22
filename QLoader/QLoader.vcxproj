@@ -203,6 +203,7 @@
     <ClInclude Include="3rdparty\3rd-json-fifo-nlohmann\json-fifo-nlohmann.h" />
     <ClInclude Include="3rdparty\3rd-json-fifo-nlohmann\nlohmann\fifo_map.hpp" />
     <ClInclude Include="3rdparty\3rd-json-fifo-nlohmann\nlohmann\json.hpp" />
+    <ClInclude Include="3rdparty\3rd-mfc-numeric-edit-ctrl\CNumericEditControl.h" />
     <ClInclude Include="3rdparty\3rd-protocol-handler\protocol-handler.h" />
     <ClInclude Include="ModuleDlg.h" />
     <ClInclude Include="PatchDlg.h" />
@@ -217,6 +218,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="3rdparty\3rd-easy-mfc-tree-ctrl\EasyTreeCtrl.cpp" />
+    <ClCompile Include="3rdparty\3rd-mfc-numeric-edit-ctrl\CNumericEditControl.cpp" />
     <ClCompile Include="3rdparty\3rd-protocol-handler\protocol-handler.cpp" />
     <ClCompile Include="ModuleDlg.cpp" />
     <ClCompile Include="PatchDlg.cpp" />

@@ -25,6 +25,9 @@
     <Filter Include="3rdparty\3rd-protocol-handler">
       <UniqueIdentifier>{ae935ad1-eae5-4e3f-8a9a-8d57a27f8232}</UniqueIdentifier>
     </Filter>
+    <Filter Include="3rdparty\3rd-mfc-numeric-edit-ctrl">
+      <UniqueIdentifier>{b5ac057b-950a-4576-a7c5-3cc0dfaa0a33}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="QLoaderApp.h">
@@ -72,6 +75,9 @@
     <ClInclude Include="ModuleDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="3rdparty\3rd-mfc-numeric-edit-ctrl\CNumericEditControl.h">
+      <Filter>3rdparty\3rd-mfc-numeric-edit-ctrl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="QLoaderApp.cpp">
@@ -97,6 +103,9 @@
     </ClCompile>
     <ClCompile Include="ModuleDlg.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="3rdparty\3rd-mfc-numeric-edit-ctrl\CNumericEditControl.cpp">
+      <Filter>3rdparty\3rd-mfc-numeric-edit-ctrl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

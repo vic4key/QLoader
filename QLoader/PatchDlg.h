@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Resource.h"
+#include "3rd-mfc-numeric-edit-ctrl/CNumericEditControl.h"
 
 // PatchDlg dialog
 
@@ -22,4 +23,9 @@ protected:
 
 protected:
   CString m_module_name;
+  CString m_patch_name;
+  CString m_patch_pattern;
+  CString m_patch_replacement;
+  CNumericEditControl m_patch_offset;
+  BOOL m_patch_enabled;
 };
