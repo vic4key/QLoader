@@ -23,9 +23,7 @@ void PatchDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 PatchDlg::PatchDlg(
-  const std::vector<std::string>& existing_patch_names,
-  const CString& selected_module_name,
-  CWnd* pParent)
+  const std::vector<std::string>& existing_patch_names, const CString& selected_module_name, CWnd* pParent)
   : CDialogEx(IDD_PATCH_DIALOG, pParent)
   , m_existing_patch_names(existing_patch_names)
   , m_selected_module_name(selected_module_name)
