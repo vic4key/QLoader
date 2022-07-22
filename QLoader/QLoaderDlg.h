@@ -7,11 +7,21 @@
 #include "QLoader.h"
 #include <3rd-easy-mfc-tree-ctrl/EasyTreeCtrl.h>
 
+enum jnode_e
+{
+  root,
+  module_name,
+  patch_name,
+  patch_key,
+  patch_value,
+};
+
 struct jnode_t : public Node
 {
-  jnode_t(const std::string& name, void* ptr = nullptr, json* ptr_parent = nullptr)
-    : Node(name, ptr), m_ptr_parent(ptr_parent) {}
+  jnode_t(const jnode_e type, const std::string& name, void* ptr = nullptr, json* ptr_parent = nullptr)
+    : Node(name, ptr), m_ptr_parent(ptr_parent), m_type(type) {}
   json* m_ptr_parent;
+  jnode_e m_type;
 };
 
 // CQLoaderDlg dialog

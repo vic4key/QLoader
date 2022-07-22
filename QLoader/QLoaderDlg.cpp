@@ -572,13 +572,25 @@ void CQLoaderDlg::initialize_ui()
   {
     switch (action)
     {
+    case EasyTreeCtrl::eNotifyType::BEFORE_INSERTING:
+    {
+      auto ptr_jnode = static_cast<jnode_t*>(pNode);
+      return ptr_jnode == nullptr || ptr_jnode->m_type == module_name;
+    }
+    break;
+
+    case EasyTreeCtrl::eNotifyType::AFTER_INSERTING:
+    {
+      AfxMessageBox(L"Not yet supported", MB_OK);
+    }
+    break;
+
     case EasyTreeCtrl::eNotifyType::BEFORE_MODIFYING:
     {
       auto ptr_jnode = static_cast<jnode_t*>(pNode);
       return // continue processing if data node
         ptr_jnode != nullptr &&
-        ptr_jnode->m_ptr_data != nullptr &&
-        ptr_jnode->m_ptr_tv->state & TVIF_IMAGE;
+        VU_CONTAINS(ptr_jnode->m_type, 3, jnode_e::module_name, jnode_e::patch_name, jnode_e::patch_value);
     }
     break;
 
@@ -626,8 +638,7 @@ void CQLoaderDlg::initialize_ui()
       auto ptr_jnode = static_cast<jnode_t*>(pNode);
       return // continue processing if data node
         ptr_jnode != nullptr &&
-        ptr_jnode->m_ptr_data != nullptr &&
-        ptr_jnode->m_ptr_tv->state & TVIS_STATEIMAGEMASK;
+        VU_CONTAINS(ptr_jnode->m_type, 2, jnode_e::module_name, jnode_e::patch_name);
     }
     break;
 
@@ -807,20 +818,10 @@ void CQLoaderDlg::populate_tree()
 
     auto fn_tree_add_node_str = [&](HTREEITEM& hparent, json& jobject, std::string key) -> HTREEITEM
     {
-      auto hitem = m_mp_tree.InsertNode(hparent, new jnode_t(key));
+      auto hitem = m_mp_tree.InsertNode(hparent, new jnode_t(jnode_e::patch_key, key));
       m_mp_tree.SetItemState(hitem, 0, TVIS_STATEIMAGEMASK);
       auto string = json_get(jobject, key, EMPTY);
-      hitem = m_mp_tree.InsertNode(hitem, new jnode_t(string, &jobject[key], &jobject));
-      m_mp_tree.SetItemState(hitem, 0, TVIS_STATEIMAGEMASK);
-      return hitem;
-    };
-
-    auto fn_tree_add_node_int = [&](HTREEITEM& hparent, json& jobject, std::string key) -> HTREEITEM
-    {
-      auto hitem = m_mp_tree.InsertNode(hparent, new jnode_t(key));
-      m_mp_tree.SetItemState(hitem, 0, TVIS_STATEIMAGEMASK);
-      auto number = json_get(jobject, key, 0);
-      hitem = m_mp_tree.InsertNode(hitem, new jnode_t(std::to_string(number), &jobject[key], &jobject));
+      hitem = m_mp_tree.InsertNode(hitem, new jnode_t(jnode_e::patch_value, string, &jobject[key], &jobject));
       m_mp_tree.SetItemState(hitem, 0, TVIS_STATEIMAGEMASK);
       return hitem;
     };
@@ -828,13 +829,13 @@ void CQLoaderDlg::populate_tree()
     for (auto& jmodule : m_mp_jdata["modules"])
     {
       auto module_name = json_get(jmodule, "name", EMPTY);
-      auto hmodule = m_mp_tree.InsertNode(root, new jnode_t(module_name, &jmodule["name"], &jmodule));
+      auto hmodule = m_mp_tree.InsertNode(root, new jnode_t(jnode_e::module_name, module_name, &jmodule["name"], &jmodule));
       m_mp_tree.SetCheck(hmodule, json_get(jmodule, "enabled", true));
 
       for (auto& jpatch : jmodule["patches"])
       {
         auto patch_name = json_get(jpatch, "name", UNNAMED);
-        if (auto hpatch = m_mp_tree.InsertNode(hmodule, new jnode_t(patch_name, &jpatch["name"], &jpatch)))
+        if (auto hpatch = m_mp_tree.InsertNode(hmodule, new jnode_t(jnode_e::patch_name, patch_name, &jpatch["name"], &jpatch)))
         {
           m_mp_tree.SetCheck(hpatch, json_get(jpatch, "enabled", true));
           fn_tree_add_node_str(hpatch, jpatch, "pattern");
