@@ -7,6 +7,8 @@
 #include "QLoaderApp.h"
 #include "QLoaderDlg.h"
 #include "AfxDialogEx.h"
+#include "PatchDlg.h"
+#include "ModuleDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -581,7 +583,17 @@ void CQLoaderDlg::initialize_ui()
 
     case EasyTreeCtrl::eNotifyType::AFTER_INSERTING:
     {
-      AfxMessageBox(L"Not yet supported", MB_OK);
+      auto ptr_jnode = static_cast<jnode_t*>(pNode);
+      if (ptr_jnode == nullptr) // add a new module
+      {
+        ModuleDlg dialog;
+        dialog.DoModal();
+      }
+      else if (ptr_jnode->m_type == jnode_e::module_name) // add a new patch
+      {
+        PatchDlg dialog(ptr_jnode->m_name);
+        dialog.DoModal();
+      }
     }
     break;
 
