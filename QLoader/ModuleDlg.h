@@ -8,7 +8,7 @@ class ModuleDlg : public CDialogEx
 {
   DECLARE_DYNAMIC(ModuleDlg)
 public:
-  ModuleDlg(CWnd* pParent = nullptr);
+  ModuleDlg(const std::vector<std::string>& existing_module_names, CWnd* pParent = nullptr);
   virtual ~ModuleDlg();
 
   enum { IDD = IDD_MODULE_DIALOG };
@@ -19,5 +19,6 @@ protected:
   DECLARE_MESSAGE_MAP()
 
 protected:
+  const std::vector<std::string> m_existing_module_names;
   CString m_module_name;
 };

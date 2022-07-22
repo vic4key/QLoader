@@ -9,7 +9,10 @@ class PatchDlg : public CDialogEx
 {
   DECLARE_DYNAMIC(PatchDlg)
 public:
-  PatchDlg(const CString& module_name, CWnd* pParent = nullptr);
+  PatchDlg(
+    const std::vector<std::string>& existing_patch_names,
+    const CString& selected_module_name,
+    CWnd* pParent = nullptr);
   virtual ~PatchDlg();
 
   enum { IDD = IDD_PATCH_DIALOG };
@@ -22,7 +25,8 @@ protected:
   DECLARE_MESSAGE_MAP()
 
 protected:
-  CString m_module_name;
+  const std::vector<std::string>& m_existing_patch_names;
+  CString m_selected_module_name;
   CString m_patch_name;
   CString m_patch_pattern;
   CString m_patch_replacement;

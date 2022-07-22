@@ -22,8 +22,13 @@ void PatchDlg::DoDataExchange(CDataExchange* pDX)
   DDX_Check(pDX, IDC_PATCH_ENABLED, m_patch_enabled);
 }
 
-PatchDlg::PatchDlg(const CString& module_name, CWnd* pParent)
-  : CDialogEx(IDD_PATCH_DIALOG, pParent), m_module_name(module_name)
+PatchDlg::PatchDlg(
+  const std::vector<std::string>& existing_patch_names,
+  const CString& selected_module_name,
+  CWnd* pParent)
+  : CDialogEx(IDD_PATCH_DIALOG, pParent)
+  , m_existing_patch_names(existing_patch_names)
+  , m_selected_module_name(selected_module_name)
   , m_patch_name(_T(""))
   , m_patch_pattern(_T(""))
   , m_patch_replacement(_T(""))
@@ -40,7 +45,7 @@ BOOL PatchDlg::OnInitDialog()
   auto result = __super::OnInitDialog();
 
   CString title;
-  title.Format(L"Add New Patch to '%s'", m_module_name);
+  title.Format(L"Add New Patch to '%s'", m_selected_module_name);
   this->SetWindowText(title);
 
   return result;

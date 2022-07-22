@@ -586,13 +586,45 @@ void CQLoaderDlg::initialize_ui()
       auto ptr_jnode = static_cast<jnode_t*>(pNode);
       if (ptr_jnode == nullptr) // add a new module
       {
-        ModuleDlg dialog;
-        dialog.DoModal();
+        std::vector<std::string> existing_module_names;
+        for (const auto& jmodule : m_mp_jdata["modules"])
+        {
+          std::string module_name = json_get(jmodule, "name", EMPTY);
+          if (!module_name.empty())
+          {
+            existing_module_names.push_back(module_name);
+          }
+        }
+
+        ModuleDlg dialog(existing_module_names, this);
+        if (dialog.DoModal() == IDOK)
+        {
+          // add module to data model here
+        }
       }
       else if (ptr_jnode->m_type == jnode_e::module_name) // add a new patch
       {
-        PatchDlg dialog(ptr_jnode->m_name);
-        dialog.DoModal();
+        auto ptr_jobject = static_cast<json*>(ptr_jnode->m_ptr_parent);
+        if (ptr_jobject != nullptr)
+        {
+          auto& jobject = static_cast<json&>(*ptr_jobject);
+          std::vector<std::string> existing_patch_names;
+          for (const auto& jmodule : jobject["patches"])
+          {
+            std::string module_name = json_get(jmodule, "name", EMPTY);
+            if (!module_name.empty())
+            {
+              existing_patch_names.push_back(module_name);
+            }
+          }
+
+          const CString selected_module_name = ptr_jnode->m_name;
+          PatchDlg dialog(existing_patch_names, selected_module_name, this);
+          if (dialog.DoModal() == IDOK)
+          {
+            // add patch to data model here
+          }
+        }
       }
     }
     break;
