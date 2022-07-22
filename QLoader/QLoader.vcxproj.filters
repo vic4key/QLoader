@@ -66,6 +66,12 @@
     <ClInclude Include="3rdparty\3rd-protocol-handler\protocol-handler.h">
       <Filter>3rdparty\3rd-protocol-handler</Filter>
     </ClInclude>
+    <ClInclude Include="PatchDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="QLoaderApp.cpp">
@@ -85,6 +91,12 @@
     </ClCompile>
     <ClCompile Include="3rdparty\3rd-protocol-handler\protocol-handler.cpp">
       <Filter>3rdparty\3rd-protocol-handler</Filter>
+    </ClCompile>
+    <ClCompile Include="PatchDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleDlg.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

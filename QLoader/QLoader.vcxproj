@@ -204,6 +204,8 @@
     <ClInclude Include="3rdparty\3rd-json-fifo-nlohmann\nlohmann\fifo_map.hpp" />
     <ClInclude Include="3rdparty\3rd-json-fifo-nlohmann\nlohmann\json.hpp" />
     <ClInclude Include="3rdparty\3rd-protocol-handler\protocol-handler.h" />
+    <ClInclude Include="ModuleDlg.h" />
+    <ClInclude Include="PatchDlg.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="QLoader.h" />
@@ -216,6 +218,8 @@
   <ItemGroup>
     <ClCompile Include="3rdparty\3rd-easy-mfc-tree-ctrl\EasyTreeCtrl.cpp" />
     <ClCompile Include="3rdparty\3rd-protocol-handler\protocol-handler.cpp" />
+    <ClCompile Include="ModuleDlg.cpp" />
+    <ClCompile Include="PatchDlg.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
