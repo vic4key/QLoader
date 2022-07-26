@@ -599,7 +599,8 @@ void CQLoaderDlg::initialize_ui()
         ModuleDlg dialog(existing_module_names, this);
         if (dialog.DoModal() == IDOK)
         {
-          // add module to data model here
+          const auto name = vu::to_string_A(dialog.m_module_name.GetBuffer());
+          this->add_a_module(name);
         }
       }
       else if (ptr_jnode->m_type == jnode_e::module_name) // add a new patch
@@ -607,14 +608,14 @@ void CQLoaderDlg::initialize_ui()
         auto ptr_jobject = static_cast<json*>(ptr_jnode->m_ptr_parent);
         if (ptr_jobject != nullptr)
         {
-          auto& jobject = static_cast<json&>(*ptr_jobject);
+          auto& jmodule = static_cast<json&>(*ptr_jobject);
           std::vector<std::string> existing_patch_names;
-          for (const auto& jmodule : jobject["patches"])
+          for (const auto& jpatch : jmodule["patches"])
           {
-            std::string module_name = json_get(jmodule, "name", EMPTY);
-            if (!module_name.empty())
+            std::string patch_name = json_get(jpatch, "name", EMPTY);
+            if (!patch_name.empty())
             {
-              existing_patch_names.push_back(module_name);
+              existing_patch_names.push_back(patch_name);
             }
           }
 
@@ -622,7 +623,12 @@ void CQLoaderDlg::initialize_ui()
           PatchDlg dialog(existing_patch_names, selected_module_name, this);
           if (dialog.DoModal() == IDOK)
           {
-            // add patch to data model here
+            const auto name = vu::to_string_A(dialog.m_patch_name.GetBuffer());
+            const auto pattern = vu::to_string_A(dialog.m_patch_pattern.GetBuffer());
+            const auto replacement = vu::to_string_A(dialog.m_patch_replacement.GetBuffer());
+            const auto offset = vu::to_string_A(dialog.m_patch_offset.GetBuffer());
+            const auto enabled = dialog.m_patch_enabled == BST_CHECKED;
+            this->add_a_patch(jmodule, name, pattern, replacement, offset, enabled);
           }
         }
       }

@@ -2,11 +2,15 @@
 
 #include "Resource.h"
 
+class CQLoaderDlg;
+
 // ModuleDlg dialog
 
 class ModuleDlg : public CDialogEx
 {
   DECLARE_DYNAMIC(ModuleDlg)
+  friend CQLoaderDlg;
+
 public:
   ModuleDlg(const std::vector<std::string>& existing_module_names, CWnd* pParent = nullptr);
   virtual ~ModuleDlg();

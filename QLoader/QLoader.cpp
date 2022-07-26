@@ -16,6 +16,29 @@
 
 static json g_mp_jdata;
 
+static const std::string JSON_MODULE_TEMPLATE = \
+R"({
+  "name": "%s",
+  "patches": [
+    {
+      "name": "patch",
+      "pattern": "",
+      "replacement": "",
+      "offset": "0",
+      "enabled": true
+    }
+  ]
+})";
+
+static const std::string JSON_PATCH_TEMPLATE = \
+R"({
+  "name": "patch",
+  "pattern": "",
+  "replacement": "",
+  "offset": "0",
+  "enabled": true
+})";
+
 QLoader::QLoader() : m_mp_jdata(g_mp_jdata), m_ph(NAME)
 {
 }
@@ -528,4 +551,20 @@ std::unique_ptr<vu::LNKW> QLoader::parse_shortcut(const std::wstring& file_path)
   }
 
   return ptr_lnk;
+}
+
+void QLoader::add_a_module(const std::string& name)
+{
+  assert(0 && "not yet implemented");
+}
+
+void QLoader::add_a_patch(
+  json& jmodule,
+  const std::string& name,
+  const std::string& pattern,
+  const std::string& replacement,
+  const std::string& offset,
+  const bool enabled)
+{
+  assert(0 && "not yet implemented");
 }

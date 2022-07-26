@@ -18,7 +18,7 @@ void PatchDlg::DoDataExchange(CDataExchange* pDX)
   DDX_Text(pDX, IDC_PATCH_NAME, m_patch_name);
   DDX_Text(pDX, IDC_PATCH_PATTERN, m_patch_pattern);
   DDX_Text(pDX, IDC_PATCH_REPLACEMENT, m_patch_replacement);
-  DDX_Control(pDX, IDC_PATCH_OFFSET, m_patch_offset);
+  DDX_Control(pDX, IDC_PATCH_OFFSET, m_patch_offset_ctrl);
   DDX_Check(pDX, IDC_PATCH_ENABLED, m_patch_enabled);
 }
 
@@ -47,6 +47,15 @@ BOOL PatchDlg::OnInitDialog()
   this->SetWindowText(title);
 
   return result;
+}
+
+void PatchDlg::OnOK()
+{
+  UpdateData(TRUE);
+
+  m_patch_offset.Format(L"0x%llX", m_patch_offset_ctrl.AsValue());
+
+  __super::OnOK();
 }
 
 // PatchDlg message handlers
