@@ -5,7 +5,7 @@
 #pragma once
 
 #include "QLoader.h"
-#include <3rd-easy-mfc-tree-ctrl/EasyTreeCtrl.h>
+#include <3rd-mfc-easy-tree-ctrl/EasyTreeCtrl.h>
 
 enum jnode_e
 {

@@ -570,14 +570,19 @@ void CQLoaderDlg::update_ui()
 
 void CQLoaderDlg::initialize_ui()
 {
-  m_mp_tree.OnNotify([&](EasyTreeCtrl::eNotifyType action, Node* pNode) -> bool
+  m_mp_tree.OnNotify([&](EasyTreeCtrl::eNotifyType action, Node* pNode, void* pOptional) -> bool
   {
     switch (action)
     {
     case EasyTreeCtrl::eNotifyType::BEFORE_INSERTING:
     {
+      if (pNode == nullptr && pOptional != nullptr && PtrToUint(pOptional) == ID_CONTEXT_MENU_INSERT) // @ <root>
+      {
+        return true;
+      }
+
       auto ptr_jnode = static_cast<jnode_t*>(pNode);
-      return ptr_jnode == nullptr || ptr_jnode->m_type == module_name;
+      return ptr_jnode != nullptr && ptr_jnode->m_type == module_name; // @ module name
     }
     break;
 

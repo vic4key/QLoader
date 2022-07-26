@@ -1,12 +1,12 @@
 [submodule "QLoader/3rdparty/3rd-json-fifo-nlohmann"]
 	path = QLoader/3rdparty/3rd-json-fifo-nlohmann
 	url = https://github.com/vn-os/3rd-json-fifo-nlohmann.git
-[submodule "QLoader/3rdparty/3rd-easy-mfc-tree-ctrl"]
-	path = QLoader/3rdparty/3rd-easy-mfc-tree-ctrl
-	url = https://github.com/vn-os/3rd-easy-mfc-tree-ctrl.git
 [submodule "QLoader/3rdparty/3rd-protocol-handler"]
 	path = QLoader/3rdparty/3rd-protocol-handler
 	url = https://github.com/vn-os/3rd-protocol-handler.git
 [submodule "QLoader/3rdparty/3rd-mfc-numeric-edit-ctrl"]
 	path = QLoader/3rdparty/3rd-mfc-numeric-edit-ctrl
 	url = https://github.com/vn-os/3rd-mfc-numeric-edit-ctrl.git
+[submodule "QLoader/3rdparty/3rd-mfc-easy-tree-ctrl"]
+	path = QLoader/3rdparty/3rd-mfc-easy-tree-ctrl
+	url = https://github.com/vn-os/3rd-mfc-easy-tree-ctrl.git
