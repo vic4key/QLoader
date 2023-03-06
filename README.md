@@ -122,17 +122,9 @@ Released under the [MIT](LICENSE.md) license
 <details>
 <summary>Steps</summary>
 
-> Step 1. Check [this](https://github.com/vic4key/QLoader.git) repository
+> Step 1. Check the repo by command `git clone --recursive https://github.com/vic4key/QLoader.git`
 > 
-> Step 2. Checkout Sub-Modules
-> 
->> $ git submodule update --init --recursive
->> 
->> $ git submodule foreach --recursive git checkout master
->> 
->> $ git submodule foreach --recursive git pull
-> 
-> Step 3. Open `QLoader.sln` in `MS Visual Studio` and start to work
+> Step 2. Open `QLoader.sln` in `MS Visual Studio` and start to work
 </details>
 
 ## ToDo
