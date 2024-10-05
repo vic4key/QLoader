@@ -1,14 +1,12 @@
 {
-	"modules":
-	[
+	"modules": [
 		{
 			"name": "sublime_text.exe",
-			"patches": 
-			[
+			"patches": [
 				{
 					"name": "license",
-					"pattern": "80 38 00",
-					"replacement": "FE 00 90",
+					"pattern": "80 79 05 00 0F 94 C2",
+					"replacement": "C6 41 05 01 B2 00 90",
 					"offset": "0"
 				}
 			]

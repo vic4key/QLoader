@@ -7,8 +7,6 @@
 #include "QLoaderApp.h"
 #include "QLoaderDlg.h"
 #include "AfxDialogEx.h"
-#include "PatchDlg.h"
-#include "ModuleDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -576,67 +574,14 @@ void CQLoaderDlg::initialize_ui()
     {
     case EasyTreeCtrl::eNotifyType::BEFORE_INSERTING:
     {
-      if (pNode == nullptr && pOptional != nullptr && PtrToUint(pOptional) == ID_CONTEXT_MENU_INSERT) // @ <root>
-      {
-        return true;
-      }
-
       auto ptr_jnode = static_cast<jnode_t*>(pNode);
-      return ptr_jnode != nullptr && ptr_jnode->m_type == module_name; // @ module name
+      return ptr_jnode == nullptr || ptr_jnode->m_type == module_name;
     }
     break;
 
     case EasyTreeCtrl::eNotifyType::AFTER_INSERTING:
     {
-      auto ptr_jnode = static_cast<jnode_t*>(pNode);
-      if (ptr_jnode == nullptr) // add a new module
-      {
-        std::vector<std::string> existing_module_names;
-        for (const auto& jmodule : m_mp_jdata["modules"])
-        {
-          std::string module_name = json_get(jmodule, "name", EMPTY);
-          if (!module_name.empty())
-          {
-            existing_module_names.push_back(module_name);
-          }
-        }
-
-        ModuleDlg dialog(existing_module_names, this);
-        if (dialog.DoModal() == IDOK)
-        {
-          const auto name = vu::to_string_A(dialog.m_module_name.GetBuffer());
-          this->add_a_module(name);
-        }
-      }
-      else if (ptr_jnode->m_type == jnode_e::module_name) // add a new patch
-      {
-        auto ptr_jobject = static_cast<json*>(ptr_jnode->m_ptr_parent);
-        if (ptr_jobject != nullptr)
-        {
-          auto& jmodule = static_cast<json&>(*ptr_jobject);
-          std::vector<std::string> existing_patch_names;
-          for (const auto& jpatch : jmodule["patches"])
-          {
-            std::string patch_name = json_get(jpatch, "name", EMPTY);
-            if (!patch_name.empty())
-            {
-              existing_patch_names.push_back(patch_name);
-            }
-          }
-
-          const CString selected_module_name = ptr_jnode->m_name;
-          PatchDlg dialog(existing_patch_names, selected_module_name, this);
-          if (dialog.DoModal() == IDOK)
-          {
-            const auto name = vu::to_string_A(dialog.m_patch_name.GetBuffer());
-            const auto pattern = vu::to_string_A(dialog.m_patch_pattern.GetBuffer());
-            const auto replacement = vu::to_string_A(dialog.m_patch_replacement.GetBuffer());
-            const auto offset = vu::to_string_A(dialog.m_patch_offset.GetBuffer());
-            const auto enabled = dialog.m_patch_enabled == BST_CHECKED;
-            this->add_a_patch(jmodule, name, pattern, replacement, offset, enabled);
-          }
-        }
-      }
+      AfxMessageBox(L"Not yet supported", MB_OK);
     }
     break;
 
@@ -734,7 +679,7 @@ void CQLoaderDlg::initialize_ui()
               checked &= jitem["offset"] == jparent["offset"];
             }
 
-            auto key = json_get(jitem, "name", EMPTY);
+            auto key = json_helper::get(jitem, "name", EMPTY);
             if (key != EMPTY && item != EMPTY && item == key && checked)
             {
               jitems.erase(it);
@@ -769,38 +714,38 @@ void CQLoaderDlg::initialize_ui()
           this->update_ui();
         }
       }
-    }
+      }
     break;
 
     case EasyTreeCtrl::eNotifyType::BOX_CHECKING:
-    {
-      if (pNode != nullptr &&
+      {
+        if (pNode != nullptr &&
           pNode->m_ptr_data != nullptr &&
           pNode->m_ptr_tv != nullptr)
-      {
-        auto ptr_jobject = static_cast<json*>(pNode->m_ptr_data);
-        if (ptr_jobject != nullptr)
         {
-          auto  ptr_jparent = static_cast<jnode_t*>(pNode)->m_ptr_parent;
-          auto& jparent = static_cast<json&>(*ptr_jparent);
+          auto ptr_jobject = static_cast<json*>(pNode->m_ptr_data);
+          if (ptr_jobject != nullptr)
+          {
+            auto  ptr_jparent = static_cast<jnode_t*>(pNode)->m_ptr_parent;
+            auto& jparent = static_cast<json&>(*ptr_jparent);
 
-          bool checked = m_mp_tree.GetCheck(pNode->m_ptr_tv->hItem) == BST_CHECKED;
-          jparent["enabled"] = !checked; // this will add to json object if not exists
-          m_mp_tree.SetCheck(pNode->m_ptr_tv->hItem, checked ? BST_UNCHECKED : BST_CHECKED);
+            bool checked = m_mp_tree.GetCheck(pNode->m_ptr_tv->hItem) == BST_CHECKED;
+            jparent["enabled"] = !checked; // this will add to json object if not exists
+            m_mp_tree.SetCheck(pNode->m_ptr_tv->hItem, checked ? BST_UNCHECKED : BST_CHECKED);
 
-          auto line = vu::to_string_W(json_get(jparent, "name", EMPTY));
-          line = vu::format(L"%s `%s` succeed", checked ? L"Disable" : L"Enable", line.c_str());
-          this->add_log(line, status_t::success);
+            auto line = vu::to_string_W(json_helper::get(jparent, "name", EMPTY));
+            line = vu::format(L"%s `%s` succeed", checked ? L"Disable" : L"Enable", line.c_str());
+            this->add_log(line, status_t::success);
+          }
         }
       }
-    }
-    break;
+      break;
 
     default: // no handler
       return false;
     }
 
-    #ifdef _DEBUG
+#ifdef _DEBUG
 
     const wchar_t* actions[] =
     {
@@ -824,7 +769,7 @@ void CQLoaderDlg::initialize_ui()
     std::ofstream file("test\\dump.json");
     file << m_mp_jdata.dump(1, '\t');
 
-    #endif // _DEBUG
+#endif // _DEBUG
 
     return true;
   });
@@ -875,7 +820,7 @@ void CQLoaderDlg::populate_tree()
     {
       auto hitem = m_mp_tree.InsertNode(hparent, new jnode_t(jnode_e::patch_key, key));
       m_mp_tree.SetItemState(hitem, 0, TVIS_STATEIMAGEMASK);
-      auto string = json_get(jobject, key, EMPTY);
+      auto string = json_helper::get(jobject, key, EMPTY);
       hitem = m_mp_tree.InsertNode(hitem, new jnode_t(jnode_e::patch_value, string, &jobject[key], &jobject));
       m_mp_tree.SetItemState(hitem, 0, TVIS_STATEIMAGEMASK);
       return hitem;
@@ -883,16 +828,16 @@ void CQLoaderDlg::populate_tree()
 
     for (auto& jmodule : m_mp_jdata["modules"])
     {
-      auto module_name = json_get(jmodule, "name", EMPTY);
+      auto module_name = json_helper::get(jmodule, "name", EMPTY);
       auto hmodule = m_mp_tree.InsertNode(root, new jnode_t(jnode_e::module_name, module_name, &jmodule["name"], &jmodule));
-      m_mp_tree.SetCheck(hmodule, json_get(jmodule, "enabled", true));
+      m_mp_tree.SetCheck(hmodule, json_helper::get(jmodule, "enabled", true));
 
       for (auto& jpatch : jmodule["patches"])
       {
-        auto patch_name = json_get(jpatch, "name", UNNAMED);
+        auto patch_name = json_helper::get(jpatch, "name", UNNAMED);
         if (auto hpatch = m_mp_tree.InsertNode(hmodule, new jnode_t(jnode_e::patch_name, patch_name, &jpatch["name"], &jpatch)))
         {
-          m_mp_tree.SetCheck(hpatch, json_get(jpatch, "enabled", true));
+          m_mp_tree.SetCheck(hpatch, json_helper::get(jpatch, "enabled", true));
           fn_tree_add_node_str(hpatch, jpatch, "pattern");
           fn_tree_add_node_str(hpatch, jpatch, "replacement");
           fn_tree_add_node_str(hpatch, jpatch, "offset");

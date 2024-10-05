@@ -1,7 +1,7 @@
 #pragma once
 
 #include <fstream>
-#include <3rd-json-fifo-nlohmann/json-fifo-nlohmann.h>
+#include <3rd-json-fifo-nlohmann/json.hpp>
 
 template <class T>
 struct PEB_T

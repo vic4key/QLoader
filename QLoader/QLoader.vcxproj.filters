@@ -22,9 +22,6 @@
     <Filter Include="3rdparty\3rd-protocol-handler">
       <UniqueIdentifier>{ae935ad1-eae5-4e3f-8a9a-8d57a27f8232}</UniqueIdentifier>
     </Filter>
-    <Filter Include="3rdparty\3rd-mfc-numeric-edit-ctrl">
-      <UniqueIdentifier>{b5ac057b-950a-4576-a7c5-3cc0dfaa0a33}</UniqueIdentifier>
-    </Filter>
     <Filter Include="3rdparty\3rd-mfc-easy-tree-ctrl">
       <UniqueIdentifier>{53bd7f39-86dd-4296-8eb2-f792ec3fd48e}</UniqueIdentifier>
     </Filter>
@@ -54,26 +51,17 @@
     <ClInclude Include="QLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="3rdparty\3rd-json-fifo-nlohmann\nlohmann\fifo_map.hpp">
-      <Filter>3rdparty\3rd-json-fifo-nlohmann</Filter>
-    </ClInclude>
-    <ClInclude Include="3rdparty\3rd-json-fifo-nlohmann\nlohmann\json.hpp">
-      <Filter>3rdparty\3rd-json-fifo-nlohmann</Filter>
-    </ClInclude>
-    <ClInclude Include="3rdparty\3rd-json-fifo-nlohmann\json-fifo-nlohmann.h">
-      <Filter>3rdparty\3rd-json-fifo-nlohmann</Filter>
-    </ClInclude>
     <ClInclude Include="3rdparty\3rd-protocol-handler\protocol-handler.h">
       <Filter>3rdparty\3rd-protocol-handler</Filter>
     </ClInclude>
-    <ClInclude Include="PatchDlg.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="3rdparty\3rd-json-fifo-nlohmann\json.hpp">
+      <Filter>3rdparty\3rd-json-fifo-nlohmann</Filter>
     </ClInclude>
-    <ClInclude Include="ModuleDlg.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="3rdparty\3rd-json-fifo-nlohmann\json_helper.hpp">
+      <Filter>3rdparty\3rd-json-fifo-nlohmann</Filter>
     </ClInclude>
-    <ClInclude Include="3rdparty\3rd-mfc-numeric-edit-ctrl\CNumericEditControl.h">
-      <Filter>3rdparty\3rd-mfc-numeric-edit-ctrl</Filter>
+    <ClInclude Include="3rdparty\3rd-json-fifo-nlohmann\json_unordered.hpp">
+      <Filter>3rdparty\3rd-json-fifo-nlohmann</Filter>
     </ClInclude>
     <ClInclude Include="3rdparty\3rd-mfc-easy-tree-ctrl\EasyTreeCtrl.h">
       <Filter>3rdparty\3rd-mfc-easy-tree-ctrl</Filter>
@@ -95,15 +83,6 @@
     <ClCompile Include="3rdparty\3rd-protocol-handler\protocol-handler.cpp">
       <Filter>3rdparty\3rd-protocol-handler</Filter>
     </ClCompile>
-    <ClCompile Include="PatchDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ModuleDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="3rdparty\3rd-mfc-numeric-edit-ctrl\CNumericEditControl.cpp">
-      <Filter>3rdparty\3rd-mfc-numeric-edit-ctrl</Filter>
-    </ClCompile>
     <ClCompile Include="3rdparty\3rd-mfc-easy-tree-ctrl\EasyTreeCtrl.cpp">
       <Filter>3rdparty\3rd-mfc-easy-tree-ctrl</Filter>
     </ClCompile>
@@ -116,6 +95,9 @@
   <ItemGroup>
     <None Include="res\QLoader.rc2">
       <Filter>Resource Files</Filter>
+    </None>
+    <None Include="3rdparty\3rd-json-fifo-nlohmann\json">
+      <Filter>3rdparty\3rd-json-fifo-nlohmann</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

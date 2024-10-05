@@ -16,29 +16,6 @@
 
 static json g_mp_jdata;
 
-static const std::string JSON_MODULE_TEMPLATE = \
-R"({
-  "name": "%s",
-  "patches": [
-    {
-      "name": "patch",
-      "pattern": "",
-      "replacement": "",
-      "offset": "0",
-      "enabled": true
-    }
-  ]
-})";
-
-static const std::string JSON_PATCH_TEMPLATE = \
-R"({
-  "name": "patch",
-  "pattern": "",
-  "replacement": "",
-  "offset": "0",
-  "enabled": true
-})";
-
 QLoader::QLoader() : m_mp_jdata(g_mp_jdata), m_ph(NAME)
 {
 }
@@ -155,7 +132,7 @@ void QLoader::launch(
       std::string v1 = vu::to_string_A(me.szModule);
       v1 = vu::lower_string_A(v1);
 
-      std::string v2 = json_get(jmodule, "name", EMPTY);
+      std::string v2 = json_helper::get(jmodule, "name", EMPTY);
       v2 = vu::lower_string_A(v2);
 
       return v1 == v2;
@@ -187,7 +164,7 @@ void QLoader::launch(
     const auto& jmodules = m_mp_jdata["modules"];
     for (const auto& jmodule : jmodules) // iterate all modules
     {
-      const auto module_name = vu::to_string_W(json_get(jmodule, "name", EMPTY));
+      const auto module_name = vu::to_string_W(json_helper::get(jmodule, "name", EMPTY));
       if (module_name.empty())
       {
         continue;
@@ -195,7 +172,7 @@ void QLoader::launch(
 
       // ignore the disable module
 
-      bool enabled = json_get(jmodule, "enabled", true);
+      bool enabled = json_helper::get(jmodule, "enabled", true);
       if (!enabled)
       {
         auto line = vu::format(L"Ignore the module `%s`", module_name.c_str());
@@ -223,14 +200,14 @@ void QLoader::launch(
 
         // extract the name of patch
 
-        auto name = json_get(jpatch, "name", UNNAMED);
+        auto name = json_helper::get(jpatch, "name", UNNAMED);
         std::wstring patch_name = vu::to_string_W(name);
         line = vu::format(L"Try to patch `%s`", patch_name.c_str());
         this->add_log(line);
 
         // extract the enabled of patch
 
-        const bool enabled = json_get(jpatch, "enabled", true);
+        const bool enabled = json_helper::get(jpatch, "enabled", true);
         if (!enabled)
         {
           auto line = vu::format(L"Ignore the patch `%s`", patch_name.c_str());
@@ -240,21 +217,21 @@ void QLoader::launch(
 
         // extract the pattern bytes of patch
 
-        const auto pattern = json_get(jpatch, "pattern", EMPTY);
+        const auto pattern = json_helper::get(jpatch, "pattern", EMPTY);
         assert(!pattern.empty());
 
         // extract the replacement bytes of patch
 
-        const auto replacement = json_get(jpatch, "replacement", EMPTY);
+        const auto replacement = json_helper::get(jpatch, "replacement", EMPTY);
         std::vector<vu::byte> replacement_bytes;
         vu::to_hex_bytes_A(replacement, replacement_bytes);
         assert(!replacement_bytes.empty());
 
         // extract the offset of patch
 
-        auto offset_s = json_get(jpatch, "offset", EMPTY);
+        auto offset_s = json_helper::get(jpatch, "offset", EMPTY);
         offset_s = vu::trim_string_A(offset_s);
-        bool is_heximal =\
+        bool is_heximal = \
           vu::contains_string_A(offset_s, "0x", true) ||
           vu::contains_string_A(offset_s, "h", true);
         const int offset = std::stoi(offset_s, nullptr, is_heximal ? 16 : 10);
@@ -285,10 +262,10 @@ void QLoader::launch(
 
         line = vu::format(
           process.bit() == vu::arch::x64 ?
-            L"Patch `%s` at %016X %s" : L"Patch `%s` at %08X %s",
+          L"Patch `%s` at %016X %s" : L"Patch `%s` at %08X %s",
           patch_name.c_str(),
           process.bit() == vu::arch::x64 ?
-            vu::ulong64(found_patch_address) : vu::ulong32(found_patch_address),
+          vu::ulong64(found_patch_address) : vu::ulong32(found_patch_address),
           ret ? L"succeed" : L"failed");
         this->add_log(line, ret ? status_t::success : status_t::error);
       }
@@ -387,8 +364,8 @@ vu::LNKW QLoader::export_as_lnk(
 
   json pe_jdata;
   pe_jdata["path"] = vu::to_string_A(pe_file_path);
-  pe_jdata["dir"]  = vu::to_string_A(pe_file_dir);
-  pe_jdata["arg"]  = vu::to_string_A(pe_file_arg);
+  pe_jdata["dir"] = vu::to_string_A(pe_file_dir);
+  pe_jdata["arg"] = vu::to_string_A(pe_file_arg);
   const auto pe_string = pe_jdata.dump();
   std::vector<vu::byte> pe_data(pe_string.cbegin(), pe_string.cend());
   std::wstring pe_data_encoded;
@@ -407,7 +384,7 @@ vu::LNKW QLoader::export_as_lnk(
 
   result.description = std::wstring(L"QLoader for ") + vu::extract_file_name_W(pe_file_path);
 
-  result.icon.first  = pe_file_path;
+  result.icon.first = pe_file_path;
   result.icon.second = 0;
 
   return result;
@@ -495,13 +472,13 @@ bool QLoader::parse_cmd_line(
       json pe_jdata = json::parse(pe_string);
       if (pe_jdata.is_object())
       {
-        auto pe_path = json_get(pe_jdata, "path", EMPTY);
-        auto pe_dir = json_get(pe_jdata, "dir", EMPTY);
-        auto pe_arg = json_get(pe_jdata, "arg", EMPTY);
+        auto pe_path = json_helper::get(pe_jdata, "path", EMPTY);
+        auto pe_dir  = json_helper::get(pe_jdata, "dir", EMPTY);
+        auto pe_arg  = json_helper::get(pe_jdata, "arg", EMPTY);
 
         pe_file_path = vu::to_string_W(pe_path);
-        pe_file_dir = vu::to_string_W(pe_dir);
-        pe_file_arg = vu::to_string_W(pe_arg);
+        pe_file_dir  = vu::to_string_W(pe_dir);
+        pe_file_arg  = vu::to_string_W(pe_arg);
       }
     }
   }
@@ -551,20 +528,4 @@ std::unique_ptr<vu::LNKW> QLoader::parse_shortcut(const std::wstring& file_path)
   }
 
   return ptr_lnk;
-}
-
-void QLoader::add_a_module(const std::string& name)
-{
-  assert(0 && "not yet implemented");
-}
-
-void QLoader::add_a_patch(
-  json& jmodule,
-  const std::string& name,
-  const std::string& pattern,
-  const std::string& replacement,
-  const std::string& offset,
-  const bool enabled)
-{
-  assert(0 && "not yet implemented");
 }

@@ -61,16 +61,6 @@ public:
 
   std::unique_ptr<vu::LNKW> parse_shortcut(const std::wstring& file_path);
 
-  void add_a_module(const std::string& name);
-
-  void add_a_patch(
-    json& jmodule,
-    const std::string& name,
-    const std::string& pattern,
-    const std::string& replacement,
-    const std::string& offset,
-    const bool enabled);
-
 private:
   vu::ulongptr launch_with_patch_at_oep(
     vu::ProcessW& process, PROCESS_INFORMATION& process_information, std::vector<byte>& ep);
