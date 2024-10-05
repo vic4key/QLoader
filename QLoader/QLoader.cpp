@@ -477,8 +477,8 @@ bool QLoader::parse_cmd_line(
         auto pe_arg  = json_helper::get(pe_jdata, "arg", EMPTY);
 
         pe_file_path = vu::to_string_W(pe_path);
-        pe_file_dir  = vu::to_string_W(pe_dir);
-        pe_file_arg  = vu::to_string_W(pe_arg);
+        pe_file_dir = vu::to_string_W(pe_dir);
+        pe_file_arg = vu::to_string_W(pe_arg);
       }
     }
   }
@@ -528,4 +528,20 @@ std::unique_ptr<vu::LNKW> QLoader::parse_shortcut(const std::wstring& file_path)
   }
 
   return ptr_lnk;
+}
+
+void QLoader::add_a_module(const std::string& name)
+{
+  assert(0 && "not yet implemented");
+}
+
+void QLoader::add_a_patch(
+  json& jmodule,
+  const std::string& name,
+  const std::string& pattern,
+  const std::string& replacement,
+  const std::string& offset,
+  const bool enabled)
+{
+  assert(0 && "not yet implemented");
 }

@@ -7,3 +7,6 @@
 [submodule "QLoader/3rdparty/3rd-mfc-easy-tree-ctrl"]
 	path = QLoader/3rdparty/3rd-mfc-easy-tree-ctrl
 	url = https://github.com/vn-os/3rd-mfc-easy-tree-ctrl.git
+[submodule "QLoader/3rdparty/3rd-mfc-numeric-edit-ctrl"]
+	path = QLoader/3rdparty/3rd-mfc-numeric-edit-ctrl
+	url = https://github.com/vn-os/3rd-mfc-numeric-edit-ctrl.git
